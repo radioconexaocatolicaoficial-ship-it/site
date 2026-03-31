@@ -24,7 +24,7 @@ const BannerCarousel = () => {
   }, [next]);
 
   return (
-    <div className="w-full overflow-hidden pt-[10px]">
+    <div className="w-full overflow-hidden pt-[16px]">
       <div className="mx-auto w-full max-w-[1140px] md:px-4">
         <div className="relative overflow-hidden md:rounded-lg">
 

@@ -53,20 +53,20 @@ const DestaqueInstitucional = () => {
 
         {/* Texto + botões */}
         <div className="text-center sm:text-left text-white">
-          <p className="text-xs font-semibold tracking-widest uppercase opacity-70 whitespace-nowrap">
+          <p className="text-xs font-semibold tracking-widest uppercase opacity-70">
             Web Rádio Católica
           </p>
-          <h2 className="text-2xl md:text-3xl font-black mt-1 whitespace-nowrap">
+          <h2 className="text-xl md:text-3xl font-black mt-1">
             a sintonia de vida no ar
           </h2>
-          <p className="text-sm mt-1 opacity-60 whitespace-nowrap">
+          <p className="text-sm mt-1 opacity-60">
             Levando a boa nova para todos os cantos.
           </p>
 
-          <div className="flex flex-row gap-3 mt-5 items-center justify-center sm:justify-start" style={{ flexWrap: "nowrap" }}>
+          <div className="flex flex-col sm:flex-row gap-3 mt-5 items-center justify-center sm:justify-start">
             <button
               onClick={togglePlay}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all w-full sm:w-auto justify-center"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 border: "1.5px solid rgba(255,255,255,0.5)",
@@ -83,7 +83,7 @@ const DestaqueInstitucional = () => {
               href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all w-full sm:w-auto justify-center"
               style={{
                 background: "linear-gradient(135deg,#f5c518,#e8a800)",
                 color: "#002266",
@@ -94,7 +94,7 @@ const DestaqueInstitucional = () => {
           </div>
 
           {isPlaying && (
-            <p className="mt-3 text-xs opacity-50 animate-pulse whitespace-nowrap">
+            <p className="mt-3 text-xs opacity-50 animate-pulse">
               🔴 Ao vivo agora
             </p>
           )}

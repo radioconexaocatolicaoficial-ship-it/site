@@ -116,7 +116,7 @@ const Footer = () => {
     <div className="container mx-auto px-4 py-12 flex flex-wrap gap-8">
 
       {/* Coluna 1 — Nossa Rádio */}
-      <div style={{ minWidth: "200px", flex: "1 1 200px" }}>
+      <div className="w-full sm:w-auto" style={{ minWidth: "200px", flex: "1 1 200px" }}>
         <h3 className={heading}><Radio className="h-5 w-5 opacity-80" />Nossa Rádio</h3>
         <p className="text-xs opacity-60 leading-relaxed italic text-justify">
           Fundada em 5 de Dezembro de 2013, na Diocese de São Miguel Paulista, na cidade de São Paulo, nascida a partir das experiências vividas aos pés de Cristo Ressuscitado que nos chama a amar e servir a Igreja e a toda humanidade.
@@ -124,7 +124,7 @@ const Footer = () => {
       </div>
 
       {/* Coluna 2 — Links Rápidos */}
-      <div style={{ minWidth: "130px", flex: "1 1 130px" }}>
+      <div className="w-full sm:w-auto" style={{ minWidth: "130px", flex: "1 1 130px" }}>
         <h3 className={heading}><Zap className="h-5 w-5 opacity-80" />Links Rápidos</h3>
         <ul className={col}>
           {[
@@ -140,7 +140,7 @@ const Footer = () => {
       </div>
 
       {/* Coluna 3 — Institucional */}
-      <div style={{ minWidth: "150px", flex: "1 1 150px" }}>
+      <div className="w-full sm:w-auto" style={{ minWidth: "150px", flex: "1 1 150px" }}>
         <h3 className={heading}><Building2 className="h-5 w-5 opacity-80" />Institucional</h3>
         <ul className={col}>
           {[
@@ -157,7 +157,7 @@ const Footer = () => {
       </div>
 
       {/* Coluna 4 — Atendimento */}
-      <div style={{ minWidth: "260px", flex: "1 1 260px" }}>
+      <div className="w-full sm:w-auto" style={{ minWidth: "260px", flex: "1 1 260px" }}>
         <h3 className={heading}><Headphones className="h-5 w-5 opacity-80" />Atendimento</h3>
         <ul className="space-y-3 text-sm opacity-80">
           <li className="flex items-center gap-2">
@@ -180,7 +180,7 @@ const Footer = () => {
       </div>
 
       {/* Coluna 5 — Mídia */}
-      <div style={{ minWidth: "160px", flex: "1 1 160px" }}>
+      <div className="w-full sm:w-auto" style={{ minWidth: "160px", flex: "1 1 160px" }}>
         <h3 className={heading}><Clapperboard className="h-5 w-5 opacity-80" />Mídia</h3>
         <ul className={`${col} mb-4`}>
           {[
