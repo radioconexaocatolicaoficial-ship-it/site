@@ -51,7 +51,7 @@ const Header = () => {
   return (
     <>
       <TopBar />
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border mb-[10px]">
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border">
         <div className="container mx-auto flex items-center justify-between px-4 py-3">
           <Link to="/" className="flex-shrink-0">
             <img src={logo} alt="Rádio Conexão Católica" className="h-12 w-auto" />
