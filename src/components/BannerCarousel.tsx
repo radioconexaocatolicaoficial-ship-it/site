@@ -1,15 +1,19 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import bannerDiante from "@/assets/banner-diante-do-rei.jpg";
+import bannerDianteMobile from "@/assets/banner-diante-do-rei-mobile.jpg";
 import bannerHomens from "@/assets/banner-encontro-homens.jpg";
+import bannerHomensMobile from "@/assets/banner-encontro-homens-mobile.jpg";
 import bannerKairos from "@/assets/banner-kairos-mulheres.jpg";
+import bannerKairosMobile from "@/assets/banner-kairos-mulheres-mobile.jpg";
 import bannerConexao from "@/assets/banner-conexao-catolica.jpg";
+import bannerConexaoMobile from "@/assets/banner-conexao-catolica-mobile-.jpg";
 
 const banners = [
-  { src: bannerDiante, alt: "Noite Oracional Diante do Rei", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-realiza-noite-de-oracao-diante-do-rei-em-sao-paulo/" },
-  { src: bannerHomens, alt: "Encontro para Homens", link: "https://saopaulo.cancaonova.com/noticias/encontro-para-homens-propoe-um-dia-de-formacao-e-espiritualidade-em-sao-paulo/" },
-  { src: bannerKairos, alt: "Kairós para Mulheres", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-sao-paulo-promove-kairos-para-mulheres-em-sao-paulo/" },
-  { src: bannerConexao, alt: "Rádio Conexão Católica - A Sintonia de Vida no Ar", link: "https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR" },
+  { src: bannerDiante, mobile: bannerDianteMobile, alt: "Noite Oracional Diante do Rei", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-realiza-noite-de-oracao-diante-do-rei-em-sao-paulo/" },
+  { src: bannerHomens, mobile: bannerHomensMobile, alt: "Encontro para Homens", link: "https://saopaulo.cancaonova.com/noticias/encontro-para-homens-propoe-um-dia-de-formacao-e-espiritualidade-em-sao-paulo/" },
+  { src: bannerKairos, mobile: bannerKairosMobile, alt: "Kairós para Mulheres", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-sao-paulo-promove-kairos-para-mulheres-em-sao-paulo/" },
+  { src: bannerConexao, mobile: bannerConexaoMobile, alt: "Rádio Conexão Católica - A Sintonia de Vida no Ar", link: "https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR" },
 ];
 
 const BannerCarousel = () => {
@@ -25,24 +29,26 @@ const BannerCarousel = () => {
 
   return (
     <div className="w-full overflow-hidden pt-[16px]">
-      <div className="mx-auto w-full max-w-[1140px] md:px-4">
-        <div className="relative overflow-hidden md:rounded-lg">
+      <div className="container mx-auto px-4">
+        <div className="relative overflow-hidden rounded-xl border border-border">
 
-          {/* Imagem — aspect-ratio responsivo */}
+          {/* Imagem — aspect-video igual ao card da Caminhada */}
           <a
             href={banners[current].link}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full"
           >
-            {/* Mobile: 4:3 centralizado, Desktop: altura natural */}
-            <div className="relative w-full aspect-[4/3] md:aspect-auto">
-              <img
-                src={banners[current].src}
-                alt={banners[current].alt}
-                className="absolute inset-0 w-full h-full object-cover md:static md:h-auto md:object-contain"
-                loading="eager"
-              />
+            <div className="aspect-[2/1] overflow-hidden">
+              <picture>
+                <source media="(max-width: 768px)" srcSet={banners[current].mobile} />
+                <img
+                  src={banners[current].src}
+                  alt={banners[current].alt}
+                  className="w-full h-full object-cover"
+                  loading="eager"
+                />
+              </picture>
             </div>
           </a>
 

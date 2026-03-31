@@ -68,8 +68,7 @@ const YouTubeVideos = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <h2 className="text-xl font-bold text-foreground">Nossos Vídeos</h2>
         <div className="flex items-center gap-2">
           <button onClick={() => setIndex(i => Math.max(0, i - 1))} disabled={index === 0}
@@ -81,7 +80,7 @@ const YouTubeVideos = () => {
             <ChevronRight className="h-4 w-4" />
           </button>
           <a href={`${CHANNEL_URL}?sub_confirmation=1`} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-opacity hover:opacity-85 ml-1"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold text-white transition-opacity hover:opacity-85 ml-1 whitespace-nowrap"
             style={{ background: "linear-gradient(135deg,#1a5fa8,#4a9fd4)" }}>
             <svg className="w-4 h-4 fill-white flex-shrink-0" viewBox="0 0 24 24">
               <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z" />
@@ -122,12 +121,12 @@ const YouTubeVideos = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)" }}
           onClick={closeModal}>
-          <div className="relative bg-card rounded-2xl overflow-visible w-full max-w-3xl shadow-2xl border border-border"
+          <div className="relative bg-card rounded-2xl overflow-hidden w-full max-w-3xl shadow-2xl border border-border mx-2"
             onClick={e => e.stopPropagation()}>
 
-            {/* Botão fechar — fora do overflow */}
+            {/* Botão fechar */}
             <button onClick={closeModal}
-              className="absolute -top-4 -right-4 z-20 w-9 h-9 rounded-full flex items-center justify-center text-white border-2 border-white shadow-lg"
+              className="absolute top-2 right-2 z-20 w-9 h-9 rounded-full flex items-center justify-center text-white shadow-lg"
               style={{ background: "linear-gradient(135deg,#e53935,#c62828)" }}>
               <X className="w-4 h-4" />
             </button>
@@ -147,7 +146,7 @@ const YouTubeVideos = () => {
             <div className="p-5 flex flex-col gap-3">
               <h3 className="font-bold text-base text-primary leading-snug">{modal.title}</h3>
               <span className="text-xs font-semibold" style={{ color: "#4a9fd4" }}>{modal.date}</span>
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3">
                 <a href={`${CHANNEL_URL}?sub_confirmation=1`} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white transition-all hover:-translate-y-0.5"
                   style={{ background: "linear-gradient(135deg,#ff0000,#cc0000)", boxShadow: "0 4px 14px rgba(255,0,0,0.3)" }}>
