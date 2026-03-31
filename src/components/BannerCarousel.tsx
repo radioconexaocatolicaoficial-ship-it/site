@@ -24,18 +24,26 @@ const BannerCarousel = () => {
   }, [next]);
 
   return (
-    <div className="w-full">
-      <div className="mx-auto w-full max-w-[1140px] px-4">
-        <div className="relative overflow-hidden rounded-lg">
+    <div className="w-full overflow-hidden">
+      <div className="mx-auto w-full max-w-[1140px] md:px-4">
+        <div className="relative overflow-hidden md:rounded-lg">
 
-          {/* Imagem ativa — altura natural, sem corte */}
-          <a href={banners[current].link} target="_blank" rel="noopener noreferrer" className="block w-full">
-            <img
-              src={banners[current].src}
-              alt={banners[current].alt}
-              className="w-full h-auto block"
-              loading="eager"
-            />
+          {/* Imagem — aspect-ratio responsivo */}
+          <a
+            href={banners[current].link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full"
+          >
+            {/* Mobile: 4:3 centralizado, Desktop: altura natural */}
+            <div className="relative w-full aspect-[4/3] md:aspect-auto">
+              <img
+                src={banners[current].src}
+                alt={banners[current].alt}
+                className="absolute inset-0 w-full h-full object-cover md:static md:h-auto md:object-contain"
+                loading="eager"
+              />
+            </div>
           </a>
 
           {/* Setas */}
@@ -55,7 +63,7 @@ const BannerCarousel = () => {
           </button>
 
           {/* Dots */}
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-10">
             {banners.map((_, i) => (
               <button
                 key={i}
