@@ -1,72 +1,90 @@
 import Layout from "@/components/Layout";
 import { ShoppingCart, MessageCircle } from "lucide-react";
 
+import camiseta from "@/assets/camiseta.jpg";
+import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.jpg";
+import exerciciosEspirituais from "@/assets/Exercícios-Espirituais.jpg";
+import squeezeAluminio from "@/assets/Squeeze-em-Alumínio.jpg";
+import santaRita from "@/assets/SANTA-RITA-DE-CASSIA.jpg";
+import sacola from "@/assets/sacola.jpg";
+import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.jpg";
+import tercoCores from "@/assets/Terços-Diversas-cores.jpg";
+import rosarioCampacto from "@/assets/rosario-campcto.jpg";
+
 const WHATSAPP = "5511961605164";
 
 const produtos = [
   {
     id: 1,
-    nome: "Camiseta Conexão Católica",
-    desc: "Camiseta 100% algodão com logo bordada. Disponível nos tamanhos P, M, G e GG.",
-    preco: "R$ 59,90",
-    img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop",
+    nome: "Camiseta Conexão Católica — Há 11 Anos",
+    desc: "Camiseta oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para tamanhos e cores disponíveis.",
+    preco: "Orçamento",
+    img: camiseta,
     categoria: "Vestuário",
   },
   {
     id: 2,
-    nome: "Caneca Rádio Conexão Católica",
-    desc: "Caneca de porcelana 325ml com arte exclusiva da rádio. Ideal para o café da manhã.",
-    preco: "R$ 39,90",
-    img: "https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=400&h=400&fit=crop",
+    nome: "Squeeze Caminhada da Ressurreição",
+    desc: "Squeeze oficial da Caminhada da Ressurreição com arte exclusiva. Entre em contato para mais informações.",
+    preco: "Orçamento",
+    img: garrafaCaminhada,
     categoria: "Acessórios",
   },
   {
     id: 3,
-    nome: "Boné Conexão Católica",
-    desc: "Boné aba curva com bordado da logo. Regulagem traseira. Cor: preto e dourado.",
-    preco: "R$ 49,90",
-    img: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400&h=400&fit=crop",
-    categoria: "Vestuário",
+    nome: "Livro Exercícios Espirituais — Santo Inácio de Loyola",
+    desc: "Edição especial do clássico Exercícios Espirituais de Santo Inácio de Loyola. Capa dura com acabamento premium.",
+    preco: "R$ 59,90",
+    img: exerciciosEspirituais,
+    categoria: "Livros",
   },
   {
     id: 4,
-    nome: "Ecobag Rádio Conexão Católica",
-    desc: "Sacola ecológica em algodão cru com estampa exclusiva. Sustentável e estilosa.",
-    preco: "R$ 29,90",
-    img: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
+    nome: "Squeeze Conexão Católica — Há 11 Anos",
+    desc: "Squeeze comemorativo de 11 anos da Rádio Conexão Católica. Entre em contato para mais informações.",
+    preco: "Orçamento",
+    img: squeezeAluminio,
     categoria: "Acessórios",
   },
   {
     id: 5,
-    nome: "Terço Exclusivo da Rádio",
-    desc: "Terço artesanal com medalha de Nossa Senhora. Embalagem especial para presente.",
-    preco: "R$ 34,90",
-    img: "https://images.unsplash.com/photo-1609501676725-7186f017a4b7?w=400&h=400&fit=crop",
-    categoria: "Religioso",
+    nome: "Livro Santa Rita de Cássia — Padre PH",
+    desc: "Livro 'Santa Rita de Cássia — Advogada das Causas Impossíveis' pelo Padre PH. Edição especial Dei Gloriam.",
+    preco: "R$ 59,90",
+    img: santaRita,
+    categoria: "Livros",
   },
   {
     id: 6,
-    nome: "Adesivo Pack Conexão Católica",
-    desc: "Kit com 5 adesivos vinil com logos e frases da rádio. Resistente à água.",
-    preco: "R$ 19,90",
-    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop",
+    nome: "Mochila Saco Conexão Católica — Há 11 Anos",
+    desc: "Mochila saco oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para mais informações.",
+    preco: "Orçamento",
+    img: sacola,
     categoria: "Acessórios",
   },
   {
     id: 7,
-    nome: "Camiseta Caminhada da Ressurreição",
-    desc: "Camiseta oficial da Caminhada da Ressurreição 2025. Edição limitada.",
-    preco: "R$ 64,90",
-    img: "https://images.unsplash.com/photo-1503341504253-dff4815485f1?w=400&h=400&fit=crop",
-    categoria: "Vestuário",
+    nome: "Terço Aeternum — Olho de Tigre com Espada",
+    desc: "Terço artesanal Aeternum com pedras olho de tigre e pingente espada de São Miguel Arcanjo. Peça única.",
+    preco: "R$ 50,00",
+    img: tercoSaoMiguel,
+    categoria: "Religioso",
   },
   {
     id: 8,
-    nome: "Almofada Conexão Católica",
-    desc: "Almofada 40x40cm com capa removível e estampa exclusiva da rádio.",
-    preco: "R$ 54,90",
-    img: "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?w=400&h=400&fit=crop",
-    categoria: "Casa",
+    nome: "Terço Nossa Senhora Aparecida — Cristal Azul",
+    desc: "Terço de cristal azul com medalha e crucifixo dourado de Nossa Senhora Aparecida. Embalagem para presente.",
+    preco: "R$ 30,00",
+    img: tercoCores,
+    categoria: "Religioso",
+  },
+  {
+    id: 9,
+    nome: "Terço Aeternum Premium — Olho de Tigre",
+    desc: "Terço premium Aeternum com pedras olho de tigre naturais e pingente espada de São Miguel Arcanjo. Edição especial.",
+    preco: "R$ 100,00",
+    img: rosarioCampacto,
+    categoria: "Religioso",
   },
 ];
 
@@ -129,7 +147,9 @@ const Loja = () => {
                 <h3 className="font-semibold text-sm text-foreground leading-snug mb-1">{produto.nome}</h3>
                 <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{produto.desc}</p>
                 <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
-                  <span className="text-base font-bold text-primary">{produto.preco}</span>
+                  <span className={`text-base font-bold ${produto.preco === "Orçamento" ? "text-muted-foreground text-sm" : "text-primary"}`}>
+                    {produto.preco === "Orçamento" ? "Sob orçamento" : produto.preco}
+                  </span>
                   <a
                     href={whatsappLink(produto)}
                     target="_blank"
@@ -137,7 +157,7 @@ const Loja = () => {
                     className="flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
                   >
                     <MessageCircle className="h-3.5 w-3.5" />
-                    Comprar
+                    {produto.preco === "Orçamento" ? "Orçamento" : "Comprar"}
                   </a>
                 </div>
               </div>

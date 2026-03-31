@@ -11,6 +11,7 @@ import LojaCard from "@/components/LojaCard";
 import CaminhadaCarousel from "@/components/CaminhadaCarousel";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import PatrocinadoresCarousel from "@/components/PatrocinadoresCarousel";
+import GoogleReviews from "@/components/GoogleReviews";
 
 const Index = () => (
   <Layout>
@@ -41,7 +42,7 @@ const Index = () => (
     </section>
 
     {/* Patrocinadores — entre seções 2 e 3 */}
-    <section className="container mx-auto px-4 py-3">
+    <section className="container mx-auto px-4 pt-0 pb-3">
       <PatrocinadoresCarousel />
     </section>
 
@@ -78,6 +79,9 @@ const Index = () => (
     <section className="container mx-auto px-4 pt-2 pb-6">
       <YouTubeVideos />
     </section>
+
+    {/* Seção 6: Avaliações Google */}
+    <GoogleReviews />
   </Layout>
 );
 
