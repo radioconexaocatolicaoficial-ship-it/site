@@ -70,7 +70,7 @@ const CaminhadaCarousel = () => {
           </button>
         </div>
       </div>
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
         {visible.map((item, i) => (
           <a key={index + i} href={item.link} target="_blank" rel="noopener noreferrer"
             className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">

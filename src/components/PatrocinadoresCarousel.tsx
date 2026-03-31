@@ -4,7 +4,7 @@ import bannerPousada from "@/assets/banner-empresa-pousada.jpg";
 
 const BannerAnuncieAqui = () => (
   <a href="https://wa.me/5511961605164" target="_blank" rel="noopener noreferrer"
-    className="relative flex w-full h-full overflow-hidden hover:brightness-105 transition-all">
+    className="relative flex w-full h-full overflow-hidden hover:brightness-105 transition-all rounded-xl">
     <div className="absolute inset-0" style={{ background: "linear-gradient(135deg,#051230 0%,#0a2060 40%,#0d3090 65%,#0a2060 100%)" }} />
     <div className="absolute inset-0 opacity-[0.04]"
       style={{ backgroundImage: "radial-gradient(circle,#fff 1px,transparent 1px)", backgroundSize: "20px 20px" }} />
@@ -41,17 +41,7 @@ const BannerAnuncieAqui = () => (
 );
 
 const banners = [
-  {
-    id: 1,
-    component: (
-      <a href="https://wa.me/5512997415260" target="_blank" rel="noopener noreferrer"
-        className="block w-full h-full">
-        <img src={bannerPousada} alt="Pousada Sao Jose de Anchieta"
-          className="w-full h-full object-cover object-center" />
-      </a>
-    ),
-  },
-  { id: 2, component: <BannerAnuncieAqui /> },
+  { id: 1, component: <BannerAnuncieAqui /> },
 ];
 
 const PatrocinadoresCarousel = () => {
@@ -75,7 +65,7 @@ const PatrocinadoresCarousel = () => {
           </button>
         </div>
       </div>
-      <div className="w-full rounded-xl overflow-hidden" style={{ height: "clamp(200px,30vw,350px)" }}>
+      <div className="w-full rounded-xl overflow-hidden" style={{ minHeight: "clamp(200px,30vw,350px)" }}>
         {banners[current].component}
       </div>
       <div className="flex justify-center gap-1.5 mt-2">
