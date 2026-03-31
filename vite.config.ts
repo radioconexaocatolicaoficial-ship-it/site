@@ -6,6 +6,14 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/app.js",
+        chunkFileNames: "assets/app.js",
+        assetFileNames: (info) =>
+          info.name?.endsWith(".css") ? "assets/app.css" : "assets/[name][extname]",
+      },
+    },
   },
   server: {
     host: "::",
