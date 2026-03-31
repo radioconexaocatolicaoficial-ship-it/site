@@ -5,8 +5,8 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   build: {
-    outDir: ".",
-    emptyOutDir: false,
+    outDir: "dist",
+    emptyOutDir: true,
   },
   server: {
     host: "::",
