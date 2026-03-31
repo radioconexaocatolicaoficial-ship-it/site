@@ -6,8 +6,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index";
 import Sobre from "./pages/Sobre";
 import Contato from "./pages/Contato";
+import LGPD from "./pages/LGPD";
+import Loja from "./pages/Loja";
 import SubPage from "./pages/SubPage";
 import NotFound from "./pages/NotFound";
+import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
 
@@ -24,10 +27,13 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <CookieConsent />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/sobre" element={<Sobre />} />
           <Route path="/contato" element={<Contato />} />
+          <Route path="/lgpd" element={<LGPD />} />
+          <Route path="/loja" element={<Loja />} />
           {subRoutes.map((r) => (
             <Route key={r} path={r} element={<SubPage />} />
           ))}

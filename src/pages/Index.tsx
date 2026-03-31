@@ -7,6 +7,7 @@ import DioceseCarousel from "@/components/DioceseCarousel";
 import BibliaWidget from "@/components/BibliaWidget";
 import RadioSantaRitaCarousel from "@/components/RadioSantaRitaCarousel";
 import DestaqueInstitucional from "@/components/DestaqueInstitucional";
+import LojaCard from "@/components/LojaCard";
 import CaminhadaCarousel from "@/components/CaminhadaCarousel";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import PatrocinadoresCarousel from "@/components/PatrocinadoresCarousel";
@@ -44,14 +45,25 @@ const Index = () => (
       <PatrocinadoresCarousel />
     </section>
 
-    {/* Seção 3: Bíblia Sagrada + Rádio Santa Rita + Caminhada */}
-    <section className="container mx-auto px-4 pt-2 pb-4">
+    {/* Seção 3: Bíblia Sagrada + Rádio Santa Rita */}
+    <section className="container mx-auto px-4 pt-2 pb-2">
       <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
         <div className="lg:col-span-3">
           <BibliaWidget />
         </div>
-        <div className="lg:col-span-7 flex flex-col gap-4">
+        <div className="lg:col-span-7">
           <RadioSantaRitaCarousel />
+        </div>
+      </div>
+    </section>
+
+    {/* Seção 4: Loja + Caminhada da Ressurreição */}
+    <section className="container mx-auto px-4 pt-[30px] pb-4">
+      <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 items-stretch">
+        <div className="lg:col-span-3">
+          <LojaCard />
+        </div>
+        <div className="lg:col-span-7">
           <CaminhadaCarousel />
         </div>
       </div>

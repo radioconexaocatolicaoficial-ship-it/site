@@ -202,37 +202,20 @@ const BibliaWidget = () => {
           </button>
         </div>
 
-        {/* Lista de categorias */}
-        <div className="px-4 pb-4 relative z-10 flex-1 overflow-y-auto min-h-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest opacity-60 mb-2">Categorias</p>
-          <div className="space-y-1">
-            {Object.entries(GROUPS).map(([grupo, livros]) => (
-              <div key={grupo}>
-                <p className="text-[10px] font-bold uppercase tracking-wide opacity-50 mt-2 mb-1">{grupo}</p>
-                <div className="flex flex-wrap gap-1">
-                  {livros.map(l => {
-                    const idx = LIVROS.indexOf(l);
-                    const isSelected = livroIdx === idx;
-                    return (
-                      <button key={idx}
-                        onClick={() => { setLivroIdx(idx); setCapIdx(1); }}
-                        className={`text-[10px] px-2 py-0.5 rounded transition-colors ${
-                          isSelected
-                            ? "bg-accent text-accent-foreground font-bold"
-                            : "bg-primary-foreground/15 hover:bg-primary-foreground/30 opacity-80"
-                        }`}>
-                        {l.n}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+        {/* Imagem decorativa da Bíblia */}
+        <div className="relative flex-1 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1504052434569-70ad5836ab65?w=600&h=400&fit=crop"
+            alt="Bíblia Sagrada"
+            className="w-full h-full object-cover opacity-40"
+          />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-5 text-center">
+            <p className="text-primary-foreground text-sm font-semibold italic leading-relaxed drop-shadow">
+              "Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho."
+            </p>
+            <p className="text-primary-foreground/70 text-xs mt-2 font-medium">— Salmos 119:105</p>
           </div>
         </div>
-
-        {/* Barra dourada */}
-        <div className="h-1 w-full flex-shrink-0" style={{ background: "linear-gradient(90deg,#f5c518,#e8a800,#f5c518)" }} />
       </div>
 
       {/* Modal de leitura */}
