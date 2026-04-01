@@ -1,4 +1,4 @@
-import camiseta from "@/assets/camiseta.jpg";
+import camiseta from "@/assets/camiseta-fundo-branco.jpg";
 import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.jpg";
 import exerciciosEspirituais from "@/assets/Exercícios-Espirituais.jpg";
 import squeezeAluminio from "@/assets/Squeeze-em-Alumínio.jpg";
