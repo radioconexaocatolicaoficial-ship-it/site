@@ -1,36 +1,18 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRssFeed } from "@/hooks/useRssFeed";
 
-const news = [
-  {
-    img: "https://www.vaticannews.va/content/dam/vaticannews/agenzie/images/srv/2025/08/03/2025-08-03-giubileo-dei-giovani---santa-messa-a-tor-vergata/1754206266819.JPG/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg",
-    title: "Papa: na Quaresma, abster-se de palavras que ferem o próximo",
-    desc: "O Papa Leão XIV convida os fiéis a um jejum que também passe pela língua, evitando palavras duras e julgamentos precipitados.",
-  },
-  {
-    img: "https://www.vaticannews.va/content/dam/vaticannews/agenzie/images/srv/2026/03/18/2026-03-18-udienza-generale/1773834369056.JPG/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg",
-    title: "Amoris Laetitia: Papa convoca bispos do mundo para encontro sobre a família",
-    desc: "Leão XIV convoca presidentes das Conferências Episcopais para um encontro sinodal sobre a família em Roma.",
-  },
-  {
-    img: "https://www.vaticannews.va/content/dam/vaticannews/agenzie/images/ansa/2026/03/29/16/1774794997310.jpg/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg",
-    title: "Cardeal Pizzaballa no Getsêmani: momento muito complicado; queremos a paz",
-    desc: "No Domingo de Ramos, o Patriarca Latino de Jerusalém presidiu a oração no Getsêmani.",
-  },
-  {
-    img: "https://www.vaticannews.va/content/dam/vaticannews/agenzie/images/srv/2025/11/27/viaggio-apostolico-in-tuerkiye-e-libano/1764227509730.JPG/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg",
-    title: "Leão XIV fará Viagens Apostólicas à África, Espanha e Mônaco em 2026",
-    desc: "O Vaticano anunciou três viagens apostólicas: Mônaco, África e Espanha.",
-  },
-];
+const VATICAN_RSS = "https://www.vaticannews.va/pt.rss.xml";
+const FALLBACK_IMG = "https://www.vaticannews.va/content/dam/vaticannews/multimedia/2022/03/07/Senza-titolo-12.jpg/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg";
 
 const VaticanNewsCarousel = () => {
   const [index, setIndex] = useState(0);
-  const prev = () => setIndex((i) => (i === 0 ? news.length - 1 : i - 1));
-  const next = () => setIndex((i) => (i === news.length - 1 ? 0 : i + 1));
+  const { items, loading, error } = useRssFeed(VATICAN_RSS, 8);
 
-  // Show 2 cards on desktop
-  const visible = [news[index], news[(index + 1) % news.length]];
+  const prev = () => setIndex((i) => (i === 0 ? Math.max(0, items.length - 2) : i - 1));
+  const next = () => setIndex((i) => (i + 2 >= items.length ? 0 : i + 1));
+
+  const visible = items.slice(index, index + 2);
 
   return (
     <div className="h-full flex flex-col">
@@ -45,21 +27,51 @@ const VaticanNewsCarousel = () => {
           </button>
         </div>
       </div>
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-        {visible.map((item, i) => (
-          <a key={i} href="https://www.vaticannews.va/pt.html" target="_blank" rel="noopener noreferrer"
-            className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-            <div className="aspect-video overflow-hidden">
-              <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+
+      {loading && (
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[0, 1].map((i) => (
+            <div key={i} className="bg-card rounded-xl border border-border overflow-hidden flex flex-col animate-pulse">
+              <div className="aspect-video bg-muted" />
+              <div className="p-4 flex flex-col gap-2">
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-full" />
+                <div className="h-3 bg-muted rounded w-2/3" />
+              </div>
             </div>
-            <div className="p-4 flex-1 flex flex-col">
-              <h3 className="font-semibold text-sm text-foreground leading-snug mb-2">{item.title}</h3>
-              <p className="text-xs text-muted-foreground flex-1">{item.desc}</p>
-              <span className="mt-3 text-xs font-semibold text-primary">LER NOTÍCIA →</span>
-            </div>
-          </a>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {error && (
+        <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+          Não foi possível carregar as notícias. Tente novamente mais tarde.
+        </div>
+      )}
+
+      {!loading && !error && (
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+          {visible.map((item, i) => (
+            <a key={index + i} href={item.link} target="_blank" rel="noopener noreferrer"
+              className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+              <div className="aspect-video overflow-hidden bg-muted">
+                <img
+                  src={item.thumbnail || FALLBACK_IMG}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).src = FALLBACK_IMG; }}
+                />
+              </div>
+              <div className="p-4 flex-1 flex flex-col">
+                <h3 className="font-semibold text-sm text-foreground leading-snug mb-2 line-clamp-3">{item.title}</h3>
+                <p className="text-xs text-muted-foreground flex-1 line-clamp-6">{item.description}</p>
+                <span className="mt-3 text-xs font-semibold text-primary">LER NOTÍCIA →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

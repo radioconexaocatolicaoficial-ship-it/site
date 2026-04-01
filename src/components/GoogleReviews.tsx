@@ -56,9 +56,9 @@ const GoogleReviews = () => {
   const visible = reviews.slice(index, index + VISIBLE);
 
   return (
-    <section className="container mx-auto px-4 pt-6 pb-8">
+    <section className="container mx-auto px-4 pt-4 pb-[10px]">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           {/* Logo Google */}
           <svg className="h-7 w-7" viewBox="0 0 24 24">
@@ -125,7 +125,7 @@ const GoogleReviews = () => {
       </div>
 
       {/* Link para Google */}
-      <div className="text-center mt-6">
+      <div className="text-center mt-2">
         <a
           href="https://www.google.com/search?q=Radio+Conexao+Catolica"
           target="_blank"

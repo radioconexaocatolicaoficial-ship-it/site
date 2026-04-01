@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 import logo from "@/assets/logo.png";
 
-const STREAM_URL = "https://hts04.brascast.com:11160/live";
+const STREAM_URL = "https://stream.zeno.fm/yn65fsaurfhvv";
 
 const DestaqueInstitucional = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -41,7 +41,7 @@ const DestaqueInstitucional = () => {
       </div>
 
       {/* Conteúdo */}
-      <div className="relative z-20 py-16 container mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-10 max-w-3xl">
+      <div className="relative z-20 py-8 md:py-16 container mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-6 md:gap-10 max-w-3xl">
 
         {/* Logo */}
         <img
@@ -56,7 +56,7 @@ const DestaqueInstitucional = () => {
           <p className="text-xs font-semibold tracking-widest uppercase opacity-70">
             Web Rádio Católica
           </p>
-          <h2 className="text-xl md:text-3xl font-black mt-1">
+          <h2 className="text-xl md:text-3xl font-black mt-1 whitespace-nowrap">
             a sintonia de vida no ar
           </h2>
           <p className="text-sm mt-1 opacity-60">
@@ -66,7 +66,7 @@ const DestaqueInstitucional = () => {
           <div className="flex flex-col sm:flex-row gap-3 mt-5 items-center justify-center sm:justify-start">
             <button
               onClick={togglePlay}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all w-full sm:w-auto justify-center"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap justify-center w-full sm:w-auto"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 border: "1.5px solid rgba(255,255,255,0.5)",
@@ -83,7 +83,7 @@ const DestaqueInstitucional = () => {
               href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all w-full sm:w-auto justify-center"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap justify-center w-full sm:w-auto"
               style={{
                 background: "linear-gradient(135deg,#f5c518,#e8a800)",
                 color: "#002266",

@@ -32,24 +32,22 @@ const BannerCarousel = () => {
       <div className="container mx-auto px-4">
         <div className="relative overflow-hidden rounded-xl border border-border">
 
-          {/* Imagem — aspect-video igual ao card da Caminhada */}
+          {/* Imagem — proporção 1140x400 no desktop, imagem mobile no celular */}
           <a
             href={banners[current].link}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full"
           >
-            <div className="aspect-[2/1] overflow-hidden">
-              <picture>
-                <source media="(max-width: 768px)" srcSet={banners[current].mobile} />
-                <img
-                  src={banners[current].src}
-                  alt={banners[current].alt}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </picture>
-            </div>
+            <picture>
+              <source media="(max-width: 768px)" srcSet={banners[current].mobile} />
+              <img
+                src={banners[current].src}
+                alt={banners[current].alt}
+                className="w-full h-auto block"
+                loading="eager"
+              />
+            </picture>
           </a>
 
           {/* Setas */}

@@ -2,59 +2,71 @@ import { useState, useEffect } from "react";
 
 export interface RssItem {
   title: string;
-  desc: string;
-  img: string;
   link: string;
+  description: string;
+  thumbnail: string;
+  pubDate: string;
 }
 
-const PROXIES = [
-  (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-  (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-];
+// Usa allorigins como proxy CORS para parsear RSS diretamente no browser
+async function fetchRss(url: string, count = 8): Promise<RssItem[]> {
+  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+  const res = await fetch(proxy);
+  if (!res.ok) throw new Error("Falha ao buscar RSS");
+  const data = await res.json();
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(data.contents, "text/xml");
+  const items = Array.from(xml.querySelectorAll("item")).slice(0, count);
 
-function extractImg(item: Element, fallback: string): string {
-  const media = item.querySelector("thumbnail, content, enclosure");
-  if (media) {
-    const url = media.getAttribute("url") || media.getAttribute("src");
-    if (url) return url;
-  }
-  const desc = item.querySelector("description")?.textContent || "";
-  const match = desc.match(/<img[^>]+src=["']([^"']+)["']/i);
-  if (match) return match[1];
-  return fallback;
+  return items.map((item) => {
+    const title = item.querySelector("title")?.textContent?.trim() ?? "";
+    const link = item.querySelector("link")?.textContent?.trim() ?? "";
+    const description = item.querySelector("description")?.textContent
+      ?.replace(/<[^>]+>/g, "").trim().slice(0, 300) ?? "";
+    const pubDate = item.querySelector("pubDate")?.textContent?.trim() ?? "";
+
+    // Tenta pegar imagem de media:content, enclosure ou og dentro da descrição
+    const mediaContent = item.getElementsByTagNameNS("*", "content")[0];
+    const enclosure = item.querySelector("enclosure");
+    const thumbnail =
+      mediaContent?.getAttribute("url") ||
+      enclosure?.getAttribute("url") ||
+      "";
+
+    return { title, link, description, thumbnail, pubDate };
+  });
 }
 
-export function useRssFeed(feedUrl: string, fallback: RssItem[], limit = 6) {
-  const [items, setItems] = useState<RssItem[]>(fallback);
+export function useRssFeed(url: string, count = 8, refreshMs = 5 * 60 * 1000) {
+  const [items, setItems] = useState<RssItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      for (const proxy of PROXIES) {
-        try {
-          const res = await fetch(proxy(feedUrl), { signal: AbortSignal.timeout(8000) });
-          if (!res.ok) continue;
-          const text = res.url.includes("allorigins")
-            ? (await res.json()).contents
-            : await res.text();
-          const doc = new DOMParser().parseFromString(text, "text/xml");
-          const entries = Array.from(doc.querySelectorAll("item, entry")).slice(0, limit);
-          if (!entries.length) continue;
-          const parsed: RssItem[] = entries.map(e => ({
-            title: e.querySelector("title")?.textContent?.trim() || "",
-            desc: (e.querySelector("description, summary")?.textContent || "").replace(/<[^>]+>/g, "").trim().slice(0, 200),
-            img: extractImg(e, fallback[0]?.img || ""),
-            link: e.querySelector("link")?.textContent?.trim() || e.querySelector("link")?.getAttribute("href") || feedUrl,
-          })).filter(i => i.title);
-          if (parsed.length) { setItems(parsed); break; }
-        } catch { /* try next */ }
-      }
-      setLoading(false);
-    };
-    load();
-    const interval = setInterval(load, 30 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [feedUrl]);
+    let cancelled = false;
 
-  return { items, loading };
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchRss(url, count);
+        if (!cancelled) {
+          setItems(data);
+          setError(false);
+        }
+      } catch {
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    const interval = setInterval(load, refreshMs);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, [url, count, refreshMs]);
+
+  return { items, loading, error };
 }

@@ -65,15 +65,10 @@ const PatrocinadoresCarousel = () => {
           </button>
         </div>
       </div>
-      <div className="w-full rounded-xl overflow-hidden" style={{ minHeight: "clamp(200px,30vw,350px)" }}>
+      <div className="w-full rounded-xl overflow-hidden" style={{ minHeight: "clamp(120px,15vw,180px)" }}>
         {banners[current].component}
       </div>
-      <div className="flex justify-center gap-1.5 mt-2">
-        {banners.map((_, i) => (
-          <button key={i} onClick={() => setCurrent(i)}
-            className={`w-1.5 h-1.5 rounded-full transition-colors ${i === current ? "bg-primary" : "bg-muted-foreground/30"}`} />
-        ))}
-      </div>
+
     </div>
   );
 };

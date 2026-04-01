@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, ChevronDown, Home, Info, CalendarDays, Clapperboard, Users, Network, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -44,17 +44,30 @@ const navItems: NavItem[] = [
   { label: "Contato", to: "/contato", icon: <Phone className="h-4 w-4" /> },
 ];
 
+const TOPBAR_H = 40; // altura do TopBar em px
+
 const Header = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > TOPBAR_H);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <>
       <TopBar />
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border">
-        <div className="container mx-auto flex items-center justify-between px-4 py-3">
+      <header
+        className={`left-0 right-0 z-50 bg-background/95 backdrop-blur-md shadow-sm border-b border-border transition-all duration-300 ${
+          scrolled ? "fixed top-0" : "relative"
+        }`}
+      >
+        <div className="container mx-auto flex items-center justify-between px-4 py-2 md:py-3">
           <Link to="/" className="flex-shrink-0">
-            <img src={logo} alt="Rádio Conexão Católica" className="h-12 w-auto" />
+            <img src={logo} alt="Rádio Conexão Católica" className="h-9 md:h-12 w-auto" />
           </Link>
 
           {/* Desktop Nav */}

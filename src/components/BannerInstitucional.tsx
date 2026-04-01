@@ -22,7 +22,7 @@ const BannerInstitucional = () => (
         <p className="text-sm md:text-base font-light tracking-widest uppercase opacity-80 mb-1">
           Web Rádio Católica
         </p>
-        <h2 className="text-2xl md:text-4xl font-black leading-tight italic"
+        <h2 className="text-xl md:text-3xl font-black leading-tight italic whitespace-nowrap"
           style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
           a sintonia de vida no ar
         </h2>

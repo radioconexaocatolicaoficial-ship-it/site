@@ -10,7 +10,7 @@ const items = [
     btn: "SAIBA MAIS",
   },
   {
-    img: "https://static.wixstatic.com/media/e11735_3de17851fd0a486e8ba63b6b3e8a46e5~mv2.jpeg/v1/crop/x_0,y_73,w_1600,h_1453/fill/w_600,h_338,al_c,q_80/WhatsApp%20Image%202025-02-12%20at%2022_17_07.jpeg",
+    img: "https://static.wixstatic.com/media/e11735_3de17851fd0a486e8ba63b6b3e8a46e5~mv2.jpeg",
     title: "Conheça a história da Caminhada da Ressurreição",
     desc: "Realizada anualmente desde 1984 pela Diocese de São Miguel Paulista, a Caminhada reúne milhares de fiéis para celebrar a Ressurreição de Jesus Cristo nas ruas da Zona Leste.",
     link: "https://www.caminhadadaressurreicao.com/",
@@ -74,13 +74,13 @@ const CaminhadaCarousel = () => {
         {visible.map((item, i) => (
           <a key={index + i} href={item.link} target="_blank" rel="noopener noreferrer"
             className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
-            <div className="aspect-video overflow-hidden">
+            <div className="aspect-video overflow-hidden bg-muted">
               <img src={item.img} alt={item.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500" loading="lazy" />
             </div>
             <div className="p-4 flex-1 flex flex-col">
               <h3 className="font-semibold text-sm text-foreground leading-snug mb-2 line-clamp-2">{item.title}</h3>
-              <p className="text-xs text-muted-foreground flex-1 line-clamp-3">{item.desc}</p>
+              <p className="text-xs text-muted-foreground flex-1 line-clamp-6">{item.desc}</p>
               <span className="mt-3 text-xs font-semibold text-primary">LER NOTÍCIA →</span>
             </div>
           </a>
