@@ -77,13 +77,21 @@
   line-height: 1.6;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 6;
   overflow: hidden;
+  max-height: 9.6em; /* 6 × 1.6em */
 }
 
 [data-theme="dark"] .nfs-highlight__desc,
 .dark .nfs-highlight__desc {
   color: hsl(var(--muted-foreground));
+}
+
+@media (max-width: 1023px) {
+  .nfs-highlight__desc {
+    -webkit-line-clamp: 8;
+    max-height: 12.8em;
+  }
 }
 
 .nfs-highlight__stack {

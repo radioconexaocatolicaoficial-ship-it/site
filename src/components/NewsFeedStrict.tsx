@@ -9,6 +9,16 @@ const FEED_SANTA_RITA = "https://www.radiosantaritadecassia.com.br/feed";
 const FEED_YOUTUBE_PADRE_PH =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
 
+const CAMINHADA_SITE = "https://www.caminhadadaressurreicao.com/";
+const HIGHLIGHT_CAMINHADA_TITLE =
+  'Vem aí a Caminhada da Ressurreição 2026 "Eu vi o Senhor"';
+const HIGHLIGHT_CAMINHADA_BADGE = "CAMINHADA DA RESSURREIÇÃO";
+
+/** Texto integral no DOM; o CSS limita linhas visíveis */
+const CAMINHADA_HIGHLIGHT_DESCRIPTION =
+  'Com o tema "Eu vi o Senhor", em 2026 teremos a 42ª Caminhada da Ressurreição. A Caminhada da Ressurreição é um evento tradicional e de grande significado para a cidade de São Paulo, realizado anualmente desde 1984, sempre no Sábado de Aleluia, véspera do Domingo de Páscoa, pela Diocese de São Miguel Paulista. O evento tem início à noite, por volta das 23h, com milhares de fiéis reunidos na Basílica e Santuário Eucarístico Nossa Senhora da Penha, na Rua Santo Afonso, 199, Penha. ' +
+  "Após a bênção de Dom Algacir Munhak, Bispo Diocesano, o percurso tem início, já na madrugada, por volta da meia-noite. São 13 quilômetros de caminhada pelas ruas dos bairros da zona leste de São Paulo, que duram aproximadamente seis horas. A caminhada é marcada pela oração, pela fé, e pelo entusiasmo dos participantes, acompanhados pelo som animado das bandas católicas. O objetivo de todos é único: celebrar a Ressurreição de Jesus Cristo.";
+
 const REFRESH_MS = 15 * 60 * 1000;
 
 const PROXY = (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
@@ -52,60 +62,6 @@ function stripHtml(html: string): string {
   const d = document.createElement("div");
   d.innerHTML = t;
   return (d.textContent || d.innerText || "").replace(/\s+/g, " ").trim();
-}
-
-/** Remove blocos típicos do feed WordPress que não são o corpo da notícia */
-function stripWpFeedBoilerplate(html: string): string {
-  if (!html) return "";
-  return html
-    .replace(/<p[^>]*>\s*The post[\s\S]*?<\/p>/gi, "")
-    .replace(/<p[^>]*>\s*O post[\s\S]*?apareceu primeiro em[\s\S]*?<\/p>/gi, "")
-    .replace(/<p[^>]*>\s*The post[\s\S]*?first appeared on[\s\S]*?<\/p>/gi, "");
-}
-
-function highlightBadgeFromItem(item: Rss2JsonItem | null): string {
-  const raw = item?.categories?.find((c) => c && String(c).trim());
-  if (raw) return String(raw).trim().toUpperCase().replace(/\s+/g, " ");
-  const blob = `${item?.title ?? ""} ${stripHtml(item?.description ?? "")}`.toLowerCase();
-  if (/\b(quaresma|noven[aá]rio|ter[cç]o|ora[cç][aã]o|espiritual|missa|liturgia|santo|padroeir)\b/.test(blob))
-    return "ESPIRITUALIDADE";
-  if (/\b(encontro|evento|agenda|inscri[cç][aã]o|ingresso|dia\s+de)\b/.test(blob)) return "EVENTOS";
-  return "NOTÍCIAS";
-}
-
-/** Resumo fiel ao corpo da notícia (content/description do RSS), sem repetir o título */
-function buildHighlightExcerpt(title: string, item: Rss2JsonItem): string {
-  const descLen = item.description?.length ?? 0;
-  const contentLen = item.content?.length ?? 0;
-  const html =
-    contentLen > descLen ? stripWpFeedBoilerplate(item.content || "") : stripWpFeedBoilerplate(item.description || "");
-  let text = stripHtml(html).replace(/\s+/g, " ").trim();
-  text = text.replace(/\bThe post\b[\s\S]*$/i, "").replace(/\bO post\b[\s\S]*$/i, "").trim();
-
-  const t = title.trim();
-  if (t.length > 0 && text.toLowerCase().startsWith(t.toLowerCase())) {
-    text = text.slice(t.length).replace(/^[\s.,;–\-:]+/, "").trim();
-  }
-
-  const max = 220;
-  if (!text) {
-    const fallback = stripHtml(stripWpFeedBoilerplate(item.description || item.content || ""))
-      .replace(/\s+/g, " ")
-      .trim();
-    text = fallback.slice(0, max);
-  }
-  if (text.length <= max) return text || "Confira os detalhes desta notícia no portal da Frente de Missão São Paulo.";
-
-  const slice = text.slice(0, max);
-  const lastSentence = Math.max(
-    slice.lastIndexOf(". "),
-    slice.lastIndexOf("! "),
-    slice.lastIndexOf("? "),
-  );
-  if (lastSentence > 80) return `${slice.slice(0, lastSentence + 1).trim()}`;
-
-  const sp = slice.lastIndexOf(" ");
-  return `${(sp > 100 ? slice.slice(0, sp) : slice).trim()}…`;
 }
 
 function extractImgFromHtml(html: string): string {
@@ -246,15 +202,17 @@ const REF_FALLBACK_TOPICS: { label: string; link: string }[] = [
 ];
 
 function pickHighlightTopicLines(cnItems: Rss2JsonItem[], mainLink: string, count = 2): { label: string; link: string }[] {
-  const main = mainLink.trim();
-  const seen = new Set<string>(main ? [main] : []);
+  const main = mainLink.replace(/\/$/, "").trim();
+  const seen = new Set<string>(main ? [main, `${main}/`] : []);
   const out: { label: string; link: string }[] = [];
 
-  for (const it of cnItems.slice(1)) {
+  for (const it of cnItems) {
     if (out.length >= count) break;
     const link = it.link?.trim() ?? "";
-    if (!link || seen.has(link)) continue;
+    const linkNorm = link.replace(/\/$/, "");
+    if (!link || seen.has(link) || seen.has(linkNorm)) continue;
     seen.add(link);
+    seen.add(linkNorm);
     out.push({ label: shortTitle(it.title?.trim() || "Notícia", 92), link });
   }
 
@@ -290,16 +248,13 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
   ]);
 
   const cn = cnItems[0] ?? null;
-  const mainLink = cn?.link || "https://saopaulo.cancaonova.com/noticias/";
 
   const highlight: HighlightData = {
-    badge: highlightBadgeFromItem(cn),
-    title: cn?.title?.trim() || "Canção Nova São Paulo",
-    description: cn
-      ? buildHighlightExcerpt(cn.title || "", cn)
-      : "Carregando a última notícia da Frente de Missão São Paulo…",
-    link: mainLink,
-    topicLines: pickHighlightTopicLines(cnItems, mainLink, 2),
+    badge: HIGHLIGHT_CAMINHADA_BADGE,
+    title: HIGHLIGHT_CAMINHADA_TITLE,
+    description: CAMINHADA_HIGHLIGHT_DESCRIPTION,
+    link: CAMINHADA_SITE,
+    topicLines: pickHighlightTopicLines(cnItems, CAMINHADA_SITE, 2),
   };
 
   const cards: FeedCardData[] = [];
@@ -389,7 +344,9 @@ const NewsFeedStrict = () => {
               >
                 <span className="nfs-highlight__badge">{highlight.badge}</span>
                 <h2 className="nfs-highlight__title">{highlight.title}</h2>
-                <p className="nfs-highlight__desc">{highlight.description}</p>
+                <p className="nfs-highlight__desc" title={highlight.description}>
+                  {highlight.description}
+                </p>
               </a>
               <div className="nfs-highlight__topics">
                 {highlight.topicLines.map((t, i) => (
