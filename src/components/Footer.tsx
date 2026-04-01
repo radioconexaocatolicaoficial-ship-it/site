@@ -54,18 +54,18 @@ const Footer = () => {
         </div>
 
         {/* Newsletter */}
-        <form onSubmit={handleSubscribe} className="flex flex-col xsm:flex-row w-full max-w-md gap-2 xsm:gap-0 px-2 sm:px-0">
+        <form onSubmit={handleSubscribe} className="flex flex-row w-full max-w-md px-2 sm:px-0">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="seu@mail.com"
             required
-            className="flex-1 px-4 py-2 rounded-md xsm:rounded-r-none text-sm text-gray-900 outline-none bg-white min-w-0"
+            className="flex-1 min-w-0 px-3 py-2 rounded-l-md text-sm text-gray-900 outline-none bg-white"
           />
           <button
             type="submit"
-            className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-5 py-2 rounded-md xsm:rounded-l-none text-sm transition-colors whitespace-nowrap"
+            className="shrink-0 bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-4 py-2 rounded-r-md text-sm transition-colors whitespace-nowrap"
           >
             Inscreva-se
           </button>
