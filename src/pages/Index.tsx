@@ -23,22 +23,6 @@ const Index = () => (
     <section className="container mx-auto px-4 pt-0 pb-[30px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-[30px] items-stretch">
         <div className="md:col-span-1 lg:col-span-3">
-          <CountdownCard />
-        </div>
-        <div className="md:col-span-1 lg:col-span-7">
-          <VaticanNewsCarousel />
-        </div>
-      </div>
-    </section>
-
-    {/* Loja + faixa de produtos — acima de Liturgia e Diocese */}
-    <section className="container mx-auto px-4 pt-0 pb-[30px]">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-[30px] items-stretch">
-        <div className="md:col-span-1 lg:col-span-3">
-          <LojaCard />
-        </div>
-        <div className="md:col-span-1 lg:col-span-7 min-h-[320px] lg:min-h-[380px]">
-          <LojaProdutosScroller />
         </div>
       </div>
     </section>

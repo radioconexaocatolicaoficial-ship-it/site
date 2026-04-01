@@ -44,7 +44,7 @@ const TopBar = () => (
       </a>
 
       {/* Redes Sociais */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5 sm:gap-2">
         {socials.map((s) =>
           s.url ? (
             <a
@@ -53,9 +53,9 @@ const TopBar = () => (
               target="_blank"
               rel="noopener noreferrer"
               aria-label={s.name}
-              className="w-7 h-7 flex items-center justify-center rounded-md border border-white/50 text-white hover:border-gold hover:text-gold transition-colors"
+              className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-md border border-white/50 text-white hover:border-gold hover:text-gold transition-colors"
             >
-              <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" viewBox="0 0 24 24">
                 <path d={s.icon} />
               </svg>
             </a>
@@ -64,9 +64,9 @@ const TopBar = () => (
               key={s.name}
               aria-label={`${s.name} — em breve`}
               title={`${s.name} — em breve`}
-              className="w-7 h-7 flex items-center justify-center rounded-md border border-white/20 text-white/40 cursor-default"
+              className="w-6 h-6 sm:w-7 sm:h-7 hidden xsm:flex items-center justify-center rounded-md border border-white/20 text-white/40 cursor-default"
             >
-              <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" viewBox="0 0 24 24">
                 <path d={s.icon} />
               </svg>
             </span>
