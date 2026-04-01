@@ -118,17 +118,18 @@
   gap: 0.65rem;
 }
 
-/* Cada tópico: sem numeração, só • */
+/* Tópicos: uma linha; fonte menor para caber mais texto (sem reticências) */
 .nfs-highlight__topic {
   margin: 0;
   padding: 0;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: clamp(10px, 1.65vw, 12px);
+  line-height: 1.45;
   color: #444;
   display: flex;
-  gap: 0.45rem;
-  align-items: flex-start;
+  gap: 0.4rem;
+  align-items: center;
   text-align: left;
+  min-width: 0;
 }
 
 [data-theme="dark"] .nfs-highlight__topic,
@@ -140,7 +141,7 @@
   flex-shrink: 0;
   color: #004a99;
   font-weight: 800;
-  line-height: 1.6;
+  line-height: 1.45;
 }
 
 [data-theme="dark"] .nfs-highlight__topic-dot,
@@ -152,6 +153,12 @@
   color: #004a99;
   font-weight: 600;
   text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 [data-theme="dark"] .nfs-highlight__topic-link,

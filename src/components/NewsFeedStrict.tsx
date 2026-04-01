@@ -7,7 +7,10 @@ const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 const FEED_CANCAO_NOVA = "https://saopaulo.cancaonova.com/noticias/feed/";
 const NOTICIAS_ARCHIVE_URL = "https://saopaulo.cancaonova.com/noticias/";
 const FEED_CAMINHADA = "https://www.caminhadadaressurreicao.com/blog-feed.xml";
-const FEED_SANTA_RITA = "https://www.radiosantaritadecassia.com.br/feed";
+/** Canal: youtube.com/@RADIOCONEXAOCATOLICA-p1l */
+const RADIO_CONEXAO_CHANNEL_URL = "https://www.youtube.com/@RADIOCONEXAOCATOLICA-p1l";
+const FEED_RADIO_CONEXAO_YT =
+  "https://www.youtube.com/feeds/videos.xml?channel_id=UCi33qNAezaFd0-TIC211CHA";
 const FEED_YOUTUBE_PADRE_PH =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
 
@@ -213,8 +216,6 @@ async function fetchPageArticleMeta(pageUrl: string): Promise<{ image: string; p
 function fallbackCardImage(siteLabel: string): string {
   if (siteLabel.includes("Caminhada"))
     return "https://static.wixstatic.com/media/e11735_e5149fc5e4d743c6a4f7613eb6017eb7~mv2.jpg/v1/crop/x_156,y_0,w_1728,h_1148/fill/w_800,h_450,al_c,q_80/cristo%20na%20cruz%203.jpg";
-  if (siteLabel.includes("Santa Rita"))
-    return "https://websitenoar.net/contents/384/slider/user_2478937.jpg";
   return "";
 }
 
@@ -350,7 +351,7 @@ async function fetchRssItems(rssUrl: string, max: number): Promise<Rss2JsonItem[
 
 const REF_FALLBACK_TOPICS: { label: string; link: string }[] = [
   { label: "Caminhada da Ressurreição", link: "https://www.caminhadadaressurreicao.com/" },
-  { label: "Rádio Santa Rita de Cássia", link: "https://www.radiosantaritadecassia.com.br/" },
+  { label: "Rádio Conexão Católica — YouTube", link: RADIO_CONEXAO_CHANNEL_URL },
   { label: "Canal Padre PH — YouTube", link: "https://www.youtube.com/c/PadrePH" },
   { label: "Todas as notícias — Frente de Missão SP", link: "https://saopaulo.cancaonova.com/noticias/" },
   { label: "Site Canção Nova São Paulo", link: "https://saopaulo.cancaonova.com/" },
@@ -395,10 +396,10 @@ function pickHighlightTopicLines(cnItems: Rss2JsonItem[], mainLink: string, coun
 }
 
 async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCardData[] }> {
-  const [cnItems, cam, rita, yt, cnArchive] = await Promise.all([
+  const [cnItems, cam, radioCx, yt, cnArchive] = await Promise.all([
     fetchRssItems(FEED_CANCAO_NOVA, 14),
     fetchRssFirstItem(FEED_CAMINHADA),
-    fetchRssFirstItem(FEED_SANTA_RITA),
+    fetchRssFirstItem(FEED_RADIO_CONEXAO_YT),
     fetchRssFirstItem(FEED_YOUTUBE_PADRE_PH),
     fetchCancaoNovaArchiveImages(),
   ]);
@@ -457,10 +458,10 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     "Caminhada da Ressurreição",
   );
   pushCard(
-    "Rádio Santa Rita de Cássia",
-    rita,
-    "https://www.radiosantaritadecassia.com.br/",
-    "Rádio Santa Rita de Cássia",
+    "Rádio Conexão Católica",
+    radioCx,
+    RADIO_CONEXAO_CHANNEL_URL,
+    "Rádio Conexão Católica — ao vivo e conteúdos",
   );
   pushCard(
     "YouTube · Padre PH",
@@ -536,6 +537,7 @@ const NewsFeedStrict = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="nfs-highlight__topic-link"
+                      title={t.label}
                     >
                       {t.label}
                     </a>
