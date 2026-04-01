@@ -67,7 +67,7 @@ const Header = () => {
       >
         <div className="container mx-auto flex items-center justify-between px-4 py-2 md:py-3">
           <Link to="/" className="flex-shrink-0">
-            <img src={logo} alt="Rádio Conexão Católica" className="h-9 md:h-12 w-auto" />
+            <img src={logo} alt="Rádio Conexão Católica" className="h-9 md:h-12 w-auto" fetchPriority="high" />
           </Link>
 
           {/* Desktop Nav */}
