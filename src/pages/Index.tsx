@@ -12,6 +12,7 @@ import LojaProdutosScroller from "@/components/LojaProdutosScroller";
 import CaminhadaCarousel from "@/components/CaminhadaCarousel";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import PatrocinadoresCarousel from "@/components/PatrocinadoresCarousel";
+import RadioInstagramNews from "@/components/RadioInstagramNews";
 import GoogleReviews from "@/components/GoogleReviews";
 import ProgramacaoSection from "@/components/ProgramacaoSection";
 import PedidoMusica from "@/components/PedidoMusica";
@@ -61,16 +62,21 @@ const Index = () => (
       <PatrocinadoresCarousel />
     </section>
 
-    {/* Seção 3: Bíblia Sagrada + Rádio Santa Rita */}
+    {/* Bíblia + notícias (Instagram da rádio), abaixo do patrocinador */}
     <section className="container mx-auto px-4 pt-2 pb-2">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-4 items-stretch">
         <div className="md:col-span-1 lg:col-span-3">
           <BibliaWidget />
         </div>
         <div className="md:col-span-1 lg:col-span-7">
-          <RadioSantaRitaCarousel />
+          <RadioInstagramNews />
         </div>
       </div>
+    </section>
+
+    {/* Rádio Santa Rita — largura total do container */}
+    <section className="container mx-auto px-4 pt-2 pb-2">
+      <RadioSantaRitaCarousel />
     </section>
 
     {/* Caminhada da Ressurreição (largura total do container) */}

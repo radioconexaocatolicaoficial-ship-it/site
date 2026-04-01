@@ -13,17 +13,19 @@ import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.jpg";
 import tercoCores from "@/assets/Terços-Diversas-cores.jpg";
 import rosarioCampacto from "@/assets/rosario-campcto.jpg";
 
-const produtos = [
+type ProdutoLoja = {
+  id: number;
+  nome: string;
+  desc: string;
+  preco: string;
+  img: string;
+  categoria: string;
+  imgLightBg?: boolean;
+};
+
+const produtos: ProdutoLoja[] = [
   {
     id: 1,
-    nome: "Camiseta Conexão Católica — Há 11 Anos",
-    desc: "Camiseta oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para tamanhos e cores disponíveis.",
-    preco: "Orçamento",
-    img: camiseta,
-    categoria: "Vestuário",
-  },
-  {
-    id: 2,
     nome: "Squeeze Caminhada da Ressurreição",
     desc: "Squeeze oficial da Caminhada da Ressurreição com arte exclusiva. Entre em contato para mais informações.",
     preco: "Orçamento",
@@ -31,7 +33,7 @@ const produtos = [
     categoria: "Acessórios",
   },
   {
-    id: 3,
+    id: 2,
     nome: "Livro Exercícios Espirituais — Santo Inácio de Loyola",
     desc: "Edição especial do clássico Exercícios Espirituais de Santo Inácio de Loyola. Capa dura com acabamento premium.",
     preco: "R$ 59,90",
@@ -39,7 +41,7 @@ const produtos = [
     categoria: "Livros",
   },
   {
-    id: 4,
+    id: 3,
     nome: "Squeeze Conexão Católica — Há 11 Anos",
     desc: "Squeeze comemorativo de 11 anos da Rádio Conexão Católica. Entre em contato para mais informações.",
     preco: "Orçamento",
@@ -47,7 +49,7 @@ const produtos = [
     categoria: "Acessórios",
   },
   {
-    id: 5,
+    id: 4,
     nome: "Livro Santa Rita de Cássia — Padre PH",
     desc: "Livro 'Santa Rita de Cássia — Advogada das Causas Impossíveis' pelo Padre PH. Edição especial Dei Gloriam.",
     preco: "R$ 59,90",
@@ -55,7 +57,7 @@ const produtos = [
     categoria: "Livros",
   },
   {
-    id: 6,
+    id: 5,
     nome: "Mochila Saco Conexão Católica — Há 11 Anos",
     desc: "Mochila saco oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para mais informações.",
     preco: "Orçamento",
@@ -63,7 +65,7 @@ const produtos = [
     categoria: "Acessórios",
   },
   {
-    id: 7,
+    id: 6,
     nome: "Terço Aeternum — Olho de Tigre com Espada",
     desc: "Terço artesanal Aeternum com pedras olho de tigre e pingente espada de São Miguel Arcanjo. Peça única.",
     preco: "R$ 50,00",
@@ -71,7 +73,7 @@ const produtos = [
     categoria: "Religioso",
   },
   {
-    id: 8,
+    id: 7,
     nome: "Terço Nossa Senhora Aparecida — Cristal Azul",
     desc: "Terço de cristal azul com medalha e crucifixo dourado de Nossa Senhora Aparecida. Embalagem para presente.",
     preco: "R$ 30,00",
@@ -79,12 +81,21 @@ const produtos = [
     categoria: "Religioso",
   },
   {
-    id: 9,
+    id: 8,
     nome: "Terço Aeternum Premium — Olho de Tigre",
     desc: "Terço premium Aeternum com pedras olho de tigre naturais e pingente espada de São Miguel Arcanjo. Edição especial.",
     preco: "R$ 100,00",
     img: rosarioCampacto,
     categoria: "Religioso",
+  },
+  {
+    id: 9,
+    nome: "Camiseta Conexão Católica — Há 11 Anos",
+    desc: "Camiseta oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para tamanhos e cores disponíveis.",
+    preco: "Orçamento",
+    img: camiseta,
+    categoria: "Vestuário",
+    imgLightBg: true,
   },
 ];
 
@@ -92,7 +103,7 @@ const categorias = ["Todos", ...Array.from(new Set(produtos.map(p => p.categoria
 
 const Loja = () => {
   const [cat, setCat] = useState("Todos");
-  const [modalProduto, setModalProduto] = useState<(typeof produtos)[0] | null>(null);
+  const [modalProduto, setModalProduto] = useState<ProdutoLoja | null>(null);
   const filtrados = cat === "Todos" ? produtos : produtos.filter(p => p.categoria === cat);
 
   return (
@@ -142,12 +153,12 @@ const Loja = () => {
               }}
               className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
             >
-              <div className={`aspect-square overflow-hidden ${produto.id === 1 ? "bg-white" : ""}`}>
+              <div className={`aspect-square overflow-hidden ${produto.imgLightBg ? "bg-white" : ""}`}>
                 <img
                   src={produto.img}
                   alt={produto.nome}
                   className={`w-full h-full hover:scale-105 transition-transform duration-500 ${
-                    produto.id === 1 ? "object-contain p-3" : "object-cover"
+                    produto.imgLightBg ? "object-contain p-3" : "object-cover"
                   }`}
                   loading="lazy"
                 />
@@ -179,7 +190,7 @@ const Loja = () => {
                 preco: modalProduto.preco,
                 img: modalProduto.img,
                 desc: modalProduto.desc,
-                ...(modalProduto.id === 1 ? { imgLightBg: true as const } : {}),
+                ...(modalProduto.imgLightBg ? { imgLightBg: true as const } : {}),
               }
             : null
         }

@@ -20,21 +20,21 @@ export interface LojaProduto {
 }
 
 export const lojaProdutos: LojaProduto[] = [
+  { id: 1, nome: "Squeeze Caminhada da Ressurreição", preco: "Orçamento", img: garrafaCaminhada },
+  { id: 2, nome: "Livro Exercícios Espirituais", preco: "R$ 59,90", img: exerciciosEspirituais },
+  { id: 3, nome: "Squeeze Conexão Católica", preco: "Orçamento", img: squeezeAluminio },
+  { id: 4, nome: "Livro Santa Rita de Cássia — Padre PH", preco: "R$ 59,90", img: santaRita },
+  { id: 5, nome: "Mochila Saco Conexão Católica", preco: "Orçamento", img: sacola },
+  { id: 6, nome: "Terço Aeternum — Olho de Tigre", preco: "R$ 50,00", img: tercoSaoMiguel },
+  { id: 7, nome: "Terço Nossa Senhora Aparecida", preco: "R$ 30,00", img: tercoCores },
+  { id: 8, nome: "Terço Aeternum Premium", preco: "R$ 100,00", img: rosarioCampacto },
   {
-    id: 1,
+    id: 9,
     nome: "Camiseta Conexão Católica — Há 11 Anos",
     preco: "Orçamento",
     img: camiseta,
     imgLightBg: true,
   },
-  { id: 2, nome: "Squeeze Caminhada da Ressurreição", preco: "Orçamento", img: garrafaCaminhada },
-  { id: 3, nome: "Livro Exercícios Espirituais", preco: "R$ 59,90", img: exerciciosEspirituais },
-  { id: 4, nome: "Squeeze Conexão Católica", preco: "Orçamento", img: squeezeAluminio },
-  { id: 5, nome: "Livro Santa Rita de Cássia — Padre PH", preco: "R$ 59,90", img: santaRita },
-  { id: 6, nome: "Mochila Saco Conexão Católica", preco: "Orçamento", img: sacola },
-  { id: 7, nome: "Terço Aeternum — Olho de Tigre", preco: "R$ 50,00", img: tercoSaoMiguel },
-  { id: 8, nome: "Terço Nossa Senhora Aparecida", preco: "R$ 30,00", img: tercoCores },
-  { id: 9, nome: "Terço Aeternum Premium", preco: "R$ 100,00", img: rosarioCampacto },
 ];
 
 export const whatsappLojaLink = (nome: string, preco: string) =>
