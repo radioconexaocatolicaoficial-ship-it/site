@@ -55,8 +55,26 @@ async function fetchRss(url: string, count = 8): Promise<RssItem[]> {
 }
 
 export function useRssFeed(url: string, count = 8, refreshMs = 5 * 60 * 1000) {
-  const [items, setItems] = useState<RssItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `rss_cache_${url}`;
+  
+  const [items, setItems] = useState<RssItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      return cached ? false : true;
+    } catch {
+      return true;
+    }
+  });
+
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -64,11 +82,13 @@ export function useRssFeed(url: string, count = 8, refreshMs = 5 * 60 * 1000) {
 
     const load = async () => {
       try {
-        setLoading(true);
         const data = await fetchRss(url, count);
         if (!cancelled) {
           setItems(data);
           setError(false);
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+          } catch { /* ignore */ }
         }
       } catch {
         if (!cancelled) setError(true);
@@ -83,7 +103,7 @@ export function useRssFeed(url: string, count = 8, refreshMs = 5 * 60 * 1000) {
       cancelled = true;
       clearInterval(interval);
     };
-  }, [url, count, refreshMs]);
+  }, [url, count, refreshMs, cacheKey]);
 
   return { items, loading, error };
 }
