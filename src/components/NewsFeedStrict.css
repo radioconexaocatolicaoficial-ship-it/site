@@ -10,8 +10,6 @@
 }
 @media (max-width: 640px) {
   .nfs-section {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
     padding-top: 24px;
     padding-bottom: 24px;
   }
@@ -86,7 +84,7 @@
 .nfs-highlight__desc {
   margin: 0;
   font-size: 14px;
-  text-align: left;
+  text-align: justify !important;
   hyphens: auto;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -326,10 +324,11 @@
   }
 
   .nfs-highlight__title {
-    font-size: clamp(20px, 7vw, 28px);
+    font-size: clamp(26px, 10vw, 42px);
     margin-bottom: 16px;
     width: 100%;
     word-wrap: break-word;
+    line-height: 1.1;
   }
 
   .nfs-highlight__badge {
