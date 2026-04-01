@@ -480,13 +480,48 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     return fromArchive ? { ...c, imageUrl: fromArchive } : c;
   });
 
-  return { highlight, cards: cardsFinal };
+  const final = { highlight, cards: cardsFinal };
+  try {
+    localStorage.setItem("nfs_cards_cache", JSON.stringify(cardsFinal));
+    localStorage.setItem("nfs_highlight_cache", JSON.stringify(highlight));
+  } catch (e) {
+    /* ignore storage errors */
+  }
+  return final;
 }
 
+const DEFAULT_HIGHLIGHT: HighlightData = {
+  badge: HIGHLIGHT_CAMINHADA_BADGE,
+  title: HIGHLIGHT_CAMINHADA_TITLE,
+  description: CAMINHADA_HIGHLIGHT_DESCRIPTION,
+  link: CAMINHADA_SITE,
+  topicLines: [
+    { label: "Caminhada da Ressurreição — Site Oficial", link: "https://www.caminhadadaressurreicao.com/" },
+    { label: "Rádio Conexão Católica — YouTube", link: "https://www.youtube.com/@RADIOCONEXAOCATOLICA-p1l" }
+  ]
+};
+
 const NewsFeedStrict = () => {
-  const [highlight, setHighlight] = useState<HighlightData | null>(null);
-  const [cards, setCards] = useState<FeedCardData[]>([]);
+  const [highlight, setHighlight] = useState<HighlightData>(() => {
+    try {
+      const cached = localStorage.getItem("nfs_highlight_cache");
+      return cached ? JSON.parse(cached) : DEFAULT_HIGHLIGHT;
+    } catch {
+      return DEFAULT_HIGHLIGHT;
+    }
+  });
+
+  const [cards, setCards] = useState<FeedCardData[]>(() => {
+    try {
+      const cached = localStorage.getItem("nfs_cards_cache");
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [error, setError] = useState<string | null>(null);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const run = useCallback(async () => {
     setError(null);
@@ -494,10 +529,13 @@ const NewsFeedStrict = () => {
       const { highlight: h, cards: c } = await loadEngine();
       setHighlight(h);
       setCards(c);
+      setIsFirstLoad(false);
     } catch {
-      setError("Não foi possível carregar os feeds. Tente novamente mais tarde.");
+      if (cards.length === 0) {
+        setError("Não foi possível carregar os feeds. Tente novamente mais tarde.");
+      }
     }
-  }, []);
+  }, [cards.length]);
 
   useEffect(() => {
     run();
