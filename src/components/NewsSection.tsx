@@ -85,8 +85,8 @@ function extractImgFromHtml(html: string): string {
   while ((m = imgRe.exec(flat)) !== null) {
     const u = m[1].replace(/\s+/g, "");
     if (/logo|icon|spacer|pixel|1x1|favicon|avatar|badge|btn|selo/i.test(u)) continue;
-    if (/\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(u)) return u;
-    if (/gstatic|ggpht|googleusercontent|s2\.glbimg|ge.globo|assets/i.test(u)) return u;
+    if (/\.(jpg|jpeg|png|webp|gif)(\?|$|&)/i.test(u)) return u;
+    if (/gstatic|ggpht|googleusercontent|s2\.glbimg|ge.globo|assets|img\.cancaonova/i.test(u)) return u;
   }
   const og = flat.match(/property=["']og:image["']\s+content=["'](https?:\/\/[^"']+)["']/i);
   if (og?.[1]) return og[1];
@@ -350,26 +350,49 @@ function firstStoryWithImage(
   badge: string,
   excludeLinks: Set<string>,
 ): RadioCard | null {
+  let fallback: RadioCard | null = null;
+
   for (const it of items) {
     const link = (it.link || "").trim();
     if (!link || isYoutubeLink(link)) continue;
     const k = link.replace(/\/$/, "").toLowerCase();
     if (excludeLinks.has(k)) continue;
-    const img = pickItemImage(it);
+
     const titleRaw = (it.title || "").trim() || stripHtml(it.description || "");
     const title = normalizeTitle(titleRaw);
-    if (!img || !title) continue;
-    excludeLinks.add(k);
-    return {
-      kind: "news",
-      href: link,
-      badge,
-      title,
-      image: img,
-      imageFallback: img,
-    };
+    if (!title) continue;
+
+    const img = pickItemImage(it);
+    if (img) {
+      excludeLinks.add(k);
+      return {
+        kind: "news",
+        href: link,
+        badge,
+        title,
+        image: img,
+        imageFallback: img,
+      };
+    }
+
+    // Se não tinha imagem, guardamos como reserva (o primeiro que aparecer)
+    if (!fallback) {
+      fallback = {
+        kind: "news",
+        href: link,
+        badge,
+        title,
+        image: "",
+        imageFallback: "",
+      };
+    }
   }
-  return null;
+
+  if (fallback) {
+    const k = fallback.href.replace(/\/$/, "").toLowerCase();
+    excludeLinks.add(k);
+  }
+  return fallback;
 }
 
 async function loadNewsCard(
