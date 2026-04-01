@@ -57,6 +57,7 @@ export type RadioCard =
       href: string;
       badge: string;
       title: string;
+      subtitle: string;
       image: string;
       imageFallback: string;
     }
@@ -362,6 +363,9 @@ function firstStoryWithImage(
     if (!title) continue;
 
     const img = pickItemImage(it);
+    const descRaw = it.description || it.content || "";
+    const subtitle = normalizeTitle(stripHtml(descRaw));
+
     if (img) {
       excludeLinks.add(k);
       return {
@@ -369,6 +373,7 @@ function firstStoryWithImage(
         href: link,
         badge,
         title,
+        subtitle,
         image: img,
         imageFallback: img,
       };
@@ -381,6 +386,7 @@ function firstStoryWithImage(
         href: link,
         badge,
         title,
+        subtitle,
         image: "",
         imageFallback: "",
       };
@@ -572,17 +578,19 @@ const NewsSection = () => {
                     <div className="min-w-0 flex-1">
                       {card.kind === "weather" ? (
                         <>
-                          <h3 className="font-semibold text-sm text-foreground leading-snug">
+                          <h3 className="font-semibold text-sm text-foreground leading-snug truncate">
                             Previsão do tempo — {card.title}
                           </h3>
-                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{card.subtitle}</p>
+                          <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1 opacity-80 italic">
+                            {card.subtitle.split("·")[0]?.trim()} · {card.subtitle.split("·")[1]?.trim()}
+                          </p>
                         </>
                       ) : card.kind === "transit" ? (
                         <div className="space-y-1">
-                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-tight line-clamp-2">
+                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-tight line-clamp-1">
                             {card.title}
                           </h3>
-                          <div className="flex flex-wrap gap-1 mt-1.5 grayscale opacity-80 overflow-hidden max-h-[2.5rem]">
+                          <div className="flex flex-wrap gap-1 mt-1.5 grayscale opacity-80 overflow-hidden max-h-[1.25rem]">
                             {card.lines.slice(0, 8).map((lin, idx) => (
                               <div 
                                 key={idx} 
@@ -593,9 +601,14 @@ const NewsSection = () => {
                           </div>
                         </div>
                       ) : (
-                        <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-2">
-                          {card.title}
-                        </h3>
+                        <>
+                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-1">
+                            {card.title}
+                          </h3>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1 opacity-70">
+                            {card.subtitle}
+                          </p>
+                        </>
                       )}
                     </div>
                     {card.kind === "weather" ? (
