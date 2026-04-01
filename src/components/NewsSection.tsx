@@ -21,9 +21,8 @@ const PROXIES = [
 const NEWS_CARD_FEEDS: { badge: string; rss: string; fallbackRss?: string }[] = [
   { badge: "Música Católica", rss: "https://musica.cancaonova.com/feed/" },
   { badge: "Canção Nova", rss: "https://noticias.cancaonova.com/feed/" },
-  { badge: "Trânsito SP", rss: "https://g1.globo.com/rss/g1/sao-paulo/transito/" },
-  { badge: "A12 — Notícias", rss: "https://www.a12.com/noticias/rss" },
-  { badge: "CN — São Paulo", rss: "https://saopaulo.cancaonova.com/noticias/feed/" },
+  { badge: "Trânsito em tempo real SP", rss: "https://g1.globo.com/rss/g1/sao-paulo/transito/" },
+  { badge: "Santo do Dia", rss: "https://santo.cancaonova.com/feed/" },
 ];
 
 interface Rss2JsonItem {
@@ -416,22 +415,44 @@ const NewsSection = () => {
     setIsLoading(true);
     try {
       const loc = await resolveLocationForWeather();
-      const weather = await fetchWeatherCard(loc.lat, loc.lon, loc.placeLabel);
-      const exclude = new Set<string>();
-      const filled: RadioCard[] = [];
-      for (const def of NEWS_CARD_FEEDS) {
-        const c = await loadNewsCard(def, exclude);
-        if (c) filled.push(c);
-      }
+      const weatherPromise = fetchWeatherCard(loc.lat, loc.lon, loc.placeLabel);
+      const metroPromise = fetchMetroStatus();
       
-      const metro = await fetchMetroStatus();
+      // Carregamos cada feed separadamente para garantir a ordem exata depois
+      const exclude = new Set<string>();
+      const feedPromises = NEWS_CARD_FEEDS.map(f => loadNewsCard(f, exclude));
+      
+      const [weather, metro, musica, cancao, transito, santo] = await Promise.all([
+        weatherPromise,
+        metroPromise,
+        ...feedPromises
+      ]);
+
+      const finalCards: RadioCard[] = [];
+      if (weather) finalCards.push(weather);                  // 1. Clima
+      if (musica) finalCards.push(musica);                    // 2. Música Católica
+      if (cancao) finalCards.push(cancao);                    // 3. Canção Nova
+
+      // 4. Metrô/Trens (Link ARTESP)
       if (metro) {
-        // Inserimos o metrô em uma posição fixa (ex: 3º ou 4º card)
-        // Se já temos preenchido, colocamos depois da música e canção nova
-        filled.splice(2, 0, metro);
+        metro.href = "https://ccm.artesp.sp.gov.br/metroferroviario/status-linhas/";
+        finalCards.push(metro);
       }
 
-      setCards([weather, ...filled]);
+      // 5. Trânsito em tempo real (Link Waze)
+      if (transito) {
+        transito.href = "https://www.waze.com/pt-BR/live-map/";
+        finalCards.push(transito);
+      }
+
+      // 6. Santo do Dia (Link Vaticano)
+      if (santo) {
+        santo.href = "https://www.vaticannews.va/pt/santo-do-dia.html";
+        finalCards.push(santo);
+      }
+
+      // Garantimos exatamente 6 cards na grade
+      setCards(finalCards.slice(0, 6));
     } catch {
       setCards([]);
     } finally {
@@ -558,7 +579,7 @@ const NewsSection = () => {
                         </>
                       ) : card.kind === "transit" ? (
                         <div className="space-y-1">
-                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-tight">
+                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-tight line-clamp-2">
                             {card.title}
                           </h3>
                           <div className="flex flex-wrap gap-1 mt-1.5 grayscale opacity-80 overflow-hidden max-h-[2.5rem]">
@@ -572,7 +593,7 @@ const NewsSection = () => {
                           </div>
                         </div>
                       ) : (
-                        <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-3">
+                        <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-2">
                           {card.title}
                         </h3>
                       )}
