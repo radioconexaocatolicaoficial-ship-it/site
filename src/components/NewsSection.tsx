@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { CloudSun, ExternalLink, Newspaper } from "lucide-react";
+import { CloudSun, ExternalLink, Newspaper, TrainFront, Car } from "lucide-react";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 const REFRESH_MS = 20 * 60 * 1000;
@@ -19,11 +19,11 @@ const PROXIES = [
  * Se algum RSS falhar, usamos a capa do G1 como reserva.
  */
 const NEWS_CARD_FEEDS: { badge: string; rss: string; fallbackRss?: string }[] = [
-  { badge: "G1 — Capa", rss: "https://g1.globo.com/rss/g1/" },
-  { badge: "G1 — Brasil", rss: "https://g1.globo.com/rss/g1/brasil/" },
-  { badge: "G1 — São Paulo", rss: "https://g1.globo.com/rss/g1/sao-paulo/", fallbackRss: "https://g1.globo.com/rss/g1/" },
-  { badge: "G1 — Mundo", rss: "https://g1.globo.com/rss/g1/mundo/" },
-  { badge: "G1 — Tecnologia", rss: "https://g1.globo.com/rss/g1/tecnologia/" },
+  { badge: "Música Católica", rss: "https://musica.cancaonova.com/feed/" },
+  { badge: "Canção Nova", rss: "https://noticias.cancaonova.com/feed/" },
+  { badge: "Trânsito SP", rss: "https://g1.globo.com/rss/g1/sao-paulo/transito/" },
+  { badge: "A12 — Notícias", rss: "https://www.a12.com/noticias/rss" },
+  { badge: "CN — São Paulo", rss: "https://saopaulo.cancaonova.com/noticias/feed/" },
 ];
 
 interface Rss2JsonItem {
@@ -60,6 +60,13 @@ export type RadioCard =
       title: string;
       image: string;
       imageFallback: string;
+    }
+  | {
+      kind: "transit";
+      href: string;
+      badge: string;
+      title: string;
+      lines: { name: string; status: string; isNormal: boolean }[];
     };
 
 function stripHtml(html: string): string {
@@ -225,6 +232,56 @@ async function fetchWeatherCard(
   };
 }
 
+async function fetchMetroStatus(): Promise<RadioCard | null> {
+  try {
+    const url = "https://ccm.artesp.sp.gov.br/metroferroviario/api/status/";
+    // Usamos o proxy para evitar CORS se for chamado via browser puro
+    const res = await fetch(PROXIES[1](url), { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) return null;
+    
+    // O AllOrigins retorna { contents: "..." }
+    const jsonStr = ((await res.json()) as { contents?: string }).contents ?? "";
+    const data = JSON.parse(jsonStr) as {
+      empresas: {
+        nome: string;
+        linhas: {
+          nome: string;
+          status: { situacao: string; operacao_normal: boolean };
+        }[];
+      }[];
+    };
+
+    const allLines: { name: string; status: string; isNormal: boolean }[] = [];
+    data.empresas.forEach((emp) => {
+      emp.linhas.forEach((lin) => {
+        allLines.push({
+          name: lin.nome,
+          status: lin.status.situacao,
+          isNormal: lin.status.operacao_normal,
+        });
+      });
+    });
+
+    if (allLines.length === 0) return null;
+
+    // Filtramos apenas as que NÃO estão em operação normal (para destaque no título se houver)
+    const issues = allLines.filter((l) => !l.isNormal);
+    const title = issues.length === 0 
+      ? "Todas as linhas operando normalmente" 
+      : `${issues.length} ${issues.length === 1 ? "linha" : "linhas"} com ocorrência`;
+
+    return {
+      kind: "transit",
+      href: "https://www.diretodostrens.com.br/",
+      badge: "Trens e Metrô — SP",
+      title,
+      lines: allLines,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function normalizeTitle(raw: string): string {
   const t = raw.replace(/\s+/g, " ").trim();
   if (!t) return "";
@@ -343,6 +400,14 @@ const NewsSection = () => {
         const c = await loadNewsCard(def, exclude);
         if (c) filled.push(c);
       }
+      
+      const metro = await fetchMetroStatus();
+      if (metro) {
+        // Inserimos o metrô em uma posição fixa (ex: 3º ou 4º card)
+        // Se já temos preenchido, colocamos depois da música e canção nova
+        filled.splice(2, 0, metro);
+      }
+
       setCards([weather, ...filled]);
     } catch {
       setCards([]);
@@ -401,6 +466,8 @@ const NewsSection = () => {
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground px-2.5 pt-2 pb-1">
                     {card.badge}
                   </p>
+                  
+                  {/* Área de mídia/visual */}
                   <div className="aspect-[3/2] overflow-hidden bg-gradient-to-br from-sky-950/40 via-violet-950/25 to-amber-950/20 shrink-0 flex items-center justify-center relative">
                     {card.kind === "weather" ? (
                       <>
@@ -432,7 +499,12 @@ const NewsSection = () => {
                           </p>
                         </div>
                       </>
-                    ) : card.image ? (
+                    ) : card.kind === "transit" ? (
+                      <div className="flex flex-col items-center justify-center w-full h-full bg-muted/10">
+                        <TrainFront className="h-14 w-14 text-primary/30 mb-2" />
+                        <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-widest opacity-60">Status das Linhas</span>
+                      </div>
+                    ) : card.kind === "news" && card.image ? (
                       <img
                         src={card.image}
                         alt={card.title}
@@ -450,6 +522,8 @@ const NewsSection = () => {
                       <Newspaper className="h-10 w-10 text-primary/35" />
                     )}
                   </div>
+
+                  {/* Área de texto e status */}
                   <div className="px-2.5 py-2 flex items-start justify-between gap-2 border-t border-border/60 flex-1 min-h-[3.25rem]">
                     <div className="min-w-0 flex-1">
                       {card.kind === "weather" ? (
@@ -459,6 +533,21 @@ const NewsSection = () => {
                           </h3>
                           <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{card.subtitle}</p>
                         </>
+                      ) : card.kind === "transit" ? (
+                        <div className="space-y-1">
+                          <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-tight">
+                            {card.title}
+                          </h3>
+                          <div className="flex flex-wrap gap-1 mt-1.5 grayscale opacity-80 overflow-hidden max-h-[2.5rem]">
+                            {card.lines.slice(0, 8).map((lin, idx) => (
+                              <div 
+                                key={idx} 
+                                title={`${lin.name}: ${lin.status}`}
+                                className={`w-3 h-3 rounded-full shrink-0 ${lin.isNormal ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
                       ) : (
                         <h3 className="font-semibold text-xs sm:text-sm text-foreground leading-snug line-clamp-3">
                           {card.title}
@@ -467,6 +556,10 @@ const NewsSection = () => {
                     </div>
                     {card.kind === "weather" ? (
                       <CloudSun className="h-4 w-4 shrink-0 text-sky-500 mt-0.5" aria-hidden />
+                    ) : card.kind === "transit" ? (
+                      <TrainFront className="h-4 w-4 shrink-0 text-primary mt-0.5" aria-hidden />
+                    ) : card.badge.toLowerCase().includes("trânsito") ? (
+                      <Car className="h-4 w-4 shrink-0 text-amber-500 mt-0.5" aria-hidden />
                     ) : (
                       <ExternalLink className="h-3.5 w-3.5 shrink-0 text-primary mt-0.5" aria-hidden />
                     )}
