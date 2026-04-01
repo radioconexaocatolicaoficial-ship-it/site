@@ -120,6 +120,9 @@
   flex-direction: column;
   flex: 1;
   min-height: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
+  overflow: hidden;
 }
 
 .nfs-highlight__link {
@@ -128,6 +131,9 @@
   display: flex;
   flex-direction: column;
   flex: 0 1 auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
 }
 
 /* Bloco de tópicos encostado na base, alinhando a coluna à altura do grid ao lado */
@@ -328,11 +334,15 @@
   }
 
   .nfs-highlight__title {
-    font-size: clamp(26px, 10vw, 42px);
+    font-size: clamp(26px, 10vw, 40px);
     margin-bottom: 16px;
-    width: 100%;
-    word-wrap: break-word;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    box-sizing: border-box !important;
     line-height: 1.1;
+    display: block !important;
   }
 
   .nfs-highlight__badge {
