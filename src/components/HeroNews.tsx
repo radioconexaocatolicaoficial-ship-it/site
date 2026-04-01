@@ -12,6 +12,9 @@ interface NewsItem {
 
 const NOTICIAS_ARCHIVE = "https://saopaulo.cancaonova.com/noticias/";
 const NOTICIAS_FEED = "https://saopaulo.cancaonova.com/noticias/feed/";
+const CAMINHADA_URL = "https://www.caminhadadaressurreicao.com/";
+const SANTA_RITA_BASE = "https://www.radiosantaritadecassia.com.br";
+const AGENDA_CN_2026_URL = "https://saopaulo.cancaonova.com/noticias/agendacancaonovasp2026/";
 
 const PROXY = (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`;
 
@@ -20,8 +23,8 @@ const MAX_PUBLICATION_AGE_MS = 120 * 24 * 60 * 60 * 1000;
 /** Atualização automática no site */
 const REFRESH_INTERVAL_MS = 2 * 60 * 1000;
 
-/** Texto abaixo do título principal — um pouco mais curto */
-const LEAD_EXCERPT_MAX = 118;
+/** Texto abaixo do título principal — mais linhas para preencher a coluna junto ao grid */
+const LEAD_EXCERPT_MAX = 320;
 
 const MONTHS_PT: Record<string, number> = {
   janeiro: 0,
@@ -186,6 +189,28 @@ function isEventStale(item: NewsItem, now = Date.now()): boolean {
   return latestKey < todayKey;
 }
 
+/** Menor data de evento futura (dia SP) extraída do item, ou null */
+function earliestFutureEventKey(item: NewsItem, now: number): string | null {
+  const dates = extractEventDatesFromBlob(`${item.title} ${item.description}`, item.pubDate, now);
+  if (dates.length === 0) return null;
+  const todayKey = calendarDayKeySaoPaulo(now);
+  const keys = [...new Set(dates.map((d) => calendarDayKeySaoPaulo(d.getTime())))]
+    .filter((k) => k >= todayKey)
+    .sort();
+  return keys[0] ?? null;
+}
+
+/** Próximo evento entre notícias da Canção Nova SP (por data citada no texto) */
+function pickNearestUpcomingCancaoNova(pool: NewsItem[], now: number): NewsItem | null {
+  const fresh = pool.filter((it) => !isEventStale(it, now));
+  const use = fresh.length > 0 ? fresh : pool;
+  if (use.length === 0) return null;
+  const scored = use.map((it) => ({ it, k: earliestFutureEventKey(it, now) }));
+  const dated = scored.filter((x) => x.k !== null).sort((a, b) => (a.k! < b.k! ? -1 : a.k! > b.k! ? 1 : 0));
+  if (dated.length > 0) return dated[0].it;
+  return [...use].sort((a, b) => b.pubDate - a.pubDate)[0] ?? null;
+}
+
 function mergePubDate(a: number, b: number): number {
   return Math.max(a, b);
 }
@@ -214,6 +239,44 @@ function extractImg(html: string): string {
   const flat = html.replace(/\s+/g, " ");
   const match = flat.match(/src="(https?:\/\/[^"]+\.(?:jpg|jpeg|png|webp)(?:\?[^"]*)?)"/i);
   return match ? match[1].split("?")[0] : "";
+}
+
+function normalizePageImageUrl(raw: string, pageUrl: string): string {
+  const u = raw.replace(/\s+/g, "").trim();
+  if (!u) return "";
+  if (u.startsWith("//")) return `https:${u}`;
+  if (/^https?:\/\//i.test(u)) return u;
+  try {
+    return new URL(u, pageUrl).href;
+  } catch {
+    return u;
+  }
+}
+
+/** Imagem “oficial” da página: Open Graph, Twitter, WordPress em destaque, etc. */
+function pickOfficialImageFromDoc(doc: Document, pageUrl: string): string {
+  const meta = (sel: string, attr: string) => {
+    const v = doc.querySelector(sel)?.getAttribute(attr)?.trim();
+    return v ? normalizePageImageUrl(v, pageUrl) : "";
+  };
+  let u = meta('meta[property="og:image"]', "content");
+  if (u) return u;
+  u = meta('meta[property="og:image:secure_url"]', "content");
+  if (u) return u;
+  u = meta('meta[name="twitter:image"]', "content") || meta('meta[property="twitter:image"]', "content");
+  if (u) return u;
+  u = doc.querySelector('link[rel="image_src"]')?.getAttribute("href")?.trim() ?? "";
+  if (u) return normalizePageImageUrl(u, pageUrl);
+
+  const wp = doc.querySelector(
+    "img.wp-post-image, img[class*='wp-image'], .entry-content img, .post-content img, article img[src*='.jpg'], article img[src*='.png'], article img[src*='.webp']",
+  ) as HTMLImageElement | null;
+  const src = wp?.getAttribute("src") || wp?.getAttribute("data-src") || wp?.currentSrc;
+  if (src) return normalizePageImageUrl(src, pageUrl);
+
+  const block = doc.querySelector(".entry-content, .post-content, article, main")?.innerHTML ?? "";
+  const ex = extractImg(block);
+  return ex ? normalizePageImageUrl(ex, pageUrl) : "";
 }
 
 function normalizeUrlAttr(raw: string): string {
@@ -293,19 +356,18 @@ async function fetchFromNoticiasFeed(): Promise<NewsItem[]> {
 
 async function fetchArticle(url: string): Promise<{ thumbnail: string; description: string }> {
   try {
-    const res = await fetch(PROXY(url), { signal: AbortSignal.timeout(6000) });
+    const res = await fetch(PROXY(url), { signal: AbortSignal.timeout(9000) });
     const html = await res.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
 
-    // Imagem: og:image ou primeira imagem do conteúdo
-    const ogImg = doc.querySelector('meta[property="og:image"]')?.getAttribute("content") ?? "";
-    const contentImg = extractImg(doc.querySelector(".entry-content, .post-content, article")?.innerHTML ?? "");
-    const thumbnail = ogImg || contentImg;
+    const thumbnail = pickOfficialImageFromDoc(doc, url);
 
-    // Descrição: og:description ou primeiro parágrafo
-    const ogDesc = doc.querySelector('meta[property="og:description"], meta[name="description"]')?.getAttribute("content") ?? "";
-    const pDesc = doc.querySelector(".entry-content p, .post-content p")?.textContent ?? "";
+    const ogDesc =
+      doc.querySelector('meta[property="og:description"]')?.getAttribute("content") ??
+      doc.querySelector('meta[name="description"]')?.getAttribute("content") ??
+      "";
+    const pDesc = doc.querySelector(".entry-content p, .post-content p, article p")?.textContent ?? "";
     const description = decodeHtml(ogDesc || pDesc).slice(0, 160);
 
     return { thumbnail, description };
@@ -351,7 +413,7 @@ function filterRecentNews(items: NewsItem[], now = Date.now()): NewsItem[] {
   return pool.sort((a, b) => b.pubDate - a.pubDate);
 }
 
-async function fetchNews(): Promise<NewsItem[]> {
+async function fetchCancaoNovaPool(limit = 20): Promise<NewsItem[]> {
   let list: NewsItem[] = [];
 
   try {
@@ -370,8 +432,7 @@ async function fetchNews(): Promise<NewsItem[]> {
   }
 
   const sorted = filterRecentNews(list);
-  /** Busca miniaturas para mais itens do que o necessário, depois corta pelos 8 primeiros já ordenados */
-  const top = sorted.slice(0, 16);
+  const top = sorted.slice(0, Math.max(limit, 16));
   const filled = await Promise.all(
     top.map(async (item) => {
       if (item.thumbnail) return item;
@@ -384,21 +445,134 @@ async function fetchNews(): Promise<NewsItem[]> {
     }),
   );
 
-  const byRecency = [...filled].sort((a, b) => b.pubDate - a.pubDate);
-  return byRecency.slice(0, 8);
+  return [...filled].sort((a, b) => b.pubDate - a.pubDate).slice(0, limit);
+}
+
+async function fetchCaminhadaCard(): Promise<NewsItem> {
+  return {
+    title: "Caminhada da Ressurreição 2026 — novo site e tema: “Eu vi o Senhor”",
+    link: CAMINHADA_URL,
+    description:
+      "Novo site da Caminhada da Ressurreição e o tema do encontro: “Eu vi o Senhor”. Diocese de São Miguel Paulista.",
+    thumbnail: "",
+    category: "Caminhada da Ressurreição",
+    pubDate: Date.now(),
+  };
+}
+
+async function fetchSantaRitaCard(): Promise<NewsItem> {
+  const fallback: NewsItem = {
+    title: "Rádio Santa Rita de Cássia",
+    link: SANTA_RITA_BASE,
+    description: "Programação ao vivo, postagens e comunidade da rádio católica da Zona Leste de São Paulo.",
+    thumbnail: "https://websitenoar.net/contents/384/slider/user_2478937.jpg",
+    category: "Santa Rita de Cássia",
+    pubDate: Date.now(),
+  };
+  try {
+    const res = await fetch(PROXY(`${SANTA_RITA_BASE}/posts`), { signal: AbortSignal.timeout(10000) });
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const links = doc.querySelectorAll("a[href*='/post/']");
+    for (const a of links) {
+      const href = a.getAttribute("href")?.trim() ?? "";
+      if (!href || href.includes("#")) continue;
+      const link = href.startsWith("http") ? href : SANTA_RITA_BASE + href;
+      const scope = a.closest(".splide__slide, .card, article, li, .post-item") ?? a.parentElement;
+      const titleRaw =
+        scope?.querySelector(".name, h2, h3, .card-title, .title")?.textContent?.trim() ||
+        a.textContent?.trim() ||
+        "";
+      const title = decodeHtml(titleRaw).replace(/\s+/g, " ").trim();
+      if (title.length < 8) continue;
+      const imgEl = scope?.querySelector("img");
+      let thumb = imgEl?.getAttribute("src") ?? imgEl?.getAttribute("data-src") ?? "";
+      if (thumb && !thumb.startsWith("http")) thumb = SANTA_RITA_BASE + thumb;
+      return {
+        title: title.slice(0, 160),
+        link,
+        description: "",
+        thumbnail: thumb,
+        category: "Santa Rita de Cássia",
+        pubDate: Date.now(),
+      };
+    }
+  } catch {
+    /* fallback */
+  }
+  return fallback;
+}
+
+async function fetchAgendaAbracoCard(): Promise<NewsItem> {
+  return {
+    title: "Canção Nova Abraça – São Paulo",
+    link: AGENDA_CN_2026_URL,
+    description:
+      "Agosto — Abraço, gratidão e missão. Dia 16: Canção Nova Abraça em São Paulo. Veja a agenda oficial 2026 no site da Canção Nova SP.",
+    thumbnail: "",
+    category: "Agenda CN SP",
+    pubDate: Date.now(),
+  };
+}
+
+async function buildMixedGridCards(cnPool: NewsItem[], featuredLink: string): Promise<NewsItem[]> {
+  const now = Date.now();
+  const pool = cnPool.filter((it) => it.link !== featuredLink);
+  let cn =
+    pickNearestUpcomingCancaoNova(pool, now) ?? pool[0] ?? cnPool[0] ?? null;
+  const [caminhada, santa, abraco] = await Promise.all([
+    fetchCaminhadaCard(),
+    fetchSantaRitaCard(),
+    fetchAgendaAbracoCard(),
+  ]);
+
+  const slot1: NewsItem = cn
+    ? { ...cn, category: "Canção Nova SP" }
+    : {
+        title: "Canção Nova São Paulo",
+        link: "https://saopaulo.cancaonova.com/noticias/",
+        description: "Eventos e notícias da Frente de Missão em São Paulo.",
+        thumbnail: "",
+        category: "Canção Nova SP",
+        pubDate: now,
+      };
+
+  const raw = [slot1, caminhada, santa, abraco];
+  /** Sempre reconsulta a URL do card para og:image / imagem oficial do post */
+  return Promise.all(
+    raw.map(async (it) => {
+      const d = await fetchArticle(it.link);
+      return {
+        ...it,
+        thumbnail: d.thumbnail || it.thumbnail,
+        description: it.description || d.description,
+      };
+    }),
+  );
+}
+
+async function fetchHeroNewsPayload(): Promise<{ pool: NewsItem[]; gridCards: NewsItem[] }> {
+  const pool = await fetchCancaoNovaPool(20);
+  const featuredLink = pool[0]?.link ?? "";
+  const gridCards = await buildMixedGridCards(pool, featuredLink);
+  return { pool, gridCards };
 }
 
 const HeroNews = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [gridCards, setGridCards] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
 
     const load = () => {
-      fetchNews()
-        .then((data) => {
-          if (!cancelled) setNews(data);
+      fetchHeroNewsPayload()
+        .then(({ pool, gridCards: grid }) => {
+          if (!cancelled) {
+            setNews(pool);
+            setGridCards(grid);
+          }
         })
         .catch(() => {})
         .finally(() => {
@@ -420,99 +594,99 @@ const HeroNews = () => {
     };
   }, []);
 
-  // Ordem: mais recente primeiro (reforço no cliente após cada fetch)
   const ranked = [...news].sort((a, b) => b.pubDate - a.pubDate);
-  /** Destaque à esquerda: notícia #1 mais recente */
   const featured = ranked[0];
-  /** Grid à direita: sempre as 4 seguintes (#2 a #5), atualizadas no mesmo intervalo do feed */
-  const GRID_RECENT_COUNT = 4;
-  const gridRecentNews = ranked.slice(1, 1 + GRID_RECENT_COUNT);
-  /** Lista “Principais destaques”: #6 a #8 */
-  const topics = ranked.slice(1 + GRID_RECENT_COUNT, 1 + GRID_RECENT_COUNT + 3);
+  const usedLinks = new Set<string>(
+    [featured?.link, ...gridCards.map((c) => c.link)].filter((x): x is string => Boolean(x)),
+  );
+  const topics = ranked.filter((it) => !usedLinks.has(it.link)).slice(0, 3);
 
   return (
     <div className="w-full bg-background border-b border-border">
       <div className="container mx-auto px-4 py-8">
-        {/* Linha 1: destaque (mais estreito) + 4 cards (mais largos), mesma altura em md+ */}
-        <div className="grid grid-cols-1 md:grid-cols-12 md:gap-8 gap-8 items-stretch">
+        {/* Linha 1: 50% destaque / 50% grelha — mesma altura em desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-2 md:gap-6 lg:gap-8 gap-8 md:items-stretch items-start">
 
-          <div className="md:col-span-5 flex flex-col md:justify-center md:pr-6 md:border-r border-border/60 min-h-0">
+          <div className="flex flex-col md:h-full md:min-h-0 md:pr-6 lg:pr-8 md:border-r md:border-border/70 min-w-0">
             {loading || !featured ? (
-              <div className="animate-pulse space-y-3 md:py-2">
-                <div className="h-3 bg-muted rounded w-1/4" />
-                <div className="h-24 bg-muted rounded w-full" />
-                <div className="h-14 bg-muted rounded w-full" />
+              <div className="animate-pulse space-y-6 pt-1 md:flex md:flex-col md:flex-1 md:min-h-[min(100%,22rem)]">
+                <div className="h-7 bg-sky-100/80 dark:bg-primary/20 rounded-md w-32 shrink-0" />
+                <div className="h-40 bg-muted rounded-lg w-full shrink-0" />
+                <div className="flex-1 min-h-24 bg-muted/80 rounded-lg w-full" />
               </div>
             ) : (
               <a
                 href={featured.link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col gap-2 md:gap-3 md:max-w-xl"
+                className="group flex flex-col h-full min-h-0 text-left gap-5 md:gap-7 w-full"
               >
                 {featured.category && (
-                  <span className="inline-block w-fit px-2 py-0.5 rounded bg-primary/10 text-[10px] font-bold uppercase tracking-[0.18em] text-primary">
+                  <span className="inline-block w-fit shrink-0 rounded-md bg-sky-100 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-primary shadow-none dark:bg-sky-950/40 dark:text-sky-100">
                     {featured.category}
                   </span>
                 )}
-                <h1 className="text-2xl sm:text-3xl md:text-[1.65rem] lg:text-4xl font-black text-primary leading-[1.15] tracking-tight group-hover:translate-x-0.5 transition-transform duration-300 line-clamp-4 md:line-clamp-5">
+                <h1 className="w-full shrink-0 text-3xl sm:text-4xl md:text-[2.35rem] lg:text-[2.75rem] xl:text-[3.1rem] font-black text-primary leading-[1.32] sm:leading-[1.36] md:leading-[1.4] lg:leading-[1.42] tracking-normal group-hover:opacity-90 transition-opacity duration-300 line-clamp-4 [text-wrap:balance]">
                   {featured.title}
                 </h1>
                 {featured.description && (
-                  <p className="text-sm md:text-[0.95rem] text-muted-foreground leading-snug font-medium line-clamp-3 md:line-clamp-4">
-                    {shortenLead(featured.description)}
-                  </p>
+                  <div className="flex-1 flex flex-col justify-end min-h-0 pt-2 md:pt-3">
+                    <p className="w-full text-justify text-xs sm:text-sm text-muted-foreground leading-[1.75] sm:leading-loose font-normal line-clamp-[12] md:line-clamp-none hyphens-auto [overflow-wrap:anywhere]">
+                      {shortenLead(featured.description)}
+                    </p>
+                  </div>
                 )}
               </a>
             )}
           </div>
 
           <div
-            className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5"
-            aria-label="Quatro notícias mais recentes"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3 min-w-0 md:h-full md:min-h-0 content-start"
+            aria-label="Destaques: Canção Nova SP, Caminhada, Santa Rita e Agenda"
           >
-            {loading || gridRecentNews.length === 0
+            {loading || gridCards.length === 0
               ? [0, 1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse flex flex-col gap-2">
-                    <div className="aspect-video bg-muted rounded-xl" />
-                    <div className="h-3.5 bg-muted rounded w-full" />
-                    <div className="h-3 bg-muted rounded w-4/5" />
+                  <div key={i} className="animate-pulse flex flex-col gap-1.5">
+                    <div className="aspect-video bg-muted rounded-lg" />
+                    <div className="h-3 bg-muted rounded w-full" />
+                    <div className="h-2.5 bg-muted rounded w-4/5" />
                   </div>
                 ))
-              : gridRecentNews.map((item) => (
+              : gridCards.map((item) => (
                   <a
                     key={item.link}
                     href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex flex-col gap-2 min-w-0"
+                    className="group flex flex-col gap-1.5 min-w-0"
                   >
-                    <div className="aspect-video overflow-hidden rounded-xl bg-muted shadow-sm border border-border/50">
+                    <div className="aspect-video overflow-hidden rounded-lg bg-muted shadow-sm border border-border/50">
                       {item.thumbnail ? (
                         <img
                           src={item.thumbnail}
                           alt={item.title}
-                          className="w-full h-full object-contain object-center group-hover:scale-[1.02] transition-transform duration-500"
+                          className="w-full h-full object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
                           loading="lazy"
+                          referrerPolicy="no-referrer"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = "none";
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-primary/5 min-h-[120px]">
-                          <span className="text-primary text-xl font-black opacity-20 capitalize">
-                            {item.category?.[0] || "CN"}
+                        <div className="w-full h-full min-h-[100px] flex items-center justify-center bg-primary/5">
+                          <span className="text-primary text-sm font-black opacity-25 capitalize text-center px-2">
+                            {item.category || "…"}
                           </span>
                         </div>
                       )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 pt-0.5">
                       {item.category && (
-                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary/70 mb-0.5 block">
+                        <span className="text-[8px] font-bold uppercase tracking-widest text-primary/70 mb-0 block leading-tight">
                           {item.category}
                         </span>
                       )}
-                      <h3 className="text-sm font-bold text-primary/90 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                      <h3 className="text-xs font-bold text-primary/90 leading-tight group-hover:text-primary transition-colors line-clamp-2">
                         {item.title}
                       </h3>
                     </div>
@@ -548,15 +722,15 @@ const HeroNews = () => {
           </div>
         )}
 
-        <div className="mt-10 pt-4 border-t border-border/60 flex items-center justify-between">
+        <div className="mt-10 pt-4 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+            <div className="w-2 h-2 shrink-0 rounded-full bg-green-500" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/80">
               Fonte: Canção Nova São Paulo
             </span>
           </div>
           <a href="https://saopaulo.cancaonova.com/noticias/" target="_blank" rel="noopener noreferrer"
-            className="group flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 font-black uppercase tracking-widest transition-all">
+            className="group flex items-center gap-2 text-[10px] text-primary font-bold uppercase tracking-[0.2em] hover:text-primary/80 transition-colors">
             Ver todas as notícias
             <span className="group-hover:translate-x-1 transition-transform">→</span>
           </a>
