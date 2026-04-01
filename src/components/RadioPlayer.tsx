@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 
-const STREAM_URL = "https://stream.zeno.fm/yn65fsaurfhvv";
+const STREAM_URL = "https://hts04.brascast.com:11160/live";
 
 const RadioPlayer = () => {
   const [playing, setPlaying] = useState(false);

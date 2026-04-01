@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Music, Users } from "lucide-react";
 
-const STREAM_URL = "https://stream.zeno.fm/yn65fsaurfhvv";
-const NOWPLAYING_URL = "https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv";
+const STREAM_URL = "https://hts04.brascast.com:11160/live";
+const NOWPLAYING_URL = "https://d2rnbw35hbqc5p.cloudfront.net/cover?p=11160&s=hts04";
+const PROXY = (u: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`;
 
 interface NowPlaying {
   title: string;
@@ -11,13 +12,22 @@ interface NowPlaying {
 
 async function fetchNowPlaying(): Promise<NowPlaying> {
   try {
-    const res = await fetch(`https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv`, {
-      headers: { "Accept": "application/json" }
-    });
-    const data = await res.json();
+    // Tentamos direto, mas usamos proxy se falhar por CORS
+    const url = NOWPLAYING_URL;
+    let res = await fetch(url, { signal: AbortSignal.timeout(8000) }).catch(() => null);
+    
+    let data;
+    if (!res || !res.ok) {
+      const pRes = await fetch(PROXY(url), { signal: AbortSignal.timeout(10000) });
+      const pData = await pRes.json();
+      data = typeof pData.contents === "string" ? JSON.parse(pData.contents) : pData.contents;
+    } else {
+      data = await res.json();
+    }
+
     return {
-      title: data?.streamTitle || "Rádio Conexão Católica",
-      listeners: data?.listeners || 0,
+      title: data?.title || "Rádio Conexão Católica",
+      listeners: 0, // A API de cover não retorna ouvintes; se precisar de ouvintes, teria que ser outra API
     };
   } catch {
     return { title: "Rádio Conexão Católica", listeners: 0 };

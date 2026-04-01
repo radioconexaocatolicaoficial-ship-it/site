@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Cross, Headphones } from "lucide-react";
 
 const TARGET = new Date("2026-04-04T22:00:00-03:00").getTime();
-const STREAM_URL = "https://stream.zeno.fm/yn65fsaurfhvv";
+const STREAM_URL = "https://hts04.brascast.com:11160/live";
 
 const CountdownCard = () => {
   const [now, setNow] = useState(Date.now());
