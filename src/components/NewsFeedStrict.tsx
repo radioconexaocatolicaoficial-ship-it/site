@@ -506,7 +506,7 @@ const NewsFeedStrict = () => {
   }, [run]);
 
   return (
-    <section className="nfs-section border-b border-border">
+    <section className="nfs-section">
       <div className="container mx-auto px-4">
         <div className="nfs-grid">
         <div className="nfs-highlight">
