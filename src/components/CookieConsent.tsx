@@ -25,7 +25,7 @@ const CookieConsent = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6">
+    <div className="fixed bottom-20 md:bottom-[80px] left-0 right-0 z-[60] p-4 md:p-6">
       <div className="container mx-auto max-w-4xl">
         <div className="bg-[#1a1a2e] border border-white/10 rounded-xl shadow-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
           
