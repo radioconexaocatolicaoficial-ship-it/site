@@ -83,8 +83,8 @@ async function fetchNews(): Promise<NewsItem[]> {
     });
   } catch { /* ignora */ }
 
-  // Busca imagem e descricao de cada artigo em paralelo (max 4)
-  const top = links.slice(0, 4);
+  // Busca imagem e descricao de cada artigo em paralelo (max 8)
+  const top = links.slice(0, 8);
   const details = await Promise.allSettled(top.map(l => fetchArticle(l.link)));
 
   return top.map((l, i) => {
@@ -103,90 +103,106 @@ const HeroNews = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const main = news[0];
-  const secondary = news.slice(1, 3);
-  const bullets = news.slice(3, 5);
+  // news[0] -> Destaque Direita
+  // news[1..4] -> Cards Esquerda
+  // news[5..7] -> Tópicos Direita
+  const featured = news[0];
+  const cards = news.slice(1, 5);
+  const topics = news.slice(5, 8);
 
   return (
     <div className="w-full bg-background border-b border-border">
-      <div className="container mx-auto px-4 py-5">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-start">
 
-          {/* Coluna esquerda — título grande */}
-          <div className="md:col-span-5 md:border-r border-border md:pr-6">
-            {loading || !main ? (
-              <div className="animate-pulse space-y-3">
-                <div className="h-6 bg-muted rounded w-1/3" />
-                <div className="h-10 bg-muted rounded w-full" />
-                <div className="h-10 bg-muted rounded w-4/5" />
-                <div className="h-4 bg-muted rounded w-full mt-2" />
-                <div className="h-4 bg-muted rounded w-3/4" />
+          {/* Coluna esquerda — Notícia Principal + 3 Tópicos */}
+          <div className="md:col-span-7 flex flex-col gap-8 md:pr-10 md:border-r border-border/60">
+            {loading || !featured ? (
+              <div className="animate-pulse space-y-5">
+                <div className="h-4 bg-muted rounded w-1/4" />
+                <div className="h-16 bg-muted rounded w-full" />
+                <div className="h-6 bg-muted rounded w-4/5" />
+                <div className="h-6 bg-muted rounded w-full mt-4" />
+                <div className="h-20 bg-muted rounded w-full" />
               </div>
             ) : (
-              <a href={main.link} target="_blank" rel="noopener noreferrer" className="group block">
-                {main.category && (
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary mb-2 block">
-                    {main.category}
-                  </span>
+              <div className="space-y-6">
+                <a href={featured.link} target="_blank" rel="noopener noreferrer" className="group block space-y-4">
+                  {featured.category && (
+                    <span className="inline-block px-2 py-1 rounded bg-primary/10 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+                      {featured.category}
+                    </span>
+                  )}
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-primary leading-[1.1] group-hover:translate-x-1 transition-transform duration-300">
+                    {featured.title}
+                  </h1>
+                  {featured.description && (
+                    <p className="text-base md:text-lg text-muted-foreground leading-relaxed font-medium">
+                      {featured.description}...
+                    </p>
+                  )}
+                </a>
+
+                {topics.length > 0 && (
+                  <div className="pt-8 border-t border-border/80">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-6 block">
+                      Principais Destaques
+                    </span>
+                    <ul className="grid grid-cols-1 gap-4">
+                      {topics.map((n, i) => (
+                        <li key={i} className="group/item">
+                          <a href={n.link} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-all border border-transparent hover:border-border/50">
+                            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-[10px] font-bold group-hover/item:bg-primary group-hover/item:text-white transition-colors">
+                              {i + 1}
+                            </span>
+                            <span className="text-sm font-semibold text-primary/80 group-hover/item:text-primary transition-colors line-clamp-1">
+                              {n.title}
+                            </span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 )}
-                <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-primary leading-tight group-hover:opacity-80 transition-opacity mb-3">
-                  {main.title}
-                </h1>
-                {main.description && (
-                  <p className="text-sm text-muted-foreground leading-relaxed line-clamp-4 mb-4">
-                    {main.description}
-                  </p>
-                )}
-                {bullets.length > 0 && (
-                  <ul className="space-y-2 border-t border-border pt-3">
-                    {bullets.map((n, i) => (
-                      <li key={i}>
-                        <a href={n.link} target="_blank" rel="noopener noreferrer"
-                          className="flex items-start gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
-                          <span className="text-primary mt-0.5 flex-shrink-0 font-bold">•</span>
-                          <span className="line-clamp-2">{n.title}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </a>
+              </div>
             )}
           </div>
 
-          {/* Coluna direita — 2 cards com imagem */}
-          <div className="md:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {loading
-              ? [0, 1].map(i => (
-                  <div key={i} className="animate-pulse space-y-2">
-                    <div className="aspect-video bg-muted rounded-lg" />
+          {/* Coluna direita — 4 cards de notícias */}
+          <div className="md:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {loading || cards.length === 0
+              ? [0, 1, 2, 3].map(i => (
+                  <div key={i} className="animate-pulse space-y-3">
+                    <div className="aspect-[4/3] bg-muted rounded-xl" />
                     <div className="h-4 bg-muted rounded w-full" />
                     <div className="h-3 bg-muted rounded w-2/3" />
                   </div>
                 ))
-              : secondary.map((item, i) => (
+              : cards.map((item, i) => (
                   <a key={i} href={item.link} target="_blank" rel="noopener noreferrer"
-                    className="group flex flex-col gap-2">
-                    <div className="aspect-video overflow-hidden rounded-lg bg-muted">
+                    className="group flex flex-col gap-3">
+                    <div className="aspect-[4/3] overflow-hidden rounded-xl bg-muted shadow-sm border border-border/50">
                       {item.thumbnail
                         ? <img src={item.thumbnail} alt={item.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading="eager"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            loading="lazy"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                        : <div className="w-full h-full flex items-center justify-center bg-primary/10">
-                            <span className="text-primary text-2xl font-black opacity-30">CN</span>
+                        : <div className="w-full h-full flex items-center justify-center bg-primary/5">
+                            <span className="text-primary text-xl font-black opacity-20 capitalize">{item.category?.[0] || 'CN'}</span>
                           </div>
                       }
                     </div>
-                    {item.category && (
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary">{item.category}</span>
-                    )}
-                    <h3 className="text-sm font-bold text-primary leading-snug group-hover:underline line-clamp-3">
-                      {item.title}
-                    </h3>
-                    {item.description && (
-                      <p className="text-xs text-muted-foreground line-clamp-3">{item.description}</p>
-                    )}
+                    <div>
+                      {item.category && (
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-primary/70 mb-1 block">
+                          {item.category}
+                        </span>
+                      )}
+                      <h3 className="text-xs md:text-sm font-bold text-primary/90 leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                        {item.title}
+                      </h3>
+                    </div>
                   </a>
                 ))
             }
@@ -194,13 +210,17 @@ const HeroNews = () => {
 
         </div>
 
-        <div className="mt-4 pt-2 border-t border-border flex items-center justify-between">
-          <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-            Fonte: Canção Nova São Paulo
-          </span>
-          <a href="https://saopaulo.cancaonova.com/" target="_blank" rel="noopener noreferrer"
-            className="text-[10px] text-primary hover:underline font-semibold uppercase tracking-widest">
-            Ver todas as notícias →
+        <div className="mt-12 pt-4 border-t border-border/60 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+              Fonte: Canção Nova São Paulo
+            </span>
+          </div>
+          <a href="https://saopaulo.cancaonova.com/noticias/" target="_blank" rel="noopener noreferrer"
+            className="group flex items-center gap-2 text-[10px] text-primary hover:text-primary/80 font-black uppercase tracking-widest transition-all">
+            Ver todas as notícias
+            <span className="group-hover:translate-x-1 transition-transform">→</span>
           </a>
         </div>
       </div>
