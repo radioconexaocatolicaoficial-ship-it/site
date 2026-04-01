@@ -413,12 +413,21 @@ async function loadNewsCard(
   return story;
 }
 
+const CACHE_KEY = "rcc_rnoticias_cache";
+
 const NewsSection = () => {
-  const [cards, setCards] = useState<RadioCard[]>([]);
+  const [cards, setCards] = useState<RadioCard[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const load = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(prev => prev);
     try {
       const loc = await resolveLocationForWeather();
       const weatherPromise = fetchWeatherCard(loc.lat, loc.lon, loc.placeLabel);
@@ -457,10 +466,11 @@ const NewsSection = () => {
         finalCards.push(santo);
       }
 
-      // Garantimos exatamente 6 cards na grade
-      setCards(finalCards.slice(0, 6));
+      const toSave = finalCards.slice(0, 6);
+      setCards(toSave);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(toSave)); } catch {}
     } catch {
-      setCards([]);
+      // Retém o cache em caso de erro
     } finally {
       setIsLoading(false);
     }

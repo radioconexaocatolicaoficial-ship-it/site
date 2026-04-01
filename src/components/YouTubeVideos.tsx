@@ -35,29 +35,49 @@ const SkeletonCard = () => (
   </div>
 );
 
+const CACHE_KEY = "rcc_youtube_cache";
+
 const YouTubeVideos = () => {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [videos, setVideos] = useState<Video[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [loading, setLoading] = useState(() => {
+    try { return !localStorage.getItem(CACHE_KEY); }
+    catch { return true; }
+  });
   const [modal, setModal] = useState<Video | null>(null);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
+      setLoading(prev => prev);
       for (const proxy of PROXIES) {
         try {
           const res = await fetch(proxy(RSS), { signal: AbortSignal.timeout(10000) });
           if (!res.ok) continue;
           const text = res.url.includes("allorigins") ? (await res.json()).contents : await res.text();
           const parsed = parseXML(text);
-          if (parsed.length) { setVideos(parsed); setLoading(false); return; }
+          if (parsed.length && !cancelled) {
+            setVideos(parsed);
+            setLoading(false);
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify(parsed)); } catch {}
+            return;
+          }
         } catch { /* try next */ }
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     };
     load();
     const interval = setInterval(load, 30 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => { cancelled = true; clearInterval(interval); };
   }, []);
+
 
   const openModal = (v: Video) => { setModal(v); document.body.style.overflow = "hidden"; };
   const closeModal = () => { setModal(null); document.body.style.overflow = ""; };

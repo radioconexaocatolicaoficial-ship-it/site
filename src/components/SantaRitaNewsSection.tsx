@@ -69,8 +69,17 @@ function parseRadio(html: string): NewsItem[] {
   return items;
 }
 
+const CACHE_KEY = "rcc_santarita_cache";
+
 const SantaRitaNewsSection = () => {
-  const [srItems, setSrItems] = useState<NewsItem[]>([]);
+  const [srItems, setSrItems] = useState<NewsItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -80,13 +89,13 @@ const SantaRitaNewsSection = () => {
       if (!res.ok) throw new Error();
       const html = await res.text();
       const parsed = parseRadio(html);
-      if (parsed.length > 0) {
-        setSrItems(parsed.slice(0, 3));
-      } else {
-        setSrItems(FALLBACK_SR);
-      }
+      
+      const toSave = parsed.length > 0 ? parsed.slice(0, 3) : FALLBACK_SR;
+      setSrItems(toSave);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(toSave)); } catch {}
     } catch {
       setSrItems(FALLBACK_SR);
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(FALLBACK_SR)); } catch {}
     } finally {
       setIsLoading(false);
     }
