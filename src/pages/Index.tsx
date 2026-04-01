@@ -8,6 +8,7 @@ import BibliaWidget from "@/components/BibliaWidget";
 import RadioSantaRitaCarousel from "@/components/RadioSantaRitaCarousel";
 import DestaqueInstitucional from "@/components/DestaqueInstitucional";
 import LojaCard from "@/components/LojaCard";
+import LojaProdutosScroller from "@/components/LojaProdutosScroller";
 import CaminhadaCarousel from "@/components/CaminhadaCarousel";
 import YouTubeVideos from "@/components/YouTubeVideos";
 import PatrocinadoresCarousel from "@/components/PatrocinadoresCarousel";
@@ -27,6 +28,18 @@ const Index = () => (
         </div>
         <div className="md:col-span-1 lg:col-span-7">
           <VaticanNewsCarousel />
+        </div>
+      </div>
+    </section>
+
+    {/* Loja + faixa de produtos — acima de Liturgia e Diocese */}
+    <section className="container mx-auto px-4 pt-2 pb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-4 items-stretch">
+        <div className="md:col-span-1 lg:col-span-3">
+          <LojaCard />
+        </div>
+        <div className="md:col-span-1 lg:col-span-7 min-h-[320px] lg:min-h-[380px]">
+          <LojaProdutosScroller />
         </div>
       </div>
     </section>
@@ -60,19 +73,12 @@ const Index = () => (
       </div>
     </section>
 
-    {/* Seção 4: Loja + Caminhada da Ressurreição */}
-    <section className="container mx-auto px-4 pt-4 pb-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-4 items-stretch">
-        <div className="md:col-span-1 lg:col-span-3">
-          <LojaCard />
-        </div>
-        <div className="md:col-span-1 lg:col-span-7">
-          <CaminhadaCarousel />
-        </div>
-      </div>
+    {/* Caminhada da Ressurreição (largura total do container) */}
+    <section className="container mx-auto px-4 pt-4 pb-2">
+      <CaminhadaCarousel />
     </section>
 
-    {/* Seção 4: Destaque Institucional */}
+    {/* Destaque Institucional */}
     <div className="my-5">
       <DestaqueInstitucional />
     </div>

@@ -1,5 +1,7 @@
+import { useState } from "react";
 import Layout from "@/components/Layout";
-import { ShoppingCart, MessageCircle } from "lucide-react";
+import LojaProdutoDialog from "@/components/LojaProdutoDialog";
+import { ShoppingCart } from "lucide-react";
 
 import camiseta from "@/assets/camiseta.jpg";
 import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.jpg";
@@ -10,8 +12,6 @@ import sacola from "@/assets/sacola.jpg";
 import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.jpg";
 import tercoCores from "@/assets/Terços-Diversas-cores.jpg";
 import rosarioCampacto from "@/assets/rosario-campcto.jpg";
-
-const WHATSAPP = "5511961605164";
 
 const produtos = [
   {
@@ -90,13 +90,9 @@ const produtos = [
 
 const categorias = ["Todos", ...Array.from(new Set(produtos.map(p => p.categoria)))];
 
-const whatsappLink = (produto: typeof produtos[0]) =>
-  `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Olá! Tenho interesse em comprar: *${produto.nome}* - ${produto.preco}`)}`;
-
-import { useState } from "react";
-
 const Loja = () => {
   const [cat, setCat] = useState("Todos");
+  const [modalProduto, setModalProduto] = useState<(typeof produtos)[0] | null>(null);
   const filtrados = cat === "Todos" ? produtos : produtos.filter(p => p.categoria === cat);
 
   return (
@@ -133,12 +129,26 @@ const Loja = () => {
         {/* Grid de produtos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filtrados.map(produto => (
-            <div key={produto.id} className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-              <div className="aspect-square overflow-hidden">
+            <div
+              key={produto.id}
+              role="button"
+              tabIndex={0}
+              onClick={() => setModalProduto(produto)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setModalProduto(produto);
+                }
+              }}
+              className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
+            >
+              <div className={`aspect-square overflow-hidden ${produto.id === 1 ? "bg-white" : ""}`}>
                 <img
                   src={produto.img}
                   alt={produto.nome}
-                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  className={`w-full h-full hover:scale-105 transition-transform duration-500 ${
+                    produto.id === 1 ? "object-contain p-3" : "object-cover"
+                  }`}
                   loading="lazy"
                 />
               </div>
@@ -150,21 +160,30 @@ const Loja = () => {
                   <span className={`text-base font-bold ${produto.preco === "Orçamento" ? "text-muted-foreground text-sm" : "text-primary"}`}>
                     {produto.preco === "Orçamento" ? "Sob orçamento" : produto.preco}
                   </span>
-                  <a
-                    href={whatsappLink(produto)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 bg-green-500 hover:bg-green-400 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    {produto.preco === "Orçamento" ? "Orçamento" : "Comprar"}
-                  </a>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ver detalhes</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      <LojaProdutoDialog
+        open={modalProduto !== null}
+        onOpenChange={(open) => !open && setModalProduto(null)}
+        produto={
+          modalProduto
+            ? {
+                id: modalProduto.id,
+                nome: modalProduto.nome,
+                preco: modalProduto.preco,
+                img: modalProduto.img,
+                desc: modalProduto.desc,
+                ...(modalProduto.id === 1 ? { imgLightBg: true as const } : {}),
+              }
+            : null
+        }
+      />
     </Layout>
   );
 };
