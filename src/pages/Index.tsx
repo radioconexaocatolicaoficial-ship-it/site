@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import BannerCarousel from "@/components/BannerCarousel";
+import HeroNews from "@/components/HeroNews";
 import CountdownCard from "@/components/CountdownCard";
 import VaticanNewsCarousel from "@/components/VaticanNewsCarousel";
 import LiturgiaWidget from "@/components/LiturgiaWidget";
@@ -17,7 +17,7 @@ import PedidoMusica from "@/components/PedidoMusica";
 
 const Index = () => (
   <Layout>
-    <BannerCarousel />
+    <HeroNews />
 
     {/* Seção 1: Countdown + Vatican News */}
     <section className="container mx-auto px-4 pt-4 pb-2">

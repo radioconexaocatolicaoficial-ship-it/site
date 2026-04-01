@@ -8,33 +8,50 @@ export interface RssItem {
   pubDate: string;
 }
 
-// Usa allorigins como proxy CORS para parsear RSS diretamente no browser
+// Proxies CORS em ordem de preferência
+const PROXIES = [
+  (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+  (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+];
+
 async function fetchRss(url: string, count = 8): Promise<RssItem[]> {
-  const proxy = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-  const res = await fetch(proxy);
-  if (!res.ok) throw new Error("Falha ao buscar RSS");
-  const data = await res.json();
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(data.contents, "text/xml");
-  const items = Array.from(xml.querySelectorAll("item")).slice(0, count);
+  let lastError: unknown;
 
-  return items.map((item) => {
-    const title = item.querySelector("title")?.textContent?.trim() ?? "";
-    const link = item.querySelector("link")?.textContent?.trim() ?? "";
-    const description = item.querySelector("description")?.textContent
-      ?.replace(/<[^>]+>/g, "").trim().slice(0, 300) ?? "";
-    const pubDate = item.querySelector("pubDate")?.textContent?.trim() ?? "";
+  for (const makeProxy of PROXIES) {
+    try {
+      const res = await fetch(makeProxy(url), { signal: AbortSignal.timeout(8000) });
+      if (!res.ok) continue;
 
-    // Tenta pegar imagem de media:content, enclosure ou og dentro da descrição
-    const mediaContent = item.getElementsByTagNameNS("*", "content")[0];
-    const enclosure = item.querySelector("enclosure");
-    const thumbnail =
-      mediaContent?.getAttribute("url") ||
-      enclosure?.getAttribute("url") ||
-      "";
+      // codetabs retorna XML direto; allorigins retorna JSON com .contents
+      const text = await res.text();
+      let xmlText = text;
+      try {
+        const json = JSON.parse(text);
+        if (json.contents) xmlText = json.contents;
+      } catch { /* já é XML */ }
 
-    return { title, link, description, thumbnail, pubDate };
-  });
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(xmlText, "text/xml");
+      const items = Array.from(xml.querySelectorAll("item")).slice(0, count);
+      if (items.length === 0) continue;
+
+      return items.map((item) => {
+        const title = item.querySelector("title")?.textContent?.trim() ?? "";
+        const link = item.querySelector("link")?.textContent?.trim() ?? "";
+        const description = item.querySelector("description")?.textContent
+          ?.replace(/<[^>]+>/g, "").trim().slice(0, 300) ?? "";
+        const pubDate = item.querySelector("pubDate")?.textContent?.trim() ?? "";
+        const mediaContent = item.getElementsByTagNameNS("*", "content")[0];
+        const enclosure = item.querySelector("enclosure");
+        const thumbnail = mediaContent?.getAttribute("url") || enclosure?.getAttribute("url") || "";
+        return { title, link, description, thumbnail, pubDate };
+      });
+    } catch (e) {
+      lastError = e;
+    }
+  }
+
+  throw lastError ?? new Error("Todos os proxies falharam");
 }
 
 export function useRssFeed(url: string, count = 8, refreshMs = 5 * 60 * 1000) {

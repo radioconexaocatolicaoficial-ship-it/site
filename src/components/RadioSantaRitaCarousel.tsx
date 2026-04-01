@@ -53,9 +53,9 @@ const RadioSantaRitaCarousel = () => {
     let cancelled = false;
     const load = async () => {
       try {
-        const res = await fetch(PROXY);
-        const data = await res.json();
-        const parsed = parseRadio(data.contents);
+        const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(BASE + "/posts")}`);
+        const html = await res.text();
+        const parsed = parseRadio(html);
         if (!cancelled && parsed.length > 0) setItems(parsed);
       } catch { /* mantém fallback */ }
     };

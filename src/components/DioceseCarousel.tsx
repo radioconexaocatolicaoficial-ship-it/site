@@ -9,7 +9,7 @@ interface DiocItem {
 }
 
 const BASE = "https://www.diocesesaomiguel.org.br";
-const PROXY = `https://api.allorigins.win/get?url=${encodeURIComponent(BASE + "/index.php/noticias-2")}`;
+const PROXY = `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(BASE + "/index.php/noticias-2")}`;
 const FALLBACK: DiocItem[] = [
   { img: `${BASE}/images/jubileu_5.jpg`, title: "Bispos celebram 25 anos de ordenação episcopal", desc: "Dom Manuel Parrado Carral e Dom Pedro Luís Stringhini celebram jubileu com missa presidida pelo Cardeal Dom Odilo Scherer na Paróquia do Divino Espírito Santo.", link: BASE },
   { img: `${BASE}/images/Abertura_Camapanha_da_Fraternidade_2026_Daniel_Reis-3.JPG`, title: "Diocese abre a Campanha da Fraternidade 2026", desc: "Dom Algacir Munhak preside abertura com o tema \"Fraternidade e Moradia\", convocando a comunidade ao compromisso social e à dignidade habitacional na Zona Leste.", link: BASE },
@@ -52,8 +52,8 @@ const DioceseCarousel = () => {
     const load = async () => {
       try {
         const res = await fetch(PROXY);
-        const data = await res.json();
-        const parsed = parseDiocese(data.contents);
+        const html = await res.text();
+        const parsed = parseDiocese(html);
         if (!cancelled && parsed.length > 0) setNews(parsed);
       } catch { /* mantém fallback */ }
     };
