@@ -54,18 +54,18 @@ const Footer = () => {
         </div>
 
         {/* Newsletter */}
-        <form onSubmit={handleSubscribe} className="flex w-full max-w-md">
+        <form onSubmit={handleSubscribe} className="flex flex-col xsm:flex-row w-full max-w-md gap-2 xsm:gap-0 px-2 sm:px-0">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="seu@mail.com"
             required
-            className="flex-1 px-4 py-2 rounded-l-md text-sm text-gray-900 outline-none bg-white"
+            className="flex-1 px-4 py-2 rounded-md xsm:rounded-r-none text-sm text-gray-900 outline-none bg-white min-w-0"
           />
           <button
             type="submit"
-            className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-5 py-2 rounded-r-md text-sm transition-colors whitespace-nowrap"
+            className="bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-semibold px-5 py-2 rounded-md xsm:rounded-l-none text-sm transition-colors whitespace-nowrap"
           >
             Inscreva-se
           </button>
@@ -193,7 +193,7 @@ const Footer = () => {
             <li key={l.to}><Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link></li>
           ))}
         </ul>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {socials.map((s) =>
             s.url ? (
               <a
@@ -202,9 +202,9 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.name}
-                className="w-7 h-7 flex items-center justify-center rounded-md border border-white/50 text-white hover:border-gold hover:text-gold transition-colors"
+                className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-md border border-white/50 text-white hover:border-gold hover:text-gold transition-colors"
               >
-                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" viewBox="0 0 24 24">
                   <path d={s.icon} />
                 </svg>
               </a>
@@ -213,9 +213,9 @@ const Footer = () => {
                 key={s.name}
                 aria-label={`${s.name} — em breve`}
                 title={`${s.name} — em breve`}
-                className="w-7 h-7 flex items-center justify-center rounded-md border border-white/20 text-white/40 cursor-default"
+                className="w-6 h-6 sm:w-7 sm:h-7 hidden xsm:flex items-center justify-center rounded-md border border-white/20 text-white/40 cursor-default"
               >
-                <svg className="h-3.5 w-3.5 fill-current" viewBox="0 0 24 24">
+                <svg className="h-3 w-3 sm:h-3.5 sm:w-3.5 fill-current" viewBox="0 0 24 24">
                   <path d={s.icon} />
                 </svg>
               </span>

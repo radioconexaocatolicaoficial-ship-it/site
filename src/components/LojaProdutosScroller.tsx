@@ -60,7 +60,7 @@ const LojaProdutosScroller = () => {
                 setSelected(p);
               }
             }}
-            className="flex-none w-[calc(50%-0.5rem)] min-w-[min(100%,240px)] snap-start bg-card rounded-xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow cursor-pointer text-left"
+            className="flex-none w-full sm:w-[calc(50%-0.5rem)] min-w-[min(100%,240px)] snap-start bg-card rounded-xl border border-border overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow cursor-pointer text-left"
           >
             <div
               className={cn(
