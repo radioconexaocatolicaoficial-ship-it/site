@@ -7,6 +7,7 @@ interface NewsItem {
   link: string;
   desc: string;
   badge: string;
+  position?: string;
 }
 
 const BASE_SANTA_RITA = "https://www.radiosantaritadecassia.com.br";
@@ -25,7 +26,8 @@ const CAMINHADA_ITEMS: NewsItem[] = [
     title: "Conheça a história da Caminhada da Ressurreição",
     desc: "Realizada anualmente desde 1984 pela Diocese de São Miguel Paulista.",
     link: LINK_CAMINHADA,
-    badge: "Caminhada"
+    badge: "Caminhada",
+    position: "object-top"
   },
   {
     img: "https://static.wixstatic.com/media/e11735_5771cbef74334ec79d9f01c90e567276~mv2.jpg/v1/crop/x_0,y_82,w_519,h_555/fill/w_600,h_338,al_c,q_80/Imagem1.jpg",
@@ -137,7 +139,7 @@ const SantaRitaNewsSection = () => {
                   <img
                     src={item.img}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full object-cover ${item.position || 'object-center'} group-hover:scale-105 transition-transform duration-500`}
                     loading="lazy"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.visibility = "hidden";
@@ -191,7 +193,7 @@ const SantaRitaNewsSection = () => {
                   <img
                     src={item.img}
                     alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full object-cover ${item.position || 'object-center'} group-hover:scale-105 transition-transform duration-500`}
                     loading="lazy"
                   />
                 ) : (
