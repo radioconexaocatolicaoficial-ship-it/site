@@ -1,15 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
+import caminhadaPoster from "@/assets/caminhada-ressurreicao-2026-poster.png";
 import "./NewsFeedStrict.css";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 
 const FEED_CANCAO_NOVA = "https://saopaulo.cancaonova.com/noticias/feed/";
+const NOTICIAS_ARCHIVE_URL = "https://saopaulo.cancaonova.com/noticias/";
 const FEED_CAMINHADA = "https://www.caminhadadaressurreicao.com/blog-feed.xml";
 const FEED_SANTA_RITA = "https://www.radiosantaritadecassia.com.br/feed";
 const FEED_YOUTUBE_PADRE_PH =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
 
 const CAMINHADA_SITE = "https://www.caminhadadaressurreicao.com/";
+/** Data e horário do evento (cartaz oficial 2026) */
+const CAMINHADA_CARD_EVENT_DATETIME =
+  "4 de abril de 2026 · 22h00 — Basílica N. S. da Penha · Rua Santo Afonso, 199, Penha";
 const HIGHLIGHT_CAMINHADA_TITLE =
   'Vem aí a Caminhada da Ressurreição 2026 "Eu vi o Senhor"';
 const HIGHLIGHT_CAMINHADA_BADGE = "CAMINHADA DA RESSURREIÇÃO";
@@ -111,10 +116,18 @@ function normalizePageImageUrl(raw: string, pageUrl: string): string {
   }
 }
 
+function isLowValueImageUrl(u: string): boolean {
+  return !u || /favicon|pfavico|parastorage\.com\/client\/pfavico|1x1\.|pixel\.gif|blank\.(gif|png)/i.test(u);
+}
+
 function pickOfficialImageFromDoc(doc: Document, pageUrl: string): string {
+  const norm = (raw: string) => {
+    const n = normalizePageImageUrl(raw.replace(/\s+/g, "").trim(), pageUrl);
+    return isLowValueImageUrl(n) ? "" : n;
+  };
   const meta = (sel: string, attr: string) => {
     const v = doc.querySelector(sel)?.getAttribute(attr)?.trim();
-    return v ? normalizePageImageUrl(v, pageUrl) : "";
+    return v ? norm(v) : "";
   };
   let u = meta('meta[property="og:image"]', "content");
   if (u) return u;
@@ -123,47 +136,105 @@ function pickOfficialImageFromDoc(doc: Document, pageUrl: string): string {
   u = meta('meta[name="twitter:image"]', "content") || meta('meta[property="twitter:image"]', "content");
   if (u) return u;
   u = doc.querySelector('link[rel="image_src"]')?.getAttribute("href")?.trim() ?? "";
-  if (u) return normalizePageImageUrl(u, pageUrl);
+  u = u ? norm(u) : "";
+  if (u) return u;
 
   const wp = doc.querySelector(
     "img.wp-post-image, img[class*='wp-image'], .entry-content img, .post-content img, article img[src*='.jpg'], article img[src*='.png'], article img[src*='.webp']",
   ) as HTMLImageElement | null;
   const src = wp?.getAttribute("src") || wp?.getAttribute("data-src") || wp?.currentSrc;
-  if (src) return normalizePageImageUrl(src, pageUrl);
+  if (src) {
+    u = norm(src);
+    if (u) return u;
+  }
 
   const block = doc.querySelector(".entry-content, .post-content, article, main")?.innerHTML ?? "";
   const ex = extractImgFromHtml(block);
-  return ex ? normalizePageImageUrl(ex, pageUrl) : "";
+  return ex ? norm(ex) : "";
 }
 
-async function fetchOgImageForPage(pageUrl: string): Promise<string> {
-  if (!pageUrl.startsWith("http")) return "";
+function extractPublishedIsoFromDoc(doc: Document): string {
+  const getMeta = (sel: string) => doc.querySelector(sel)?.getAttribute("content")?.trim() ?? "";
+  let iso =
+    getMeta('meta[property="article:published_time"]') ||
+    getMeta('meta[name="article:published_time"]') ||
+    getMeta('meta[property="og:updated_time"]') ||
+    getMeta('meta[name="pubdate"]') ||
+    getMeta('meta[name="date"]');
+  if (iso) return iso;
+
+  doc.querySelectorAll('script[type="application/ld+json"]').forEach((s) => {
+    if (iso) return;
+    try {
+      const j = JSON.parse(s.textContent || "{}");
+      const flat = (node: unknown): void => {
+        if (!node || iso) return;
+        if (Array.isArray(node)) {
+          node.forEach(flat);
+          return;
+        }
+        if (typeof node === "object" && node !== null) {
+          const o = node as Record<string, unknown>;
+          if (o["@graph"]) flat(o["@graph"]);
+          const dp = o.datePublished ?? o.dateModified;
+          if (typeof dp === "string" && dp) iso = dp;
+          else if (typeof o.uploadDate === "string" && o.uploadDate) iso = o.uploadDate;
+        }
+      };
+      flat(j);
+    } catch {
+      /* ignore */
+    }
+  });
+
+  if (!iso) {
+    iso = doc.querySelector("time[datetime]")?.getAttribute("datetime")?.trim() ?? "";
+  }
+  return iso;
+}
+
+async function fetchPageArticleMeta(pageUrl: string): Promise<{ image: string; publishedIso: string }> {
+  if (!pageUrl.startsWith("http")) return { image: "", publishedIso: "" };
   const yt = youtubeThumbFromUrl(pageUrl);
-  if (yt) return yt;
+  if (yt) return { image: yt, publishedIso: "" };
   try {
     const res = await fetch(PROXY(pageUrl), { signal: AbortSignal.timeout(12000) });
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
-    return pickOfficialImageFromDoc(doc, pageUrl);
+    const image = pickOfficialImageFromDoc(doc, pageUrl);
+    const publishedIso = extractPublishedIsoFromDoc(doc);
+    return { image, publishedIso };
   } catch {
-    return "";
+    return { image: "", publishedIso: "" };
   }
 }
 
-async function enrichCardsWithArticleImages(cards: FeedCardData[]): Promise<FeedCardData[]> {
-  return Promise.all(
-    cards.map(async (c) => {
-      if (c.imageUrl) return c;
-      const img = await fetchOgImageForPage(c.link);
-      return img ? { ...c, imageUrl: img } : c;
-    }),
-  );
+/** Imagem de apoio alinhada ao site quando feed/página não entregam mídia */
+function fallbackCardImage(siteLabel: string): string {
+  if (siteLabel.includes("Caminhada"))
+    return "https://static.wixstatic.com/media/e11735_e5149fc5e4d743c6a4f7613eb6017eb7~mv2.jpg/v1/crop/x_156,y_0,w_1728,h_1148/fill/w_800,h_450,al_c,q_80/cristo%20na%20cruz%203.jpg";
+  if (siteLabel.includes("Santa Rita"))
+    return "https://websitenoar.net/contents/384/slider/user_2478937.jpg";
+  return "";
+}
+
+const LAST_RESORT_CARD_IMAGE =
+  "https://static.wixstatic.com/media/e11735_e5149fc5e4d743c6a4f7613eb6017eb7~mv2.jpg/v1/crop/x_156,y_0,w_1728,h_1148/fill/w_800,h_450,al_c,q_80/cristo%20na%20cruz%203.jpg";
+
+function parseFlexibleDate(raw: string): Date | null {
+  if (!raw) return null;
+  const d1 = new Date(raw);
+  if (!Number.isNaN(d1.getTime())) return d1;
+  const norm = raw.trim().replace(/^(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})$/, "$1T$2");
+  const d2 = new Date(norm);
+  if (!Number.isNaN(d2.getTime())) return d2;
+  return null;
 }
 
 function formatDatePt(pubDate: string): string {
   if (!pubDate) return "";
-  const d = new Date(pubDate);
-  if (Number.isNaN(d.getTime())) return pubDate;
+  const d = parseFlexibleDate(pubDate);
+  if (!d) return pubDate.trim();
   return d.toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
@@ -171,6 +242,29 @@ function formatDatePt(pubDate: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function formatSyncDateLabel(): string {
+  return `Sincronizado em ${formatDatePt(new Date().toISOString())}`;
+}
+
+async function enrichCardsFromPages(cards: FeedCardData[]): Promise<FeedCardData[]> {
+  return Promise.all(
+    cards.map(async (c) => {
+      const meta = await fetchPageArticleMeta(c.link);
+      let imageUrl = "";
+      if (meta.image && !isLowValueImageUrl(meta.image)) imageUrl = meta.image;
+      if (!imageUrl && c.imageUrl && !isLowValueImageUrl(c.imageUrl)) imageUrl = c.imageUrl;
+      if (!imageUrl) imageUrl = fallbackCardImage(c.siteLabel);
+      if (!imageUrl) imageUrl = LAST_RESORT_CARD_IMAGE;
+
+      let dateLabel = (c.dateLabel ?? "").trim();
+      if (!dateLabel && meta.publishedIso) dateLabel = formatDatePt(meta.publishedIso);
+      if (!dateLabel) dateLabel = formatSyncDateLabel();
+
+      return { ...c, imageUrl, dateLabel };
+    }),
+  );
 }
 
 function shortTitle(title: string, max = 72): string {
@@ -182,6 +276,67 @@ function shortTitle(title: string, max = 72): string {
 async function fetchRssFirstItem(rssUrl: string): Promise<Rss2JsonItem | null> {
   const items = await fetchRssItems(rssUrl, 1);
   return items[0] ?? null;
+}
+
+/** Miniaturas oficiais listadas em saopaulo.cancaonova.com/noticias/ (article.type-noticias) */
+function parseCancaoNovaNoticiasArchive(html: string): { byLink: Map<string, string>; firstThumb: string } {
+  const byLink = new Map<string, string>();
+  let firstThumb = "";
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc.querySelectorAll("article.type-noticias").forEach((article) => {
+    const linkEl = article.querySelector("a.entry-link");
+    const href = (linkEl?.getAttribute("href") ?? "").replace(/\s+/g, "").trim();
+    if (!href.includes("saopaulo.cancaonova.com/noticias/")) return;
+    try {
+      const u = new URL(href);
+      const parts = u.pathname.replace(/\/$/, "").split("/").filter(Boolean);
+      if (parts.length < 2 || parts[0] !== "noticias") return;
+      if (parts[1] === "page") return;
+    } catch {
+      return;
+    }
+    const raw = (article.querySelector("img.wp-post-image")?.getAttribute("src") ?? "").replace(/\s+/g, "").trim();
+    if (!raw) return;
+    const full = raw.startsWith("http") ? raw : new URL(raw, "https://saopaulo.cancaonova.com").href;
+    if (!firstThumb) firstThumb = full;
+    const noSlash = href.replace(/\/$/, "");
+    const withSlash = href.endsWith("/") ? href : `${href}/`;
+    byLink.set(noSlash, full);
+    byLink.set(withSlash, full);
+  });
+  return { byLink, firstThumb };
+}
+
+async function fetchCancaoNovaArchiveImages(): Promise<{ byLink: Map<string, string>; firstThumb: string }> {
+  try {
+    const res = await fetch(PROXY(NOTICIAS_ARCHIVE_URL), { signal: AbortSignal.timeout(14000) });
+    const html = await res.text();
+    return parseCancaoNovaNoticiasArchive(html);
+  } catch {
+    return { byLink: new Map(), firstThumb: "" };
+  }
+}
+
+function thumbFromCnNoticiasArchive(
+  link: string,
+  archive: { byLink: Map<string, string>; firstThumb: string },
+): string {
+  if (!link) return archive.firstThumb || "";
+  const noSlash = link.replace(/\/$/, "");
+  const withSlash = link.endsWith("/") ? link : `${link}/`;
+  const hit =
+    archive.byLink.get(link) ||
+    archive.byLink.get(noSlash) ||
+    archive.byLink.get(withSlash) ||
+    Array.from(archive.byLink.entries()).find(([k]) => k.replace(/\/$/, "") === noSlash)?.[1];
+  if (hit) return hit;
+  try {
+    const path = new URL(link).pathname.replace(/\/$/, "") || "/";
+    if (path === "/noticias") return archive.firstThumb;
+  } catch {
+    /* ignore */
+  }
+  return "";
 }
 
 async function fetchRssItems(rssUrl: string, max: number): Promise<Rss2JsonItem[]> {
@@ -240,11 +395,12 @@ function pickHighlightTopicLines(cnItems: Rss2JsonItem[], mainLink: string, coun
 }
 
 async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCardData[] }> {
-  const [cnItems, cam, rita, yt] = await Promise.all([
+  const [cnItems, cam, rita, yt, cnArchive] = await Promise.all([
     fetchRssItems(FEED_CANCAO_NOVA, 14),
     fetchRssFirstItem(FEED_CAMINHADA),
     fetchRssFirstItem(FEED_SANTA_RITA),
     fetchRssFirstItem(FEED_YOUTUBE_PADRE_PH),
+    fetchCancaoNovaArchiveImages(),
   ]);
 
   const cn = cnItems[0] ?? null;
@@ -265,13 +421,26 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     fallbackLink: string,
     fallbackTitle: string,
   ) => {
-    const img = item ? pickItemImage(item) : "";
+    let img = "";
+    if (siteLabel === "Canção Nova SP") {
+      const l = item?.link || fallbackLink;
+      img = thumbFromCnNoticiasArchive(l, cnArchive);
+      if (!img) img = item ? pickItemImage(item) : "";
+    } else if (siteLabel === "Caminhada da Ressurreição") {
+      img = caminhadaPoster;
+    } else {
+      img = item ? pickItemImage(item) : "";
+    }
+    const dateLabel =
+      siteLabel === "Caminhada da Ressurreição"
+        ? CAMINHADA_CARD_EVENT_DATETIME
+        : formatDatePt(item?.pubDate || "");
     cards.push({
       siteLabel,
       title: shortTitle(item?.title?.trim() || fallbackTitle),
       link: item?.link || fallbackLink,
       imageUrl: img,
-      dateLabel: formatDatePt(item?.pubDate || ""),
+      dateLabel,
     });
   };
 
@@ -300,9 +469,17 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     "Canal Padre PH no YouTube",
   );
 
-  const cardsWithImages = await enrichCardsWithArticleImages(cards);
+  const cardsWithImages = await enrichCardsFromPages(cards);
+  const cardsFinal = cardsWithImages.map((c) => {
+    if (c.siteLabel === "Caminhada da Ressurreição") {
+      return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
+    }
+    if (!c.siteLabel.includes("Canção Nova SP")) return c;
+    const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
+    return fromArchive ? { ...c, imageUrl: fromArchive } : c;
+  });
 
-  return { highlight, cards: cardsWithImages };
+  return { highlight, cards: cardsFinal };
 }
 
 const NewsFeedStrict = () => {
@@ -382,15 +559,19 @@ const NewsFeedStrict = () => {
                 rel="noopener noreferrer"
                 className="nfs-card"
               >
-                <div className="nfs-card__media">
-                  {c.imageUrl ? (
-                    <img src={c.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-                  ) : null}
+                <div
+                  className={
+                    c.siteLabel === "Caminhada da Ressurreição"
+                      ? "nfs-card__media nfs-card__media--poster"
+                      : "nfs-card__media"
+                  }
+                >
+                  <img src={c.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
                 </div>
                 <div className="nfs-card__body">
                   <span className="nfs-card__badge">{c.siteLabel}</span>
                   <h3 className="nfs-card__title">{c.title}</h3>
-                  {c.dateLabel ? <p className="nfs-card__date">{c.dateLabel}</p> : null}
+                  <p className="nfs-card__date">{c.dateLabel}</p>
                 </div>
               </a>
             ))

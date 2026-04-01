@@ -215,6 +215,15 @@
   display: block;
 }
 
+/* Cartaz vertical da Caminhada — mostra o pôster inteiro na área 16:9 */
+.nfs-card__media--poster {
+  background: #fafafa;
+}
+
+.nfs-card__media--poster img {
+  object-fit: contain;
+}
+
 .nfs-card__body {
   flex: 1;
   display: flex;
@@ -249,9 +258,10 @@
 
 .nfs-card__date {
   margin: 0;
+  margin-top: 2px;
   font-size: 12px;
   color: #666;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 [data-theme="dark"] .nfs-card__date,
