@@ -547,76 +547,76 @@ const NewsFeedStrict = () => {
     <section className="nfs-section">
       <div className="container mx-auto px-4">
         <div className="nfs-grid">
-        <div className="nfs-highlight">
-          {!highlight ? (
-            <div className="nfs-loading">Carregando destaque…</div>
-          ) : (
-            <div className="nfs-highlight__stack">
-              <a
-                href={highlight.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nfs-highlight__link"
-              >
-                <span className="nfs-highlight__badge">{highlight.badge}</span>
-                <h2 className="nfs-highlight__title">{highlight.title}</h2>
-                <p className="nfs-highlight__desc" title={highlight.description}>
-                  {highlight.description}
-                </p>
-              </a>
-              <div className="nfs-highlight__topics">
-                {highlight.topicLines.map((t, i) => (
-                  <p key={`${t.link}-${i}`} className="nfs-highlight__topic">
-                    <span className="nfs-highlight__topic-dot" aria-hidden="true">
-                      &#8226;
-                    </span>
-                    <a
-                      href={t.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="nfs-highlight__topic-link"
-                      title={t.label}
-                    >
-                      {t.label}
-                    </a>
-                  </p>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="nfs-feed">
-          {error && <div className="nfs-error">{error}</div>}
-          {cards.length === 0 && !error ? (
-            <div className="nfs-loading">Carregando feed…</div>
-          ) : (
-            cards.map((c) => (
-              <a
-                key={`${c.siteLabel}-${c.link}`}
-                href={c.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="nfs-card"
-              >
-                <div
-                  className={
-                    c.siteLabel === "Caminhada da Ressurreição"
-                      ? "nfs-card__media nfs-card__media--poster"
-                      : "nfs-card__media"
-                  }
+          <div className="nfs-highlight">
+            {!highlight ? (
+              <div className="nfs-loading">Carregando destaque…</div>
+            ) : (
+              <div className="nfs-highlight__stack">
+                <a
+                  href={highlight.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nfs-highlight__link"
                 >
-                  <img src={c.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                  <span className="nfs-highlight__badge">{highlight.badge}</span>
+                  <h2 className="nfs-highlight__title">{highlight.title}</h2>
+                  <p className="nfs-highlight__desc" title={highlight.description}>
+                    {highlight.description}
+                  </p>
+                </a>
+                <div className="nfs-highlight__topics">
+                  {highlight.topicLines.map((t, i) => (
+                    <p key={`${t.link}-${i}`} className="nfs-highlight__topic">
+                      <span className="nfs-highlight__topic-dot" aria-hidden="true">
+                        &#8226;
+                      </span>
+                      <a
+                        href={t.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="nfs-highlight__topic-link"
+                        title={t.label}
+                      >
+                        {t.label}
+                      </a>
+                    </p>
+                  ))}
                 </div>
-                <div className="nfs-card__body">
-                  <span className="nfs-card__badge">{c.siteLabel}</span>
-                  <h3 className="nfs-card__title">{c.title}</h3>
-                  <p className="nfs-card__date">{c.dateLabel}</p>
-                </div>
-              </a>
-            ))
-          )}
-        </div>
+              </div>
+            )}
+          </div>
+
+          <div className="nfs-feed">
+            {error && <div className="nfs-error">{error}</div>}
+            {cards.length === 0 && !error ? (
+              <div className="nfs-loading">Carregando feed…</div>
+            ) : (
+              cards.map((c) => (
+                <a
+                  key={`${c.siteLabel}-${c.link}`}
+                  href={c.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="nfs-card"
+                >
+                  <div
+                    className={
+                      c.siteLabel === "Caminhada da Ressurreição"
+                        ? "nfs-card__media nfs-card__media--poster"
+                        : "nfs-card__media"
+                    }
+                  >
+                    <img src={c.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                  </div>
+                  <div className="nfs-card__body">
+                    <span className="nfs-card__badge">{c.siteLabel}</span>
+                    <h3 className="nfs-card__title">{c.title}</h3>
+                    <p className="nfs-card__date">{c.dateLabel}</p>
+                  </div>
+                </a>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </section>

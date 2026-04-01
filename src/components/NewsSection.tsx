@@ -130,20 +130,10 @@ function weatherLabelPt(code: number): string {
 }
 
 function getCurrentPosition(): Promise<{ lat: number; lon: number }> {
-  return new Promise((resolve, reject) => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      reject(new Error("Geolocalização indisponível"));
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lon: p.coords.longitude }),
-      () => reject(new Error("Permissão negada ou posição indisponível")),
-      {
-        enableHighAccuracy: true,
-        timeout: 16000,
-        maximumAge: 120000,
-      },
-    );
+  return new Promise((resolve) => {
+    // Paramos de pedir GPS automaticamente no carregamento para evitar bloqueios no PageSpeed
+    // e melhorar a experiência do usuário, priorizando a localização da rádio (SP).
+    resolve({ lat: SP_LAT, lon: SP_LON });
   });
 }
 

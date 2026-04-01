@@ -187,10 +187,10 @@ const BibliaWidget = () => {
             className="w-full bg-primary-foreground/15 border border-primary-foreground/30 text-primary-foreground text-xs px-3 py-2 rounded-lg outline-none disabled:opacity-40">
             {livro
               ? Array.from({ length: livro.c }, (_, i) => (
-                  <option key={i + 1} value={i + 1} className="text-foreground bg-card">
-                    Capítulo {i + 1}
-                  </option>
-                ))
+                <option key={i + 1} value={i + 1} className="text-foreground bg-card">
+                  Capítulo {i + 1}
+                </option>
+              ))
               : <option>Capítulo</option>}
           </select>
 

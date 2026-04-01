@@ -15,7 +15,7 @@ async function fetchNowPlaying(): Promise<NowPlaying> {
     // Tentamos direto, mas usamos proxy se falhar por CORS
     const url = NOWPLAYING_URL;
     let res = await fetch(url, { signal: AbortSignal.timeout(8000) }).catch(() => null);
-    
+
     let data;
     if (!res || !res.ok) {
       const pRes = await fetch(PROXY(url), { signal: AbortSignal.timeout(10000) });
