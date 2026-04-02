@@ -182,7 +182,7 @@ const BibliaWidget = () => {
           </div>
 
           {/* Seletor de capítulo */}
-          <select onChange={e => setCapIdx(parseInt(e.target.value))} value={capIdx}
+          <select aria-label="Selecionar Capítulo" onChange={e => setCapIdx(parseInt(e.target.value))} value={capIdx}
             disabled={!livro}
             className="w-full bg-primary-foreground/15 border border-primary-foreground/30 text-primary-foreground text-xs px-3 py-2 rounded-lg outline-none disabled:opacity-40">
             {livro
@@ -234,7 +234,7 @@ const BibliaWidget = () => {
                   {livro && <span className="text-xs font-normal opacity-70 ml-2">({livro.g})</span>}
                 </h3>
               </div>
-              <button onClick={() => setModalOpen(false)}
+              <button aria-label="Fechar" onClick={() => setModalOpen(false)}
                 className="p-1.5 rounded-lg bg-primary-foreground/15 hover:bg-primary-foreground/30 transition-colors">
                 <X className="h-4 w-4" />
               </button>

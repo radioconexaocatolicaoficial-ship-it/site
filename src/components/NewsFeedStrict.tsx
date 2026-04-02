@@ -591,7 +591,7 @@ const NewsFeedStrict = () => {
             {cards.length === 0 && !error ? (
               <div className="nfs-loading">Carregando feed…</div>
             ) : (
-              cards.map((c) => (
+              cards.map((c, i) => (
                 <a
                   key={`${c.siteLabel}-${c.link}`}
                   href={c.link}
@@ -606,7 +606,15 @@ const NewsFeedStrict = () => {
                         : "nfs-card__media"
                     }
                   >
-                    <img src={c.imageUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                    <img 
+                      src={c.imageUrl} 
+                      alt="" 
+                      loading={i < 2 ? "eager" : "lazy"} 
+                      fetchPriority={i < 2 ? "high" : "auto"}
+                      width="800" 
+                      height="450"
+                      referrerPolicy="no-referrer" 
+                    />
                   </div>
                   <div className="nfs-card__body">
                     <span className="nfs-card__badge">{c.siteLabel}</span>

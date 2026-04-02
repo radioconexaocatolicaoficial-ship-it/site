@@ -116,7 +116,7 @@ const FixedPlayer = () => {
 
         {/* Volume — ícone no mobile, slider no desktop */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={toggleMute} className="text-white/60 hover:text-white transition-colors">
+          <button onClick={toggleMute} aria-label={muted ? "Ativar som" : "Desativar som"} className="text-white/60 hover:text-white transition-colors">
             {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
           <input
