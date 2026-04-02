@@ -600,8 +600,6 @@ const HeroNews = () => {
     [featured?.link, ...gridCards.map((c) => c.link)].filter((x): x is string => Boolean(x)),
   );
   const topics = ranked.filter((it) => !usedLinks.has(it.link)).slice(0, 3);
-  
-  const isVideoPeriod = new Date() < new Date('2026-04-06T00:00:00-03:00');
 
   return (
     <div className="w-full bg-background border-b border-border">
@@ -642,26 +640,11 @@ const HeroNews = () => {
             )}
           </div>
 
-          {isVideoPeriod ? (
-            <div className="w-full flex flex-col justify-center min-w-0">
-              <div className="w-full aspect-video rounded-lg overflow-hidden border border-border shadow-sm bg-black">
-                <iframe
-                  className="w-full h-full"
-                  src="https://www.youtube.com/embed/euw51CcF2WY?autoplay=0"
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                  style={{ border: 0 }}
-                ></iframe>
-              </div>
-            </div>
-          ) : (
-            <div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3 min-w-0 md:h-full md:min-h-0 content-start"
-              aria-label="Destaques: Canção Nova SP, Caminhada, Santa Rita e Agenda"
-            >
-              {loading || gridCards.length === 0
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3 min-w-0 md:h-full md:min-h-0 content-start"
+            aria-label="Destaques: Canção Nova SP, Caminhada, Santa Rita e Agenda"
+          >
+            {loading || gridCards.length === 0
               ? [0, 1, 2, 3].map(i => (
                   <div key={i} className="animate-pulse flex flex-col gap-1.5">
                     <div className="aspect-video bg-muted rounded-lg" />
@@ -709,8 +692,7 @@ const HeroNews = () => {
                     </div>
                   </a>
                 ))}
-            </div>
-          )}
+          </div>
         </div>
 
         {!loading && topics.length > 0 && (

@@ -69,10 +69,10 @@
 }
 
 .nfs-highlight__title {
-  margin: 0 0 24px 0;
-  font-size: clamp(24px, 8vw, 50px);
+  margin: 0 0 16px 0;
+  font-size: clamp(22px, 5vw, 36px);
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.18;
   color: #004a99;
 }
 
@@ -83,19 +83,19 @@
 
 .nfs-highlight__desc {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   text-align: justify !important;
   hyphens: auto;
   word-break: break-word;
   overflow-wrap: anywhere;
   color: #444;
-  line-height: 1.6;
+  line-height: 1.55;
   width: 100% !important;
   max-width: 100% !important;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 6;
-  line-clamp: 6;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
 }
 
@@ -107,11 +107,10 @@
 @media (max-width: 1023px) {
   .nfs-highlight__desc {
     display: -webkit-box;
-    -webkit-line-clamp: 8;
-    line-clamp: 8;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    max-height: 12.8em;
   }
 }
 
@@ -334,14 +333,14 @@
   }
 
   .nfs-highlight__title {
-    font-size: clamp(26px, 10vw, 40px);
-    margin-bottom: 16px;
+    font-size: clamp(22px, 8vw, 32px);
+    margin-bottom: 12px;
     width: 100% !important;
     max-width: 100% !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
     box-sizing: border-box !important;
-    line-height: 1.1;
+    line-height: 1.15;
     display: block !important;
   }
 

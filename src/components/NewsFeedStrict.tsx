@@ -587,43 +587,66 @@ const NewsFeedStrict = () => {
           </div>
 
           <div className="nfs-feed">
-            {error && <div className="nfs-error">{error}</div>}
-            {cards.length === 0 && !error ? (
-              <div className="nfs-loading">Carregando feed…</div>
-            ) : (
-              cards.map((c, i) => (
-                <a
-                  key={`${c.siteLabel}-${c.link}`}
-                  href={c.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nfs-card"
-                >
-                  <div
-                    className={
-                      c.siteLabel === "Caminhada da Ressurreição"
-                        ? "nfs-card__media nfs-card__media--poster"
-                        : "nfs-card__media"
-                    }
-                  >
-                    <img 
-                      src={c.imageUrl} 
-                      alt="" 
-                      loading={i < 2 ? "eager" : "lazy"} 
-                      fetchPriority={i < 2 ? "high" : "auto"}
-                      width="800" 
-                      height="450"
-                      referrerPolicy="no-referrer" 
-                    />
+            {(() => {
+              const isVideoPeriod = new Date() < new Date('2026-04-06T00:00:00-03:00');
+              if (isVideoPeriod) {
+                return (
+                  <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+                    <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%', borderRadius: '0.75rem', overflow: 'hidden', border: '1px solid hsl(var(--border))', boxShadow: '0 4px 16px rgba(0,0,0,0.10)', background: '#000' }}>
+                      <iframe
+                        src="https://www.youtube.com/embed/euw51CcF2WY?autoplay=0&rel=0&modestbranding=1&hd=1&vq=hd720"
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }}
+                      ></iframe>
+                    </div>
                   </div>
-                  <div className="nfs-card__body">
-                    <span className="nfs-card__badge">{c.siteLabel}</span>
-                    <h3 className="nfs-card__title">{c.title}</h3>
-                    <p className="nfs-card__date">{c.dateLabel}</p>
-                  </div>
-                </a>
-              ))
-            )}
+                );
+              }
+              return (
+                <>
+                  {error && <div className="nfs-error">{error}</div>}
+                  {cards.length === 0 && !error ? (
+                    <div className="nfs-loading">Carregando feed…</div>
+                  ) : (
+                    cards.map((c, i) => (
+                      <a
+                        key={`${c.siteLabel}-${c.link}`}
+                        href={c.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="nfs-card"
+                      >
+                        <div
+                          className={
+                            c.siteLabel === "Caminhada da Ressurreição"
+                              ? "nfs-card__media nfs-card__media--poster"
+                              : "nfs-card__media"
+                          }
+                        >
+                          <img 
+                            src={c.imageUrl} 
+                            alt="" 
+                            loading={i < 2 ? "eager" : "lazy"} 
+                            fetchPriority={i < 2 ? "high" : "auto"}
+                            width="800" 
+                            height="450"
+                            referrerPolicy="no-referrer" 
+                          />
+                        </div>
+                        <div className="nfs-card__body">
+                          <span className="nfs-card__badge">{c.siteLabel}</span>
+                          <h3 className="nfs-card__title">{c.title}</h3>
+                          <p className="nfs-card__date">{c.dateLabel}</p>
+                        </div>
+                      </a>
+                    ))
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
