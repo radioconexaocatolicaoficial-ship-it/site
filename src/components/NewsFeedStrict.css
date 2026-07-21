@@ -73,10 +73,10 @@
 }
 
 .nfs-highlight__title {
-  margin: 0 0 16px 0;
-  font-size: clamp(24px, 5vw, 42px);
+  margin: 0 0 18px 0;
+  font-size: clamp(28px, 5.5vw, 48px);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   color: #004a99;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   letter-spacing: -0.02em;
@@ -90,9 +90,9 @@
 }
 
 .nfs-highlight__intro {
-  margin: 0 0 1.25rem 0;
-  font-size: 14px;
-  line-height: 1.65;
+  margin: 0 0 1rem 0;
+  font-size: 13px;
+  line-height: 1.55;
   color: #444;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 400;
@@ -128,13 +128,13 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.65rem;
   width: 100%;
 }
 
 .nfs-highlight__info-item {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.65rem;
   align-items: flex-start;
   width: 100%;
 }
@@ -142,8 +142,8 @@
 .nfs-highlight__info-dot {
   flex-shrink: 0;
   color: #004a99;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 13px;
+  line-height: 1.55;
   margin-top: 0.1rem;
 }
 
@@ -154,8 +154,8 @@
 
 .nfs-highlight__info-text {
   flex: 1;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12.5px;
+  line-height: 1.55;
   color: #444;
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 400;
@@ -235,7 +235,7 @@
 
 .nfs-highlight__button {
   display: inline-block;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   padding: 0.875rem 2rem;
   background: #004a99;
   color: #fff;
@@ -465,14 +465,14 @@
   }
 
   .nfs-highlight__title {
-    font-size: clamp(26px, 8vw, 36px);
-    margin-bottom: 14px;
+    font-size: clamp(28px, 8vw, 38px);
+    margin-bottom: 16px;
     width: 100% !important;
     max-width: 100% !important;
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
     box-sizing: border-box !important;
-    line-height: 1.2;
+    line-height: 1.15;
     display: block !important;
     letter-spacing: -0.03em;
   }
@@ -480,5 +480,10 @@
   .nfs-highlight__badge {
     margin-bottom: 14px;
     font-size: 10px;
+  }
+  
+  .nfs-highlight__intro {
+    font-size: 13px;
+    margin-bottom: 1rem;
   }
 }
