@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import caminhadaPoster from "@/assets/caminhada-ressurreicao-2026-poster.png";
-import bannerDiante from "@/assets/banner-diante-do-rei.jpg";
-import logoImage from "@/assets/logo.png";
 import "./NewsFeedStrict.css";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
@@ -422,12 +420,9 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     item: Rss2JsonItem | null,
     fallbackLink: string,
     fallbackTitle: string,
-    staticImage?: string,
   ) => {
     let img = "";
-    if (staticImage) {
-      img = staticImage;
-    } else if (siteLabel === "Canção Nova SP") {
+    if (siteLabel === "Canção Nova SP") {
       const l = item?.link || fallbackLink;
       img = thumbFromCnNoticiasArchive(l, cnArchive);
       if (!img) img = item ? pickItemImage(item) : "";
@@ -457,44 +452,31 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
   );
   pushCard(
     "Abraça São Paulo 2026",
-    null,
+    cam,
     CAMINHADA_SITE,
     "Abraça São Paulo 2026 — Inscreva-se",
-    caminhadaPoster,
   );
   pushCard(
     "Rádio Conexão Católica",
-    null,
+    radioCx,
     RADIO_CONEXAO_CHANNEL_URL,
     "Rádio Conexão Católica — Programação e conteúdos",
-    logoImage,
   );
   pushCard(
     "Canção Nova",
-    null,
+    yt,
     "https://www.cancaonova.com/",
     "Canção Nova — Portal de Notícias",
-    bannerDiante,
   );
 
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
-    // Preserva imagens estáticas já definidas
-    if (c.siteLabel.includes("Abraça")) {
+    if (c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição") {
       return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
     }
-    if (c.siteLabel === "Rádio Conexão Católica") {
-      return { ...c, imageUrl: logoImage };
-    }
-    if (c.siteLabel === "Canção Nova" && !c.siteLabel.includes("SP")) {
-      return { ...c, imageUrl: bannerDiante };
-    }
-    // Para Canção Nova SP, tenta pegar do archive
-    if (c.siteLabel.includes("Canção Nova SP")) {
-      const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
-      return fromArchive ? { ...c, imageUrl: fromArchive } : c;
-    }
-    return c;
+    if (!c.siteLabel.includes("Canção Nova SP")) return c;
+    const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
+    return fromArchive ? { ...c, imageUrl: fromArchive } : c;
   });
 
   const final = { highlight, cards: cardsFinal };
