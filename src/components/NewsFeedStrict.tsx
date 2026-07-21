@@ -15,9 +15,9 @@ const FEED_YOUTUBE_PADRE_PH =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
 
 const CAMINHADA_SITE = "https://www.sympla.com.br/evento/cancao-nova-abraca-sao-paulo/3369168?referrer=www.google.com";
-/** Data e horário do evento (cartaz oficial 2026) */
+/** Data e horário do evento Abraça São Paulo 2026 */
 const CAMINHADA_CARD_EVENT_DATETIME =
-  "4 de abril de 2026 · 22h00 — Basílica N. S. da Penha · Rua Santo Afonso, 199, Penha";
+  "16 de agosto de 2026 · 08h às 21h — Ginásio do Ibirapuera · São Paulo";
 const HIGHLIGHT_CAMINHADA_TITLE =
   'Canção Nova São Paulo organiza o Abraça São Paulo 2026 no Ibirapuera';
 const HIGHLIGHT_CAMINHADA_BADGE = "ABRAÇA SÃO PAULO 2026";
@@ -213,7 +213,7 @@ async function fetchPageArticleMeta(pageUrl: string): Promise<{ image: string; p
 
 /** Imagem de apoio alinhada ao site quando feed/página não entregam mídia */
 function fallbackCardImage(siteLabel: string): string {
-  if (siteLabel.includes("Caminhada"))
+  if (siteLabel.includes("Abraça") || siteLabel.includes("Caminhada"))
     return "https://static.wixstatic.com/media/e11735_e5149fc5e4d743c6a4f7613eb6017eb7~mv2.jpg/v1/crop/x_156,y_0,w_1728,h_1148/fill/w_800,h_450,al_c,q_80/cristo%20na%20cruz%203.jpg";
   return "";
 }
@@ -426,13 +426,13 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
       const l = item?.link || fallbackLink;
       img = thumbFromCnNoticiasArchive(l, cnArchive);
       if (!img) img = item ? pickItemImage(item) : "";
-    } else if (siteLabel === "Caminhada da Ressurreição") {
+    } else if (siteLabel.includes("Abraça") || siteLabel === "Caminhada da Ressurreição") {
       img = caminhadaPoster;
     } else {
       img = item ? pickItemImage(item) : "";
     }
     const dateLabel =
-      siteLabel === "Caminhada da Ressurreição"
+      siteLabel.includes("Abraça") || siteLabel === "Caminhada da Ressurreição"
         ? CAMINHADA_CARD_EVENT_DATETIME
         : formatDatePt(item?.pubDate || "");
     cards.push({
@@ -448,30 +448,30 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     "Canção Nova SP",
     cn,
     "https://saopaulo.cancaonova.com/noticias/",
-    "Últimas notícias — São Paulo",
+    "Últimas notícias da Canção Nova São Paulo",
   );
   pushCard(
-    "Caminhada da Ressurreição",
+    "Abraça São Paulo 2026",
     cam,
-    "https://www.caminhadadaressurreicao.com/",
-    "Caminhada da Ressurreição",
+    CAMINHADA_SITE,
+    "Abraça São Paulo 2026 — Inscreva-se",
   );
   pushCard(
     "Rádio Conexão Católica",
     radioCx,
     RADIO_CONEXAO_CHANNEL_URL,
-    "Rádio Conexão Católica — ao vivo e conteúdos",
+    "Rádio Conexão Católica — Programação e conteúdos",
   );
   pushCard(
-    "YouTube · Padre PH",
+    "Canção Nova",
     yt,
-    "https://www.youtube.com/c/PadrePH",
-    "Canal Padre PH no YouTube",
+    "https://www.cancaonova.com/",
+    "Canção Nova — Portal de Notícias",
   );
 
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
-    if (c.siteLabel === "Caminhada da Ressurreição") {
+    if (c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição") {
       return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
     }
     if (!c.siteLabel.includes("Canção Nova SP")) return c;
@@ -623,7 +623,7 @@ const NewsFeedStrict = () => {
                       >
                         <div
                           className={
-                            c.siteLabel === "Caminhada da Ressurreição"
+                            c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição"
                               ? "nfs-card__media nfs-card__media--poster"
                               : "nfs-card__media"
                           }
