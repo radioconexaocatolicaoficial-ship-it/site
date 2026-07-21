@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Cross, Headphones } from "lucide-react";
 
-const TARGET = new Date("2026-04-04T22:00:00-03:00").getTime();
+const TARGET = new Date("2026-08-16T08:00:00-03:00").getTime();
 const STREAM_URL = "https://hts04.brascast.com:11160/live";
 
 const CountdownCard = () => {
@@ -45,9 +45,9 @@ const CountdownCard = () => {
         <Cross className="h-24 w-24" />
       </div>
       <div className="relative z-10">
-        <p className="text-xs font-medium tracking-widest uppercase opacity-80">Vem aí a 42ª</p>
-        <h2 className="text-xl md:text-2xl font-extrabold mt-1 leading-tight">CAMINHADA DA<br />RESSURREIÇÃO</h2>
-        <p className="text-sm mt-2 italic opacity-90">"Eu vi o Senhor" (Jo 20, 18)</p>
+        <p className="text-xs font-medium tracking-widest uppercase opacity-80">Vem aí a 19ª edição</p>
+        <h2 className="text-xl md:text-2xl font-extrabold mt-1 leading-tight">ABRAÇA SÃO PAULO<br />2026</h2>
+        <p className="text-sm mt-2 italic opacity-90">"A Fé que Transforma"</p>
       </div>
 
       <div className="relative z-10 flex gap-2 md:gap-3 my-4 md:my-6">
@@ -60,10 +60,10 @@ const CountdownCard = () => {
       </div>
 
       <div className="relative z-10 text-xs space-y-1.5 opacity-90">
-        <p className="font-semibold">04 de Abril de 2026</p>
-        <p>22h00 — Palco Esquenta (Basílica da Penha)</p>
-        <p>00h00 — Início rumo a São Miguel Paulista</p>
-        <a href="https://www.caminhadadaressurreicao.com/" target="_blank" rel="noopener noreferrer"
+        <p className="font-semibold">16 de Agosto de 2026</p>
+        <p>08h00 às 21h00 — Ginásio do Ibirapuera</p>
+        <p>R. Manuel da Nóbrega, 1361 - Ibirapuera, São Paulo</p>
+        <a href="https://www.sympla.com.br/evento/cancao-nova-abraca-sao-paulo/3369168?referrer=www.google.com&referrer=www.google.com" target="_blank" rel="noopener noreferrer"
           className="inline-block mt-3 px-4 py-2 rounded-full bg-accent text-accent-foreground font-semibold text-xs hover:brightness-110 transition-all">
           Saiba Mais
         </a>
