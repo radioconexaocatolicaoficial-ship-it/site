@@ -127,13 +127,24 @@ function isLowValueImageUrl(u: string): boolean {
 
 function pickOfficialImageFromDoc(doc: Document, pageUrl: string): string {
   const norm = (raw: string) => {
-    const n = normalizePageImageUrl(raw.replace(/\s+/g, "").trim(), pageUrl);
+    let n = normalizePageImageUrl(raw.replace(/\s+/g, "").trim(), pageUrl);
+    // Remove parâmetros de redimensionamento para forçar imagem original
+    if (n && pageUrl.includes("saopaulo.cancaonova.com")) {
+      n = n
+        .replace(/-\d+x\d+\./g, '.') // Remove -300x200.jpg
+        .replace(/\?resize=\d+%2C\d+/g, '') // Remove ?resize=300%2C200
+        .replace(/\?w=\d+/g, '') // Remove ?w=300
+        .replace(/\?h=\d+/g, '') // Remove ?h=200
+        .replace(/&.*$/g, ''); // Remove outros parâmetros
+    }
     return isLowValueImageUrl(n) ? "" : n;
   };
   const meta = (sel: string, attr: string) => {
     const v = doc.querySelector(sel)?.getAttribute(attr)?.trim();
     return v ? norm(v) : "";
   };
+  
+  // Prioriza og:image que geralmente é a melhor qualidade
   let u = meta('meta[property="og:image"]', "content");
   if (u) return u;
   u = meta('meta[property="og:image:secure_url"]', "content");
@@ -144,13 +155,31 @@ function pickOfficialImageFromDoc(doc: Document, pageUrl: string): string {
   u = u ? norm(u) : "";
   if (u) return u;
 
+  // Busca imagem no artigo, priorizando as maiores
   const wp = doc.querySelector(
     "img.wp-post-image, img[class*='wp-image'], .entry-content img, .post-content img, article img[src*='.jpg'], article img[src*='.png'], article img[src*='.webp']",
   ) as HTMLImageElement | null;
-  const src = wp?.getAttribute("src") || wp?.getAttribute("data-src") || wp?.currentSrc;
-  if (src) {
-    u = norm(src);
-    if (u) return u;
+  
+  if (wp) {
+    // Tenta pegar a maior resolução disponível no srcset
+    const srcset = wp.getAttribute("srcset");
+    if (srcset) {
+      const sources = srcset.split(',').map(s => s.trim());
+      const largest = sources[sources.length - 1]; // Última é geralmente a maior
+      if (largest) {
+        const match = largest.match(/^(\S+)/);
+        if (match) {
+          u = norm(match[1]);
+          if (u) return u;
+        }
+      }
+    }
+    
+    const src = wp.getAttribute("src") || wp.getAttribute("data-src") || wp.currentSrc;
+    if (src) {
+      u = norm(src);
+      if (u) return u;
+    }
   }
 
   const block = doc.querySelector(".entry-content, .post-content, article, main")?.innerHTML ?? "";
@@ -206,7 +235,19 @@ async function fetchPageArticleMeta(pageUrl: string): Promise<{ image: string; p
     const res = await fetch(PROXY(pageUrl), { signal: AbortSignal.timeout(12000) });
     const html = await res.text();
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const image = pickOfficialImageFromDoc(doc, pageUrl);
+    let image = pickOfficialImageFromDoc(doc, pageUrl);
+    
+    // Para Canção Nova, tenta melhorar a qualidade da imagem removendo parâmetros de redimensionamento
+    if (image && pageUrl.includes("saopaulo.cancaonova.com")) {
+      // Remove parâmetros de tamanho pequeno e força imagem maior
+      image = image
+        .replace(/-\d+x\d+\./g, '.') // Remove -300x200.jpg etc
+        .replace(/\?resize=\d+%2C\d+/g, '') // Remove ?resize=300%2C200
+        .replace(/\?w=\d+/g, '') // Remove ?w=300
+        .replace(/\?h=\d+/g, '') // Remove ?h=200
+        .replace(/&.*$/g, ''); // Remove outros parâmetros
+    }
+    
     const publishedIso = extractPublishedIsoFromDoc(doc);
     return { image, publishedIso };
   } catch {
@@ -298,8 +339,34 @@ function parseCancaoNovaNoticiasArchive(html: string): { byLink: Map<string, str
     } catch {
       return;
     }
-    const raw = (article.querySelector("img.wp-post-image")?.getAttribute("src") ?? "").replace(/\s+/g, "").trim();
+    const imgEl = article.querySelector("img.wp-post-image") as HTMLImageElement;
+    let raw = (imgEl?.getAttribute("src") ?? "").replace(/\s+/g, "").trim();
+    
+    // Tenta pegar imagem em resolução maior
+    const dataSrc = imgEl?.getAttribute("data-src") ?? "";
+    const srcset = imgEl?.getAttribute("srcset") ?? "";
+    
+    // Se tem srcset, pega a maior resolução disponível
+    if (srcset) {
+      const sources = srcset.split(',').map(s => s.trim());
+      const largest = sources[sources.length - 1]; // Última é geralmente a maior
+      if (largest) {
+        const match = largest.match(/^(\S+)/);
+        if (match) raw = match[1];
+      }
+    } else if (dataSrc) {
+      raw = dataSrc;
+    }
+    
     if (!raw) return;
+    
+    // Remove parâmetros de redimensionamento para forçar imagem original
+    raw = raw
+      .replace(/-\d+x\d+\./g, '.') // Remove -300x200.jpg
+      .replace(/\?resize=\d+%2C\d+/g, '') // Remove ?resize=300%2C200
+      .replace(/\?w=\d+/g, '') // Remove ?w=300
+      .replace(/\?h=\d+/g, ''); // Remove ?h=200
+    
     const full = raw.startsWith("http") ? raw : new URL(raw, "https://saopaulo.cancaonova.com").href;
     if (!firstThumb) firstThumb = full;
     const noSlash = href.replace(/\/$/, "");
