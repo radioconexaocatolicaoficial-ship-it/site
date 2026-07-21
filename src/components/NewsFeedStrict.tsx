@@ -6,13 +6,15 @@ const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 
 const FEED_CANCAO_NOVA = "https://saopaulo.cancaonova.com/noticias/feed/";
 const NOTICIAS_ARCHIVE_URL = "https://saopaulo.cancaonova.com/noticias/";
-const FEED_CAMINHADA = "https://www.caminhadadaressurreicao.com/blog-feed.xml";
+const FEED_ABRACA_SP = "https://saopaulo.cancaonova.com/noticias/feed/"; // Feed da Canção Nova SP para notícias do evento
 /** Canal: youtube.com/@RADIOCONEXAOCATOLICA-p1l */
 const RADIO_CONEXAO_CHANNEL_URL = "https://www.youtube.com/@RADIOCONEXAOCATOLICA-p1l";
 const FEED_RADIO_CONEXAO_YT =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UCi33qNAezaFd0-TIC211CHA";
-const FEED_YOUTUBE_PADRE_PH =
-  "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
+const FEED_CANCAO_NOVA_NACIONAL =
+  "https://noticias.cancaonova.com/feed/";
+const FEED_VATICANO =
+  "https://www.vaticannews.va/pt.rss.xml";
 
 const CAMINHADA_SITE = "https://www.sympla.com.br/evento/cancao-nova-abraca-sao-paulo/3369168?referrer=www.google.com";
 /** Data e horário do evento Abraça São Paulo 2026 */
@@ -395,15 +397,17 @@ function pickHighlightTopicLines(cnItems: Rss2JsonItem[], mainLink: string, coun
 }
 
 async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCardData[] }> {
-  const [cnItems, cam, radioCx, yt, cnArchive] = await Promise.all([
+  const [cnItems, abracaItems, radioCx, cnNacional, cnArchive] = await Promise.all([
     fetchRssItems(FEED_CANCAO_NOVA, 14),
-    fetchRssFirstItem(FEED_CAMINHADA),
+    fetchRssItems(FEED_ABRACA_SP, 5),
     fetchRssFirstItem(FEED_RADIO_CONEXAO_YT),
-    fetchRssFirstItem(FEED_YOUTUBE_PADRE_PH),
+    fetchRssItems(FEED_CANCAO_NOVA_NACIONAL, 5),
     fetchCancaoNovaArchiveImages(),
   ]);
 
   const cn = cnItems[0] ?? null;
+  const abraca = abracaItems[0] ?? null;
+  const cnNac = cnNacional[0] ?? null;
 
   const highlight: HighlightData = {
     badge: HIGHLIGHT_CAMINHADA_BADGE,
@@ -422,10 +426,13 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     fallbackTitle: string,
   ) => {
     let img = "";
-    if (siteLabel === "Canção Nova SP") {
+    if (siteLabel === "Canção Nova SP" || siteLabel === "Abraça São Paulo 2026") {
       const l = item?.link || fallbackLink;
       img = thumbFromCnNoticiasArchive(l, cnArchive);
       if (!img) img = item ? pickItemImage(item) : "";
+      if (!img && siteLabel === "Abraça São Paulo 2026") {
+        img = caminhadaPoster;
+      }
     } else if (siteLabel.includes("Abraça") || siteLabel === "Caminhada da Ressurreição") {
       img = caminhadaPoster;
     } else {
@@ -452,7 +459,7 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
   );
   pushCard(
     "Abraça São Paulo 2026",
-    cam,
+    abraca,
     CAMINHADA_SITE,
     "Abraça São Paulo 2026 — Inscreva-se",
   );
@@ -460,23 +467,29 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     "Rádio Conexão Católica",
     radioCx,
     RADIO_CONEXAO_CHANNEL_URL,
-    "Rádio Conexão Católica — Programação e conteúdos",
+    "Rádio Conexão Católica — Últimos vídeos",
   );
   pushCard(
-    "Canção Nova",
-    yt,
-    "https://www.cancaonova.com/",
-    "Canção Nova — Portal de Notícias",
+    "Canção Nova Brasil",
+    cnNac,
+    "https://noticias.cancaonova.com/",
+    "Notícias Canção Nova Brasil",
   );
 
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
     if (c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição") {
-      return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
+      // Se não tem imagem do feed, usa o poster
+      if (!c.imageUrl || isLowValueImageUrl(c.imageUrl)) {
+        return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
+      }
+      return { ...c, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
     }
-    if (!c.siteLabel.includes("Canção Nova SP")) return c;
-    const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
-    return fromArchive ? { ...c, imageUrl: fromArchive } : c;
+    if (c.siteLabel.includes("Canção Nova SP")) {
+      const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
+      return fromArchive ? { ...c, imageUrl: fromArchive } : c;
+    }
+    return c;
   });
 
   const final = { highlight, cards: cardsFinal };
