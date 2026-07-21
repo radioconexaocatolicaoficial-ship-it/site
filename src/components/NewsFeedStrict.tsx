@@ -24,7 +24,7 @@ const HIGHLIGHT_CAMINHADA_BADGE = "ABRAÇA SÃO PAULO 2026";
 
 /** Texto integral no DOM; o CSS limita linhas visíveis */
 const CAMINHADA_HIGHLIGHT_DESCRIPTION =
-  'Com o tema "A Fé que Transforma", a 19ª edição contará com missas, pregações, shows, adoração e confissões. Data: Sábado, 16 de agosto de 2026. Horário: Das 08h às 21h. Local: Ginásio do Ibirapuera (R. Manuel da Nóbrega, 1361 - Ibirapuera, São Paulo). Ingressos: A entrada é gratuita, mas exige inscrição prévia (vagas limitadas). Doação: Solicita-se a contribuição de 1 kg de alimento não perecível na entrada.';
+  'Com o tema "A Fé que Transforma", a 19ª edição contará com missas, pregações, shows, adoração e confissões. Data: Sábado, 16 de agosto de 2026, das 08h às 21h. Local: Ginásio do Ibirapuera (R. Manuel da Nóbrega, 1361 - Ibirapuera, SP). Entrada gratuita com inscrição prévia (vagas limitadas) + 1kg de alimento não perecível. Retirada de camisetas: no dia do evento (7h) ou antecipadamente na Catedral Maronita (R. Tamandaré, 355, Liberdade) ou Loja Canção Nova (R. Domingos de Moraes, 348, perto metrô Ana Rosa). Fique atento às redes sociais para mais informações!';
 
 const REFRESH_MS = 15 * 60 * 1000;
 
