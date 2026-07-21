@@ -3,7 +3,7 @@ import heroBgMobile from "@/assets/Banner-topo-mobile.jpg";
 
 const HeroSection = () => {
   return (
-    <section id="inicio" className="relative w-full overflow-hidden">
+    <section id="inicio" className="relative w-full overflow-hidden -mt-3 md:mt-0 -mb-4 md:mb-0">
       {/* Banner para Desktop */}
       <img 
         src={heroBg} 

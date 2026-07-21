@@ -65,7 +65,7 @@ const Header = () => {
           scrolled ? "fixed top-0" : "relative"
         }`}
       >
-        <div className="container mx-auto flex items-center justify-between px-4 py-2 md:py-3">
+        <div className="container mx-auto flex items-center justify-between px-4 py-1 md:py-3">
           <Link to="/" className="flex-shrink-0">
             <img src={logo} alt="Rádio Conexão Católica" className="h-9 md:h-12 w-auto" fetchPriority="high" />
           </Link>

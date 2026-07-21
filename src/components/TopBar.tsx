@@ -29,7 +29,7 @@ const socials = [
 ];
 
 const TopBar = () => (
-  <div className="bg-primary text-primary-foreground py-2 text-sm">
+  <div className="bg-primary text-primary-foreground py-1.5 md:py-2 text-sm">
     <div className="container mx-auto flex items-center justify-between px-4">
       {/* WhatsApp */}
       <a
