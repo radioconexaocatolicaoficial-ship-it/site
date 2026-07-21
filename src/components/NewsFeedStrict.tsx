@@ -19,7 +19,7 @@ const CAMINHADA_SITE = "https://www.sympla.com.br/evento/cancao-nova-abraca-sao-
 const CAMINHADA_CARD_EVENT_DATETIME =
   "4 de abril de 2026 · 22h00 — Basílica N. S. da Penha · Rua Santo Afonso, 199, Penha";
 const HIGHLIGHT_CAMINHADA_TITLE =
-  'Canção Nova São Paulo organiza o Abraça São Paulo que é o maior evento da comunidade católica na capital paulista';
+  'Canção Nova São Paulo organiza o Abraça São Paulo 2026 no Ibirapuera';
 const HIGHLIGHT_CAMINHADA_BADGE = "ABRAÇA SÃO PAULO 2026";
 
 /** Texto integral no DOM; o CSS limita linhas visíveis */
