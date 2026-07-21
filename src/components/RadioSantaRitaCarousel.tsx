@@ -43,15 +43,15 @@ const FALLBACK: RadioItem[] = [
   },
   {
     img: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&h=450&fit=crop",
-    title: "Esportes: Acompanhe as principais notícias",
-    desc: "Fique por dentro dos principais acontecimentos do mundo esportivo: futebol, basquete, vôlei e muito mais.",
+    title: "Esportes: Acompanhe as principais notícias do Brasil",
+    desc: "Fique por dentro dos principais acontecimentos do mundo esportivo: futebol, basquete, vôlei, Fórmula 1 e muito mais.",
     link: "https://www.espn.com.br/",
     category: "Esportes"
   },
   {
     img: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&h=450&fit=crop",
-    title: "Futebol: Resultados e classificação",
-    desc: "Confira os últimos jogos do Campeonato Brasileiro, Libertadores e principais competições nacionais e internacionais.",
+    title: "Futebol: Brasileirão, Libertadores e Champions",
+    desc: "Confira os últimos jogos do Campeonato Brasileiro, Libertadores, Champions League e principais competições nacionais e internacionais.",
     link: "https://www.espn.com.br/futebol/",
     category: "Esportes"
   },
@@ -123,23 +123,11 @@ async function fetchSportsNews(): Promise<RadioItem[]> {
 
 const VISIBLE = 6; // 3 colunas x 2 linhas = 6 cards
 const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutos
-const VERSION = "v2"; // Versão para invalidar cache antigo
+const VERSION = "v3"; // Versão para invalidar cache antigo
 
 const RadioSantaRitaCarousel = () => {
   const [index, setIndex] = useState(0);
-  const [items, setItems] = useState<RadioItem[]>(() => {
-    try {
-      const cached = localStorage.getItem(`radio_news_cache_${VERSION}`);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-      // Limpa cache antigo
-      localStorage.removeItem("radio_news_cache");
-      return FALLBACK;
-    } catch {
-      return FALLBACK;
-    }
-  });
+  const [items, setItems] = useState<RadioItem[]>(FALLBACK); // Sempre inicia com 6 cards
 
   useEffect(() => {
     let cancelled = false;
@@ -147,30 +135,55 @@ const RadioSantaRitaCarousel = () => {
     const load = async () => {
       try {
         // Busca notícias da rádio
-        const radioRes = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(BASE + "/posts")}`, {
-          signal: AbortSignal.timeout(15000)
-        });
-        const radioHtml = await radioRes.text();
-        const radioParsed = parseRadio(radioHtml);
+        let radioParsed: RadioItem[] = [];
+        try {
+          const radioRes = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(BASE + "/posts")}`, {
+            signal: AbortSignal.timeout(15000)
+          });
+          const radioHtml = await radioRes.text();
+          radioParsed = parseRadio(radioHtml);
+        } catch (err) {
+          console.warn("Usando fallback da rádio");
+          radioParsed = FALLBACK.filter(item => item.category === "Rádio");
+        }
         
         // Busca notícias de esportes
-        const sportsNews = await fetchSportsNews();
+        let sportsNews: RadioItem[] = [];
+        try {
+          sportsNews = await fetchSportsNews();
+        } catch (err) {
+          console.warn("Usando fallback de esportes");
+          sportsNews = FALLBACK.filter(item => item.category === "Esportes");
+        }
         
-        // Combina: 4 da rádio + 2 de esportes
-        const combined = [...radioParsed, ...sportsNews];
+        // Garante pelo menos 4 da rádio
+        if (radioParsed.length < 4) {
+          const radioFallback = FALLBACK.filter(item => item.category === "Rádio");
+          radioParsed = [...radioParsed, ...radioFallback].slice(0, 4);
+        } else {
+          radioParsed = radioParsed.slice(0, 4);
+        }
         
-        if (!cancelled && combined.length > 0) {
+        // Garante pelo menos 2 de esportes
+        if (sportsNews.length < 2) {
+          const sportsFallback = FALLBACK.filter(item => item.category === "Esportes");
+          sportsNews = [...sportsNews, ...sportsFallback].slice(0, 2);
+        } else {
+          sportsNews = sportsNews.slice(0, 2);
+        }
+        
+        // Combina: SEMPRE 4 da rádio + 2 de esportes = 6 cards
+        const combined = [...radioParsed.slice(0, 4), ...sportsNews.slice(0, 2)];
+        
+        if (!cancelled && combined.length === 6) {
           setItems(combined);
           try {
             localStorage.setItem(`radio_news_cache_${VERSION}`, JSON.stringify(combined));
           } catch { /* ignora erro de storage */ }
-        } else if (!cancelled) {
-          // Se falhar, usa fallback que já tem 6 cards
-          setItems(FALLBACK);
         }
       } catch (error) {
-        console.warn("Erro ao carregar notícias:", error);
-        // Mantém fallback com 6 cards
+        console.error("Erro ao carregar notícias:", error);
+        // Mantém FALLBACK com 6 cards garantidos
         if (!cancelled) setItems(FALLBACK);
       }
     };
@@ -180,11 +193,15 @@ const RadioSantaRitaCarousel = () => {
     return () => { cancelled = true; clearInterval(interval); };
   }, []);
   }, []);
+  }, []);
 
   const max = Math.max(0, items.length - VISIBLE);
   const prev = () => setIndex((i) => Math.max(0, i - VISIBLE));
   const next = () => setIndex((i) => Math.min(max, i + VISIBLE));
   const visible = items.slice(index, index + VISIBLE);
+
+  // Debug: mostra quantos cards temos
+  console.log(`RadioSantaRitaCarousel: ${items.length} cards (${items.filter(i => i.category === 'Rádio').length} Rádio + ${items.filter(i => i.category === 'Esportes').length} Esportes)`);
 
   return (
     <div className="h-full flex flex-col">
