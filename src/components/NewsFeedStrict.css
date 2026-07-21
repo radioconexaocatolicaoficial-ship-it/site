@@ -89,6 +89,20 @@
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
+.nfs-highlight__intro {
+  margin: 0 0 1.25rem 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #444;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 400;
+}
+
+[data-theme="dark"] .nfs-highlight__intro,
+.dark .nfs-highlight__intro {
+  color: hsl(var(--muted-foreground));
+}
+
 .nfs-highlight__desc {
   margin: 0;
   font-size: 13px;
