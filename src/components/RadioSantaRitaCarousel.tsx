@@ -123,13 +123,19 @@ async function fetchSportsNews(): Promise<RadioItem[]> {
 
 const VISIBLE = 6; // 3 colunas x 2 linhas = 6 cards
 const REFRESH_INTERVAL = 15 * 60 * 1000; // 15 minutos
+const VERSION = "v2"; // Versão para invalidar cache antigo
 
 const RadioSantaRitaCarousel = () => {
   const [index, setIndex] = useState(0);
   const [items, setItems] = useState<RadioItem[]>(() => {
     try {
-      const cached = localStorage.getItem("radio_news_cache");
-      return cached ? JSON.parse(cached) : FALLBACK;
+      const cached = localStorage.getItem(`radio_news_cache_${VERSION}`);
+      if (cached) {
+        return JSON.parse(cached);
+      }
+      // Limpa cache antigo
+      localStorage.removeItem("radio_news_cache");
+      return FALLBACK;
     } catch {
       return FALLBACK;
     }
@@ -156,18 +162,23 @@ const RadioSantaRitaCarousel = () => {
         if (!cancelled && combined.length > 0) {
           setItems(combined);
           try {
-            localStorage.setItem("radio_news_cache", JSON.stringify(combined));
+            localStorage.setItem(`radio_news_cache_${VERSION}`, JSON.stringify(combined));
           } catch { /* ignora erro de storage */ }
+        } else if (!cancelled) {
+          // Se falhar, usa fallback que já tem 6 cards
+          setItems(FALLBACK);
         }
       } catch (error) {
         console.warn("Erro ao carregar notícias:", error);
-        // Mantém fallback ou cache
+        // Mantém fallback com 6 cards
+        if (!cancelled) setItems(FALLBACK);
       }
     };
     
     load();
     const interval = setInterval(load, REFRESH_INTERVAL);
     return () => { cancelled = true; clearInterval(interval); };
+  }, []);
   }, []);
 
   const max = Math.max(0, items.length - VISIBLE);
