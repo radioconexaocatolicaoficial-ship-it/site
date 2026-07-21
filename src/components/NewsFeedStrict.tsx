@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import caminhadaPoster from "@/assets/caminhada-ressurreicao-2026-poster.png";
 import abracaSaoPauloPoster from "@/assets/Abraça-sao-paulo-2026.jpg";
+import cancaoNovaSpImage from "@/assets/canção-nova-sp.jpg";
 import "./NewsFeedStrict.css";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
@@ -510,9 +511,8 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     const finalLink = forceLink || (item?.link || fallbackLink);
     
     if (siteLabel === "Canção Nova SP") {
-      const l = item?.link || fallbackLink;
-      img = thumbFromCnNoticiasArchive(l, cnArchive);
-      if (!img) img = item ? pickItemImage(item) : "";
+      // Usa sempre a imagem oficial local da Canção Nova SP
+      img = cancaoNovaSpImage;
     } else if (siteLabel === "Abraça São Paulo 2026") {
       img = abracaSaoPauloPoster;
     } else if (siteLabel.includes("Abraça") || siteLabel === "Caminhada da Ressurreição") {
@@ -561,6 +561,10 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
 
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
+    if (c.siteLabel === "Canção Nova SP") {
+      // Usa sempre a imagem oficial local da Canção Nova SP
+      return { ...c, imageUrl: cancaoNovaSpImage };
+    }
     if (c.siteLabel === "Abraça São Paulo 2026") {
       // Usa sempre a imagem oficial local do Abraça São Paulo 2026
       return { ...c, imageUrl: abracaSaoPauloPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
@@ -571,10 +575,6 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
         return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
       }
       return { ...c, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
-    }
-    if (c.siteLabel.includes("Canção Nova SP")) {
-      const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
-      return fromArchive ? { ...c, imageUrl: fromArchive } : c;
     }
     return c;
   });
