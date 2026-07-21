@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import caminhadaPoster from "@/assets/caminhada-ressurreicao-2026-poster.png";
+import abracaSaoPauloPoster from "@/assets/Abraça-sao-paulo-2026.jpg";
 import "./NewsFeedStrict.css";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
@@ -429,13 +430,12 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     let img = "";
     const finalLink = forceLink || (item?.link || fallbackLink);
     
-    if (siteLabel === "Canção Nova SP" || siteLabel === "Abraça São Paulo 2026") {
+    if (siteLabel === "Canção Nova SP") {
       const l = item?.link || fallbackLink;
       img = thumbFromCnNoticiasArchive(l, cnArchive);
       if (!img) img = item ? pickItemImage(item) : "";
-      if (!img && siteLabel === "Abraça São Paulo 2026") {
-        img = caminhadaPoster;
-      }
+    } else if (siteLabel === "Abraça São Paulo 2026") {
+      img = abracaSaoPauloPoster;
     } else if (siteLabel.includes("Abraça") || siteLabel === "Caminhada da Ressurreição") {
       img = caminhadaPoster;
     } else {
@@ -482,6 +482,10 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
 
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
+    if (c.siteLabel === "Abraça São Paulo 2026") {
+      // Usa sempre a imagem oficial local do Abraça São Paulo 2026
+      return { ...c, imageUrl: abracaSaoPauloPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
+    }
     if (c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição") {
       // Busca imagem da página do Sympla ou usa o poster como fallback
       if (!c.imageUrl || isLowValueImageUrl(c.imageUrl)) {
