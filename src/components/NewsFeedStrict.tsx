@@ -566,24 +566,6 @@ const NewsFeedStrict = () => {
                     Inscreva-se Agora
                   </a>
                 </div>
-                <div className="nfs-highlight__topics">
-                  {highlight.topicLines.map((t, i) => (
-                    <p key={`${t.link}-${i}`} className="nfs-highlight__topic">
-                      <span className="nfs-highlight__topic-dot" aria-hidden="true">
-                        &#8226;
-                      </span>
-                      <a
-                        href={t.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="nfs-highlight__topic-link"
-                        title={t.label}
-                      >
-                        {t.label}
-                      </a>
-                    </p>
-                  ))}
-                </div>
               </div>
             )}
           </div>
