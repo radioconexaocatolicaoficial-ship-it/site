@@ -10,7 +10,7 @@
 }
 @media (max-width: 640px) {
   .nfs-section {
-    padding-top: 8px;
+    padding-top: 0px;
     padding-bottom: 20px;
   }
 }
@@ -328,7 +328,7 @@
 
 @media (max-width: 640px) {
   .nfs-section {
-    padding-top: 24px;
+    padding-top: 0px;
     padding-bottom: 24px;
   }
 

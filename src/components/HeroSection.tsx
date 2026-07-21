@@ -16,7 +16,7 @@ const HeroSection = () => {
       <img 
         src={heroBgMobile} 
         alt="Banner Rádio Conexão Católica" 
-        className="block md:hidden w-full h-[400px] object-contain" 
+        className="block md:hidden w-full h-auto object-cover" 
         width={1080} 
         height={1920} 
       />
