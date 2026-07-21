@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import Layout from "@/components/Layout";
+import HeroSection from "@/components/HeroSection";
 import NewsFeedStrict from "@/components/NewsFeedStrict";
 import CountdownCard from "@/components/CountdownCard";
 import VaticanNewsCarousel from "@/components/VaticanNewsCarousel";
@@ -22,6 +23,7 @@ const SkeletonBlock = () => <div className="animate-pulse bg-muted/30 rounded-xl
 
 const Index = () => (
   <Layout>
+    <HeroSection /> {/* Banner topo - acima de tudo */}
     <NewsFeedStrict /> {/* Acima da dobra - Eager Load */}
 
     {/* Seção 1: Countdown + Vatican News (Ainda importantes o suficiente para serem eager) */}
