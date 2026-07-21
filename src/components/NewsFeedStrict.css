@@ -96,8 +96,8 @@
   max-width: 100% !important;
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 6;
+  line-clamp: 6;
   overflow: hidden;
 }
 
@@ -109,8 +109,8 @@
 @media (max-width: 1023px) {
   .nfs-highlight__desc {
     display: -webkit-box;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
+    -webkit-line-clamp: 8;
+    line-clamp: 8;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
@@ -135,6 +135,51 @@
   width: 100% !important;
   max-width: 100% !important;
   overflow: hidden;
+}
+
+.nfs-highlight__link-wrapper {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden;
+}
+
+.nfs-highlight__button {
+  display: inline-block;
+  margin-top: 1.25rem;
+  padding: 0.875rem 2rem;
+  background: #004a99;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  box-shadow: 0 4px 12px rgba(0, 74, 153, 0.3);
+}
+
+.nfs-highlight__button:hover {
+  background: #003875;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 74, 153, 0.4);
+}
+
+[data-theme="dark"] .nfs-highlight__button,
+.dark .nfs-highlight__button {
+  background: hsl(var(--primary));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .nfs-highlight__button:hover,
+.dark .nfs-highlight__button:hover {
+  background: hsl(var(--primary-dark));
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
 }
 
 /* Bloco de tópicos encostado na base, alinhando a coluna à altura do grid ao lado */

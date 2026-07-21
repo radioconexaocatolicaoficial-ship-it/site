@@ -14,7 +14,7 @@ const FEED_RADIO_CONEXAO_YT =
 const FEED_YOUTUBE_PADRE_PH =
   "https://www.youtube.com/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ";
 
-const CAMINHADA_SITE = "https://www.caminhadadaressurreicao.com/";
+const CAMINHADA_SITE = "https://www.sympla.com.br/evento/cancao-nova-abraca-sao-paulo/3369168?referrer=www.google.com";
 /** Data e horário do evento (cartaz oficial 2026) */
 const CAMINHADA_CARD_EVENT_DATETIME =
   "4 de abril de 2026 · 22h00 — Basílica N. S. da Penha · Rua Santo Afonso, 199, Penha";
@@ -24,8 +24,7 @@ const HIGHLIGHT_CAMINHADA_BADGE = "ABRAÇA SÃO PAULO 2026";
 
 /** Texto integral no DOM; o CSS limita linhas visíveis */
 const CAMINHADA_HIGHLIGHT_DESCRIPTION =
-  'Com o tema "Eu vi o Senhor", em 2026 teremos a 42ª Caminhada da Ressurreição. A Caminhada da Ressurreição é um evento tradicional e de grande significado para a cidade de São Paulo, realizado anualmente desde 1984, sempre no Sábado de Aleluia, véspera do Domingo de Páscoa, pela Diocese de São Miguel Paulista. O evento tem início à noite, por volta das 23h, com milhares de fiéis reunidos na Basílica e Santuário Eucarístico Nossa Senhora da Penha, na Rua Santo Afonso, 199, Penha. ' +
-  "Após a bênção de Dom Algacir Munhak, Bispo Diocesano, o percurso tem início, já na madrugada, por volta da meia-noite. São 13 quilômetros de caminhada pelas ruas dos bairros da zona leste de São Paulo, que duram aproximadamente seis horas. A caminhada é marcada pela oração, pela fé, e pelo entusiasmo dos participantes, acompanhados pelo som animado das bandas católicas. O objetivo de todos é único: celebrar a Ressurreição de Jesus Cristo.";
+  'Com o tema "A Fé que Transforma", a 19ª edição contará com missas, pregações, shows, adoração e confissões. Data: Sábado, 16 de agosto de 2026. Horário: Das 08h às 21h. Local: Ginásio do Ibirapuera (R. Manuel da Nóbrega, 1361 - Ibirapuera, São Paulo). Ingressos: A entrada é gratuita, mas exige inscrição prévia (vagas limitadas). Doação: Solicita-se a contribuição de 1 kg de alimento não perecível na entrada.';
 
 const REFRESH_MS = 15 * 60 * 1000;
 
@@ -552,18 +551,21 @@ const NewsFeedStrict = () => {
               <div className="nfs-loading">Carregando destaque…</div>
             ) : (
               <div className="nfs-highlight__stack">
-                <a
-                  href={highlight.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="nfs-highlight__link"
-                >
+                <div className="nfs-highlight__link-wrapper">
                   <span className="nfs-highlight__badge">{highlight.badge}</span>
                   <h2 className="nfs-highlight__title">{highlight.title}</h2>
                   <p className="nfs-highlight__desc" title={highlight.description}>
                     {highlight.description}
                   </p>
-                </a>
+                  <a
+                    href={highlight.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="nfs-highlight__button"
+                  >
+                    Inscreva-se Agora
+                  </a>
+                </div>
                 <div className="nfs-highlight__topics">
                   {highlight.topicLines.map((t, i) => (
                     <p key={`${t.link}-${i}`} className="nfs-highlight__topic">
