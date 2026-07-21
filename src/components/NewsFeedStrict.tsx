@@ -554,9 +554,40 @@ const NewsFeedStrict = () => {
                 <div className="nfs-highlight__link-wrapper">
                   <span className="nfs-highlight__badge">{highlight.badge}</span>
                   <h2 className="nfs-highlight__title">{highlight.title}</h2>
-                  <p className="nfs-highlight__desc" title={highlight.description}>
-                    {highlight.description}
-                  </p>
+                  <div className="nfs-highlight__info-list">
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Tema:</strong> "A Fé que Transforma" — 19ª edição com missas, pregações, shows, adoração e confissões</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Data:</strong> Sábado, 16 de agosto de 2026</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Horário:</strong> Das 08h às 21h</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Local:</strong> Ginásio do Ibirapuera (R. Manuel da Nóbrega, 1361 - Ibirapuera, São Paulo)</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Entrada:</strong> Gratuita com inscrição prévia (vagas limitadas) + 1kg de alimento não perecível</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Retirada de Camisetas:</strong> No dia do evento (a partir das 7h) ou antecipadamente</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Catedral Maronita:</strong> R. Tamandaré, 355, Liberdade (seg e qua 9h-21h | ter, qui, sex 9h-18h)</span>
+                    </div>
+                    <div className="nfs-highlight__info-item">
+                      <span className="nfs-highlight__info-dot">●</span>
+                      <span className="nfs-highlight__info-text"><strong>Loja Canção Nova:</strong> R. Domingos de Moraes, 348, perto metrô Ana Rosa (seg-sex 9h-18h | sáb 9h-13h)</span>
+                    </div>
+                  </div>
                   <a
                     href={highlight.link}
                     target="_blank"
