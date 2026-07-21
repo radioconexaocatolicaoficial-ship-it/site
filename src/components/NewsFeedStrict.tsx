@@ -20,7 +20,7 @@ const CAMINHADA_CARD_EVENT_DATETIME =
   "4 de abril de 2026 · 22h00 — Basílica N. S. da Penha · Rua Santo Afonso, 199, Penha";
 const HIGHLIGHT_CAMINHADA_TITLE =
   'Vem aí a Caminhada da Ressurreição 2026 "Eu vi o Senhor"';
-const HIGHLIGHT_CAMINHADA_BADGE = "CAMINHADA DA RESSURREIÇÃO";
+const HIGHLIGHT_CAMINHADA_BADGE = "ABRAÇA SÃO PAULO 2026";
 
 /** Texto integral no DOM; o CSS limita linhas visíveis */
 const CAMINHADA_HIGHLIGHT_DESCRIPTION =
