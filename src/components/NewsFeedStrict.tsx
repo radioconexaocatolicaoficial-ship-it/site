@@ -406,7 +406,19 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     fetchCancaoNovaArchiveImages(),
   ]);
 
-  const cn = cnItems[0] ?? null;
+  // Busca a primeira notícia da Canção Nova SP que tenha imagem
+  let cn = cnItems[0] ?? null;
+  if (cn) {
+    const firstWithImage = cnItems.find((item) => {
+      const thumb = thumbFromCnNoticiasArchive(item.link, cnArchive);
+      const itemImg = pickItemImage(item);
+      return thumb || itemImg;
+    });
+    if (firstWithImage) {
+      cn = firstWithImage;
+    }
+  }
+  
   const abraca = abracaItems[0] ?? null;
   const cnNac = cnNacional[0] ?? null;
 
