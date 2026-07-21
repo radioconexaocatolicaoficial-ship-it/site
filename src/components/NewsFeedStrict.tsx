@@ -424,8 +424,11 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     item: Rss2JsonItem | null,
     fallbackLink: string,
     fallbackTitle: string,
+    forceLink?: string,
   ) => {
     let img = "";
+    const finalLink = forceLink || (item?.link || fallbackLink);
+    
     if (siteLabel === "Canção Nova SP" || siteLabel === "Abraça São Paulo 2026") {
       const l = item?.link || fallbackLink;
       img = thumbFromCnNoticiasArchive(l, cnArchive);
@@ -445,7 +448,7 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
     cards.push({
       siteLabel,
       title: shortTitle(item?.title?.trim() || fallbackTitle),
-      link: item?.link || fallbackLink,
+      link: finalLink,
       imageUrl: img,
       dateLabel,
     });
@@ -459,9 +462,10 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
   );
   pushCard(
     "Abraça São Paulo 2026",
-    abraca,
+    null,
     CAMINHADA_SITE,
     "Abraça São Paulo 2026 — Inscreva-se",
+    CAMINHADA_SITE,
   );
   pushCard(
     "Rádio Conexão Católica",
@@ -479,11 +483,11 @@ async function loadEngine(): Promise<{ highlight: HighlightData; cards: FeedCard
   const cardsWithImages = await enrichCardsFromPages(cards);
   const cardsFinal = cardsWithImages.map((c) => {
     if (c.siteLabel.includes("Abraça") || c.siteLabel === "Caminhada da Ressurreição") {
-      // Se não tem imagem do feed, usa o poster
+      // Busca imagem da página do Sympla ou usa o poster como fallback
       if (!c.imageUrl || isLowValueImageUrl(c.imageUrl)) {
-        return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
+        return { ...c, imageUrl: caminhadaPoster, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
       }
-      return { ...c, dateLabel: CAMINHADA_CARD_EVENT_DATETIME };
+      return { ...c, dateLabel: CAMINHADA_CARD_EVENT_DATETIME, link: CAMINHADA_SITE };
     }
     if (c.siteLabel.includes("Canção Nova SP")) {
       const fromArchive = thumbFromCnNoticiasArchive(c.link, cnArchive);
