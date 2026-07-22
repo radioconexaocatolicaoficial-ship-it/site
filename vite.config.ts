@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { newsCardsApiPlugin } from "./vite-plugins/newsCardsApi";
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
@@ -46,7 +47,6 @@ async function proxyImageRequest(
   }
 }
 
-/** Proxies locais (dev): imagens IG/notícias + feeds RSS sem CORS. */
 function localApiProxyPlugin(): Plugin {
   return {
     name: "local-api-proxy",
@@ -107,14 +107,11 @@ export default defineConfig({
         target: "https://www.youtube.com",
         changeOrigin: true,
         rewrite: () => "/feeds/videos.xml?channel_id=UC1F-NuywrrTYVUq370yR9WQ",
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        },
+        headers: { "User-Agent": UA },
       },
     },
   },
-  plugins: [react(), localApiProxyPlugin()],
+  plugins: [react(), localApiProxyPlugin(), newsCardsApiPlugin()],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],

@@ -234,31 +234,27 @@ function isYoutubeLink(url: string): boolean {
   return /youtube\.com|youtu\.be/i.test(url);
 }
 
-/** Proxy de imagem — cadeia estável para CDN de notícias. */
+/** Proxy de imagem — weserv primeiro (funciona no browser); /api/img como reserva no dev. */
 function proxyImage(url: string): string {
   if (!url || !/^https?:\/\//i.test(url)) return url;
-  if (/wsrv\.nl|images\.weserv\.nl|images\.unsplash\.com|openweathermap|wttr\.in|\/api\/img/i.test(url)) {
+  if (/wsrv\.nl|images\.weserv\.nl|openweathermap|wttr\.in|\/api\/img/i.test(url)) {
     return url;
   }
   const clean = upgradeImageUrl(url);
-  // Em dev, proxy local evita hotlink bloqueado (Globo etc.)
-  if (import.meta.env.DEV) {
-    return `/api/img?u=${encodeURIComponent(clean)}`;
-  }
-  return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&w=640&h=420&fit=cover&output=jpg`;
+  return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&w=720&h=480&fit=cover&output=jpg`;
 }
 
 function imageSources(primary: string, original?: string): string[] {
   const srcs: string[] = [];
   const add = (u: string) => {
-    if (u && !srcs.includes(u)) srcs.push(u);
+    if (u && !srcs.includes(u) && !/unsplash\.com/i.test(u)) srcs.push(u);
   };
   const orig = upgradeImageUrl(original || "");
   add(primary);
   if (orig) {
-    add(`/api/img?u=${encodeURIComponent(orig)}`);
-    add(`https://images.weserv.nl/?url=${encodeURIComponent(orig)}&w=640&h=420&fit=cover&output=jpg`);
-    add(`https://wsrv.nl/?url=${encodeURIComponent(orig.replace(/^https?:\/\//i, ""))}&w=640&h=420&fit=cover&output=jpg`);
+    add(`https://images.weserv.nl/?url=${encodeURIComponent(orig)}&w=720&h=480&fit=cover&output=jpg`);
+    add(`https://wsrv.nl/?url=${encodeURIComponent(orig)}&w=720&h=480&fit=cover&output=jpg`);
+    if (import.meta.env.DEV) add(`/api/img?u=${encodeURIComponent(orig)}`);
     add(orig);
   }
   return srcs;
@@ -782,11 +778,12 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v7";
+const CACHE_KEY = "rcc_rnoticias_cache_v8";
 
 function isStockPhotoCard(card: RadioCard): boolean {
   if (card.kind !== "news") return false;
-  return /unsplash\.com/i.test(card.image || "") || /unsplash\.com/i.test(card.imageOriginal || "");
+  const img = `${card.image || ""} ${card.imageOriginal || ""}`;
+  return /unsplash\.com/i.test(img) || !card.image;
 }
 
 function readCache(): RadioCard[] {
@@ -810,9 +807,7 @@ function NewsCardImage({
 }: {
   card: Extract<RadioCard, { kind: "news" }>;
 }) {
-  const sources = imageSources(card.image, card.imageOriginal || "").filter(
-    (u) => u && !/unsplash\.com/i.test(u),
-  );
+  const sources = imageSources(card.image, card.imageOriginal || card.image);
   const [idx, setIdx] = useState(0);
   const [exhausted, setExhausted] = useState(false);
   const sourceKey = `${card.image}|${card.imageOriginal || ""}`;
@@ -845,6 +840,34 @@ function NewsCardImage({
   );
 }
 
+/** Carrega cards já resolvidos no servidor Vite (/api/news-cards). */
+async function loadResolvedNewsCardsFromApi(): Promise<RadioCard[] | null> {
+  try {
+    const res = await fetch("/api/news-cards", { signal: AbortSignal.timeout(45000) });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      ok?: boolean;
+      cards?: { badge: string; title: string; subtitle: string; href: string; image: string }[];
+    };
+    if (!data.ok || !data.cards?.length) return null;
+
+    return data.cards
+      .filter((c) => c.image && c.title && !/unsplash/i.test(c.image))
+      .map((c) => ({
+        kind: "news" as const,
+        badge: c.badge,
+        title: c.title,
+        subtitle: c.subtitle || c.title,
+        href: c.href,
+        image: proxyImage(c.image),
+        imageFallback: proxyImage(c.image),
+        imageOriginal: c.image,
+      }));
+  } catch {
+    return null;
+  }
+}
+
 const NewsSection = () => {
   const [cards, setCards] = useState<RadioCard[]>(() => readCache());
   const [isLoading, setIsLoading] = useState(false);
@@ -859,8 +882,7 @@ const NewsSection = () => {
         for (let i = 0; i < 6; i++) {
           const next = slots[i];
           const old = prev[i];
-          // Não reaproveita foto genérica (Unsplash) se o slot novo ainda não chegou
-          if (next) out.push(next);
+          if (next && !(next.kind === "news" && !next.image)) out.push(next);
           else if (old && !isStockPhotoCard(old)) out.push(old);
           else out.push(base[i]);
         }
@@ -874,53 +896,93 @@ const NewsSection = () => {
       setIsLoading(false);
     };
 
-    // 1 clima · 2 música · 3 canção nova · 4 trânsito · 5 santo do dia · 6 esportes
-    const tasks: Promise<void>[] = [
-      fetchWeatherCard(SP_LAT, SP_LON, FALLBACK_PLACE).then((c) => {
-        slots[0] = c;
-        publish();
-      }),
-      loadNewsCard(NEWS_CARD_FEEDS[0]).then((c) => {
-        if (c) {
-          slots[1] = c;
-          publish();
-        }
-      }),
-      loadNewsCard(NEWS_CARD_FEEDS[1]).then((c) => {
-        if (c) {
-          slots[2] = c;
-          publish();
-        }
-      }),
-      loadNewsCard(NEWS_CARD_FEEDS[2]).then((c) => {
-        if (c) {
-          slots[3] = { ...c, href: "https://www.waze.com/pt-BR/live-map/" };
-          publish();
-        }
-      }),
-      fetchSantoDoDia().then((c) => {
-        if (c) {
-          slots[4] = c;
-          publish();
-        }
-      }),
-      loadNewsCard(NEWS_CARD_FEEDS[3]).then((c) => {
-        if (c) {
-          slots[5] = c;
-          publish();
-        }
-      }),
-    ];
+    // Clima (client)
+    const weatherTask = fetchWeatherCard(SP_LAT, SP_LON, FALLBACK_PLACE).then((c) => {
+      slots[0] = c;
+      publish();
+    });
 
-    await Promise.allSettled(tasks);
+    // Caminho principal: API local resolve título + foto real no servidor
+    const apiCards = await loadResolvedNewsCardsFromApi();
+    if (apiCards?.length) {
+      const byBadge = (b: string) =>
+        apiCards.find((c) => c.badge.toLowerCase() === b.toLowerCase()) || null;
+
+      slots[1] = byBadge("Música Católica");
+      slots[2] = byBadge("Canção Nova");
+      slots[3] = byBadge("Trânsito em tempo real SP");
+      slots[4] = byBadge("Santo do Dia");
+      slots[5] = byBadge("Esportes");
+      publish();
+    } else {
+      // Fallback: feeds no browser (se a API local não existir / produção)
+      const tasks: Promise<void>[] = [
+        loadNewsCard(NEWS_CARD_FEEDS[0]).then((c) => {
+          if (c) {
+            slots[1] = c;
+            publish();
+          }
+        }),
+        loadNewsCard(NEWS_CARD_FEEDS[1]).then((c) => {
+          if (c) {
+            slots[2] = c;
+            publish();
+          }
+        }),
+        loadNewsCard(NEWS_CARD_FEEDS[2]).then((c) => {
+          if (c) {
+            slots[3] = { ...c, href: "https://www.waze.com/pt-BR/live-map/" };
+            publish();
+          }
+        }),
+        fetchSantoDoDia().then((c) => {
+          if (c) {
+            slots[4] = c;
+            publish();
+          }
+        }),
+        loadNewsCard(NEWS_CARD_FEEDS[3]).then((c) => {
+          if (c) {
+            slots[5] = c;
+            publish();
+          }
+        }),
+      ];
+      await Promise.allSettled(tasks);
+    }
+
+    await weatherTask;
     publish();
     setIsLoading(false);
   }, []);
 
   const refreshSportsCard = useCallback(async () => {
     if (typeof document !== "undefined" && document.hidden) return;
+
+    // Tenta API local primeiro
+    try {
+      const apiCards = await loadResolvedNewsCardsFromApi();
+      const sports = apiCards?.find((c) => c.badge === "Esportes");
+      if (sports?.image) {
+        setCards((prev) => {
+          const next = [...(prev.length === 6 ? prev : defaultCards())];
+          while (next.length < 6) next.push(defaultCards()[next.length]);
+          next[5] = sports;
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(next.slice(0, 6)));
+          } catch {
+            /* ignore */
+          }
+          return next.slice(0, 6);
+        });
+        return;
+      }
+    } catch {
+      /* fallback abaixo */
+    }
+
     const sports = await loadNewsCard(SPORTS_FEED);
-    if (!sports) return;
+    if (!sports?.image) return;
 
     setCards((prev) => {
       const next = [...(prev.length === 6 ? prev : defaultCards())];
@@ -941,7 +1003,6 @@ const NewsSection = () => {
     return () => clearInterval(t);
   }, [load]);
 
-  // Esportes: atualização contínua enquanto a aba estiver visível
   useEffect(() => {
     refreshSportsCard();
     const t = setInterval(refreshSportsCard, SPORTS_REFRESH_MS);
