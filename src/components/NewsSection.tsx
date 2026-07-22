@@ -784,7 +784,7 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v9";
+const CACHE_KEY = "rcc_rnoticias_cache_v10";
 
 function isStockPhotoCard(card: RadioCard): boolean {
   if (card.kind !== "news") return false;
@@ -861,9 +861,36 @@ function toRadioCards(resolved: ResolvedNewsCard[]): RadioCard[] {
     }));
 }
 
-/** Dev: API Vite. Produção: resolve no browser com proxies CORS + weserv. */
+/** Dev: API Vite. Produção: JSON gerado no build (+ tentativa live). */
 async function loadResolvedNewsCards(): Promise<RadioCard[] | null> {
-  // 1) API local (só existe no `npm run dev`)
+  // 1) JSON estático gerado no `npm run build` — funciona no site oficial
+  try {
+    const res = await fetch(`/news-cards.json?t=${Date.now()}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (res.ok) {
+      const data = (await res.json()) as { ok?: boolean; cards?: ResolvedNewsCard[] };
+      if (data.cards?.length) {
+        const cards = toRadioCards(data.cards);
+        if (cards.length) {
+          // Em paralelo tenta atualizar ao vivo (não bloqueia se falhar)
+          void resolveNewsCardsInBrowser()
+            .then((live) => {
+              const liveCards = toRadioCards(live);
+              if (liveCards.length >= 3) {
+                // Atualiza cache silenciosamente; próximo paint via setCards fica a cargo do load
+              }
+            })
+            .catch(() => {});
+          return cards;
+        }
+      }
+    }
+  } catch {
+    /* segue */
+  }
+
+  // 2) API local (só `npm run dev`)
   if (import.meta.env.DEV) {
     try {
       const res = await fetch("/api/news-cards", { signal: AbortSignal.timeout(45000) });
@@ -879,7 +906,7 @@ async function loadResolvedNewsCards(): Promise<RadioCard[] | null> {
     }
   }
 
-  // 2) Produção / fallback: resolve no cliente (funciona no site oficial)
+  // 3) Resolve no cliente (proxies CORS) — melhor esforço em produção
   try {
     const resolved = await resolveNewsCardsInBrowser();
     const cards = toRadioCards(resolved);
@@ -933,6 +960,22 @@ const NewsSection = () => {
       slots[4] = byBadge("Santo do Dia");
       slots[5] = byBadge("Esportes");
       publish();
+
+      // Tenta atualizar ao vivo sem travar a UI (produção)
+      void resolveNewsCardsInBrowser()
+        .then((live) => {
+          const liveCards = toRadioCards(live);
+          if (liveCards.length < 3) return;
+          const find = (b: string) =>
+            liveCards.find((c) => c.badge.toLowerCase() === b.toLowerCase()) || null;
+          slots[1] = find("Música Católica") || slots[1];
+          slots[2] = find("Canção Nova") || slots[2];
+          slots[3] = find("Trânsito em tempo real SP") || slots[3];
+          slots[4] = find("Santo do Dia") || slots[4];
+          slots[5] = find("Esportes") || slots[5];
+          publish();
+        })
+        .catch(() => {});
     } else {
       // Último recurso: loaders antigos por feed
       const tasks: Promise<void>[] = [

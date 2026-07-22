@@ -1,4 +1,4 @@
-import{c as T,r as g,j as n}from"./index-BxkPSVkl.js";import{E as U,N as J}from"./newspaper-NMZIQAJy.js";/**
+import{c as T,r as g,j as n}from"./index-D1dYuJa1.js";import{E as U,N as J}from"./newspaper-BWyeREEP.js";/**
  * @license lucide-react v0.462.0 - ISC
  *
  * This source code is licensed under the ISC license.

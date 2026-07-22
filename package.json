@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node vite-plugins/generateNewsCards.mjs",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "deploy": "npm run build && git add . && git commit -m \"deploy: build atualizado\" && git push origin main"
+    "deploy": "npm run build && git add . && git commit -m \"deploy: build atualizado\" && git push origin main",
+    "news:generate": "node vite-plugins/generateNewsCards.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
