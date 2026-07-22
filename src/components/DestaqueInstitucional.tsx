@@ -1,8 +1,7 @@
 import { useState, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 import logo from "@/assets/logo.png";
-
-const STREAM_URL = "https://hts04.brascast.com:11160/live";
+import { STREAM_URL } from "@/lib/radioStream";
 
 const DestaqueInstitucional = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -10,14 +9,17 @@ const DestaqueInstitucional = () => {
 
   const togglePlay = () => {
     if (!isPlaying) {
-      if (!audioRef.current) audioRef.current = new Audio(STREAM_URL);
+      if (!audioRef.current) {
+        audioRef.current = new Audio();
+        audioRef.current.preload = "none";
+      }
+      audioRef.current.src = STREAM_URL;
       audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
     } else {
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current.src = "";
+        audioRef.current.removeAttribute("src");
         audioRef.current.load();
-        audioRef.current.src = STREAM_URL;
       }
       setIsPlaying(false);
     }

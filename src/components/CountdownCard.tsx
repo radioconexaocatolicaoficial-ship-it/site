@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { Cross, Headphones } from "lucide-react";
+import { STREAM_URL } from "@/lib/radioStream";
 
 const TARGET = new Date("2026-08-16T08:00:00-03:00").getTime();
-const STREAM_URL = "https://hts04.brascast.com:11160/live";
 
 const CountdownCard = () => {
   const [now, setNow] = useState(Date.now());
@@ -15,10 +15,14 @@ const CountdownCard = () => {
   }, []);
 
   const toggleRadio = () => {
-    if (!audioRef.current) audioRef.current = new Audio(STREAM_URL);
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.preload = "none";
+    }
     if (playing) {
       audioRef.current.pause();
-      audioRef.current.src = "";
+      audioRef.current.removeAttribute("src");
+      audioRef.current.load();
     } else {
       audioRef.current.src = STREAM_URL;
       audioRef.current.play().catch(console.error);
