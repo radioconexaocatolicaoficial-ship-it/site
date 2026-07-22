@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { CloudSun, ExternalLink, Newspaper, TrainFront, Car, Trophy, Cross } from "lucide-react";
+import {
+  displayImageUrl,
+  resolveNewsCardsInBrowser,
+  type ResolvedNewsCard,
+} from "@/lib/resolveNewsCards";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 const REFRESH_MS = 10 * 60 * 1000;
@@ -11,8 +16,11 @@ const SP_LAT = -23.5505;
 const SP_LON = -46.6333;
 const FALLBACK_PLACE = "São Paulo";
 
+/** Proxies CORS (produção). /api/rss só no Vite dev. */
 const PROXIES = [
-  (url: string) => `/api/rss?u=${encodeURIComponent(url)}`,
+  ...(import.meta.env.DEV
+    ? [(url: string) => `/api/rss?u=${encodeURIComponent(url)}`]
+    : []),
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
@@ -234,14 +242,9 @@ function isYoutubeLink(url: string): boolean {
   return /youtube\.com|youtu\.be/i.test(url);
 }
 
-/** Proxy de imagem — weserv primeiro (funciona no browser); /api/img como reserva no dev. */
+/** Proxy de imagem — weserv (funciona no site oficial sem /api/img). */
 function proxyImage(url: string): string {
-  if (!url || !/^https?:\/\//i.test(url)) return url;
-  if (/wsrv\.nl|images\.weserv\.nl|openweathermap|wttr\.in|\/api\/img/i.test(url)) {
-    return url;
-  }
-  const clean = upgradeImageUrl(url);
-  return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&w=720&h=480&fit=cover&output=jpg`;
+  return displayImageUrl(url);
 }
 
 function imageSources(primary: string, original?: string): string[] {
@@ -252,8 +255,9 @@ function imageSources(primary: string, original?: string): string[] {
   const orig = upgradeImageUrl(original || "");
   add(primary);
   if (orig) {
-    add(`https://images.weserv.nl/?url=${encodeURIComponent(orig)}&w=720&h=480&fit=cover&output=jpg`);
+    add(displayImageUrl(orig));
     add(`https://wsrv.nl/?url=${encodeURIComponent(orig)}&w=720&h=480&fit=cover&output=jpg`);
+    // /api/img só no servidor local (Vite)
     if (import.meta.env.DEV) add(`/api/img?u=${encodeURIComponent(orig)}`);
     add(orig);
   }
@@ -671,7 +675,9 @@ async function loadNewsCard(
 async function fetchPageHtml(pageUrl: string): Promise<string> {
   // HTML: proxy local (dev) + CORS proxies — evita jina (vira markdown e quebra og:tags)
   const htmlProxies = [
-    (url: string) => `/api/rss?u=${encodeURIComponent(url)}`,
+    ...(import.meta.env.DEV
+      ? [(url: string) => `/api/rss?u=${encodeURIComponent(url)}`]
+      : []),
     (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
     (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
     (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
@@ -778,7 +784,7 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v8";
+const CACHE_KEY = "rcc_rnoticias_cache_v9";
 
 function isStockPhotoCard(card: RadioCard): boolean {
   if (card.kind !== "news") return false;
@@ -840,29 +846,44 @@ function NewsCardImage({
   );
 }
 
-/** Carrega cards já resolvidos no servidor Vite (/api/news-cards). */
-async function loadResolvedNewsCardsFromApi(): Promise<RadioCard[] | null> {
-  try {
-    const res = await fetch("/api/news-cards", { signal: AbortSignal.timeout(45000) });
-    if (!res.ok) return null;
-    const data = (await res.json()) as {
-      ok?: boolean;
-      cards?: { badge: string; title: string; subtitle: string; href: string; image: string }[];
-    };
-    if (!data.ok || !data.cards?.length) return null;
+function toRadioCards(resolved: ResolvedNewsCard[]): RadioCard[] {
+  return resolved
+    .filter((c) => c.image && c.title && !/unsplash/i.test(c.image))
+    .map((c) => ({
+      kind: "news" as const,
+      badge: c.badge,
+      title: c.title,
+      subtitle: c.subtitle || c.title,
+      href: c.href,
+      image: proxyImage(c.image),
+      imageFallback: proxyImage(c.image),
+      imageOriginal: c.image,
+    }));
+}
 
-    return data.cards
-      .filter((c) => c.image && c.title && !/unsplash/i.test(c.image))
-      .map((c) => ({
-        kind: "news" as const,
-        badge: c.badge,
-        title: c.title,
-        subtitle: c.subtitle || c.title,
-        href: c.href,
-        image: proxyImage(c.image),
-        imageFallback: proxyImage(c.image),
-        imageOriginal: c.image,
-      }));
+/** Dev: API Vite. Produção: resolve no browser com proxies CORS + weserv. */
+async function loadResolvedNewsCards(): Promise<RadioCard[] | null> {
+  // 1) API local (só existe no `npm run dev`)
+  if (import.meta.env.DEV) {
+    try {
+      const res = await fetch("/api/news-cards", { signal: AbortSignal.timeout(45000) });
+      if (res.ok) {
+        const data = (await res.json()) as { ok?: boolean; cards?: ResolvedNewsCard[] };
+        if (data.ok && data.cards?.length) {
+          const cards = toRadioCards(data.cards);
+          if (cards.length) return cards;
+        }
+      }
+    } catch {
+      /* cai no browser resolver */
+    }
+  }
+
+  // 2) Produção / fallback: resolve no cliente (funciona no site oficial)
+  try {
+    const resolved = await resolveNewsCardsInBrowser();
+    const cards = toRadioCards(resolved);
+    return cards.length ? cards : null;
   } catch {
     return null;
   }
@@ -896,14 +917,12 @@ const NewsSection = () => {
       setIsLoading(false);
     };
 
-    // Clima (client)
     const weatherTask = fetchWeatherCard(SP_LAT, SP_LON, FALLBACK_PLACE).then((c) => {
       slots[0] = c;
       publish();
     });
 
-    // Caminho principal: API local resolve título + foto real no servidor
-    const apiCards = await loadResolvedNewsCardsFromApi();
+    const apiCards = await loadResolvedNewsCards();
     if (apiCards?.length) {
       const byBadge = (b: string) =>
         apiCards.find((c) => c.badge.toLowerCase() === b.toLowerCase()) || null;
@@ -915,7 +934,7 @@ const NewsSection = () => {
       slots[5] = byBadge("Esportes");
       publish();
     } else {
-      // Fallback: feeds no browser (se a API local não existir / produção)
+      // Último recurso: loaders antigos por feed
       const tasks: Promise<void>[] = [
         loadNewsCard(NEWS_CARD_FEEDS[0]).then((c) => {
           if (c) {
@@ -959,9 +978,8 @@ const NewsSection = () => {
   const refreshSportsCard = useCallback(async () => {
     if (typeof document !== "undefined" && document.hidden) return;
 
-    // Tenta API local primeiro
     try {
-      const apiCards = await loadResolvedNewsCardsFromApi();
+      const apiCards = await loadResolvedNewsCards();
       const sports = apiCards?.find((c) => c.badge === "Esportes");
       if (sports?.image) {
         setCards((prev) => {
@@ -978,7 +996,7 @@ const NewsSection = () => {
         return;
       }
     } catch {
-      /* fallback abaixo */
+      /* fallback */
     }
 
     const sports = await loadNewsCard(SPORTS_FEED);

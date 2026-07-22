@@ -82,8 +82,10 @@ function igImageSources(item: NewsItem): string[] {
     // weserv primeiro: converte webp/heic → jpg e funciona em produção
     add(`https://images.weserv.nl/?url=${encodeURIComponent(original)}&w=720&h=480&fit=cover&output=jpg`);
     add(`https://wsrv.nl/?url=${encodeURIComponent(original)}&w=720&h=480&fit=cover&output=jpg`);
-    // proxy local (dev) com Referer do Instagram
-    add(`/api/ig-img?u=${encodeURIComponent(original)}`);
+    // proxy local só no Vite (dev)
+    if (import.meta.env.DEV) {
+      add(`/api/ig-img?u=${encodeURIComponent(original)}`);
+    }
     add(original);
   }
   if (fromProxy) add(fromProxy);
