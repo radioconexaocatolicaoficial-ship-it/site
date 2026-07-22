@@ -13,21 +13,14 @@ const FALLBACK_PLACE = "São Paulo";
 
 const PROXIES = [
   (url: string) => `/api/rss?u=${encodeURIComponent(url)}`,
-  (url: string) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, "")}`,
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
   (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
 ];
 
-/** Imagens de reserva por categoria (só se o feed não trouxer mídia). */
-const FALLBACK_IMAGES: Record<string, string> = {
-  "Música Católica": "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&h=520&fit=crop",
-  "Canção Nova": "https://images.unsplash.com/photo-1438232992991-999b318256bc?w=800&h=520&fit=crop",
-  "Trânsito em tempo real SP": "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&h=520&fit=crop",
-  "Santo do Dia": "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=800&h=520&fit=crop",
-  Esportes: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=520&fit=crop",
-};
+/** Jina por último — transforma RSS em markdown e perde enclosure/thumbnail. */
+const JINA_PROXY = (url: string) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, "")}`;
 
 const SANTO_DIA_URL = "https://santo.cancaonova.com/";
 
@@ -37,15 +30,14 @@ function fallbackNewsCard(
   subtitle: string,
   href: string,
 ): RadioCard {
-  const image = proxyImage(FALLBACK_IMAGES[badge] || FALLBACK_IMAGES.Esportes);
   return {
     kind: "news",
     href,
     badge,
     title,
     subtitle,
-    image,
-    imageFallback: image,
+    image: "",
+    imageFallback: "",
   };
 }
 
@@ -289,7 +281,9 @@ function pickItemImage(item: Rss2JsonItem): string {
   if (item.thumbnail?.trim() && /^https?:\/\//i.test(item.thumbnail) && !isJunkImage(item.thumbnail)) {
     return upgradeImageUrl(item.thumbnail.trim());
   }
-  return extractImgFromHtml(item.content || item.description || "");
+  // Não varre o HTML do corpo (muitas imagens laterais/erradas).
+  // A foto correta vem de media/enclosure ou og:image da matéria.
+  return "";
 }
 
 /** Busca a foto oficial (og:image) da matéria — garante imagem correspondente à notícia. */
@@ -544,39 +538,42 @@ function parseFeedMarkdown(md: string): Rss2JsonItem[] {
   return out;
 }
 
-/** Proxies em paralelo primeiro; rss2json só como reserva (evita 429). */
+/** Proxies em ordem: local XML primeiro (com fotos). Jina só se nada mais funcionar. */
 async function loadRssItems(rssUrl: string, max: number): Promise<Rss2JsonItem[]> {
-  const proxyTasks = PROXIES.map((p) => fetchFeedViaOneProxy(p, rssUrl, max));
+  const ordered = [...PROXIES, JINA_PROXY];
 
-  const fromProxy = await new Promise<Rss2JsonItem[] | null>((resolve) => {
-    let pending = proxyTasks.length;
-    let done = false;
-    proxyTasks.forEach((task) => {
-      task
-        .then((items) => {
-          if (!done && items.length) {
-            done = true;
-            resolve(items);
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          pending -= 1;
-          if (!done && pending === 0) resolve(null);
-        });
-    });
-  });
+  for (const make of ordered) {
+    try {
+      const items = await fetchFeedViaOneProxy(make, rssUrl, max);
+      if (!items.length) continue;
+      // Prefere respostas que já trazem imagem da matéria
+      const withImg = items.filter((it) => !!pickItemImage(it));
+      if (withImg.length) return items;
+      // Sem imagem no XML: ainda serve (vamos buscar og:image depois)
+      if (!make(rssUrl).includes("jina.ai")) return items;
+      // Jina sem imagem: só usa se for a única opção
+    } catch {
+      /* próximo */
+    }
+  }
 
-  if (fromProxy?.length) return fromProxy;
-  return fetchRss2Json(rssUrl, max);
+  try {
+    return await fetchRss2Json(rssUrl, max);
+  } catch {
+    return [];
+  }
 }
 
+/**
+ * Monta o card com a foto DA MATÉRIA (enclosure/media → og:image).
+ * Nunca usa Unsplash/foto genérica de categoria.
+ */
 async function buildNewsCard(
   items: Rss2JsonItem[],
   badge: string,
 ): Promise<RadioCard | null> {
   const ordered = sortItemsNewest(items);
-  const maxAgeMs = 1000 * 60 * 60 * 24 * 45; // 45 dias
+  const maxAgeMs = 1000 * 60 * 60 * 24 * 45;
   const now = Date.now();
   const isTransit = badge.toLowerCase().includes("trânsito");
 
@@ -593,15 +590,20 @@ async function buildNewsCard(
     if (trafficOnly.length) pool = trafficOnly;
   }
 
-  for (const it of pool.slice(0, 10)) {
+  // Prioriza itens que já têm imagem no feed
+  pool = [...pool].sort((a, b) => {
+    const ai = pickItemImage(a) ? 1 : 0;
+    const bi = pickItemImage(b) ? 1 : 0;
+    return bi - ai;
+  });
+
+  for (const it of pool.slice(0, 12)) {
     const link = unwrapArticleUrl((it.link || "").trim());
     if (!link || isYoutubeLink(link)) continue;
 
     const titleRaw = (it.title || "").trim() || stripHtml(it.description || "");
     const title = normalizeTitle(titleRaw.replace(/\s+-\s+[^-]+$/, ""));
     if (!title) continue;
-
-    let rawImg = pickItemImage(it);
 
     let articleUrl = link;
     if (/news\.google\.com/i.test(link)) {
@@ -612,10 +614,28 @@ async function buildNewsCard(
       if (fromHtml) articleUrl = unwrapArticleUrl(fromHtml);
     }
 
-    const og = await fetchOgImage(articleUrl);
-    if (og) rawImg = og;
+    // 1) Foto do próprio item RSS (já corresponde à notícia)
+    let rawImg = pickItemImage(it);
 
-    if (!rawImg) continue;
+    // 2) Completa/atualiza com og:image da página da matéria
+    const needsOg = !rawImg || /-\d{2,3}x\d{2,3}\./i.test(rawImg);
+    const og = await fetchOgImage(articleUrl);
+    if (og) {
+      if (needsOg) {
+        rawImg = og;
+      } else {
+        try {
+          const a = new URL(rawImg).hostname.replace(/^www\./, "");
+          const b = new URL(og).hostname.replace(/^www\./, "");
+          const domain = (h: string) => h.split(".").slice(-2).join(".");
+          if (a === b || domain(a) === domain(b)) rawImg = og;
+        } catch {
+          rawImg = og;
+        }
+      }
+    }
+
+    if (!rawImg || /unsplash\.com/i.test(rawImg)) continue;
 
     const image = proxyImage(rawImg);
     const subtitle = normalizeTitle(stripHtml(it.description || it.content || "")) || title;
@@ -629,25 +649,6 @@ async function buildNewsCard(
       image,
       imageFallback: proxyImage(rawImg),
       imageOriginal: rawImg,
-    };
-  }
-
-  for (const it of pool) {
-    const link = unwrapArticleUrl((it.link || "").trim());
-    if (!link || isYoutubeLink(link)) continue;
-    const titleRaw = (it.title || "").trim() || stripHtml(it.description || "");
-    const title = normalizeTitle(titleRaw.replace(/\s+-\s+[^-]+$/, ""));
-    if (!title) continue;
-    const fallback = FALLBACK_IMAGES[badge] || FALLBACK_IMAGES.Esportes;
-    return {
-      kind: "news",
-      href: isTransit ? "https://www.waze.com/pt-BR/live-map/" : link,
-      badge,
-      title,
-      subtitle: normalizeTitle(stripHtml(it.description || "")) || "Abra para ler a matéria completa",
-      image: proxyImage(fallback),
-      imageFallback: proxyImage(fallback),
-      imageOriginal: fallback,
     };
   }
 
@@ -733,49 +734,70 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
     );
     const dayLink = dayLinkRe.exec(html)?.[1] || "";
 
-    let title = normalizeTitle(metaContent(html, "og:title"));
+    // Página do santo do dia (foto correta) — senão usa a home
+    let pageHtml = html;
+    let pageUrl = SANTO_DIA_URL;
+    if (dayLink) {
+      try {
+        pageHtml = await fetchPageHtml(dayLink);
+        pageUrl = dayLink;
+      } catch {
+        /* mantém home */
+      }
+    }
+
+    let title = normalizeTitle(metaContent(pageHtml, "og:title"));
     if (!title || /^canção nova/i.test(title)) {
       const entry =
-        /<h1[^>]*class=["'][^"']*entry-title[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i.exec(html)?.[1] ||
-        /class=["'][^"']*entry-title[^"']*["'][^>]*>([\s\S]*?)<\//i.exec(html)?.[1] ||
+        /<h1[^>]*class=["'][^"']*entry-title[^"']*["'][^>]*>([\s\S]*?)<\/h1>/i.exec(pageHtml)?.[1] ||
+        /class=["'][^"']*entry-title[^"']*["'][^>]*>([\s\S]*?)<\//i.exec(pageHtml)?.[1] ||
         "";
       title = normalizeTitle(entry.replace(/<[^>]+>/g, " "));
     }
     if (!title) return null;
 
     const rawImg =
-      metaContent(html, "og:image") ||
-      extractImgFromHtml(html) ||
-      FALLBACK_IMAGES["Santo do Dia"];
+      metaContent(pageHtml, "og:image") ||
+      metaContent(pageHtml, "twitter:image") ||
+      extractImgFromHtml(pageHtml);
+    if (!rawImg || /unsplash/i.test(rawImg)) return null;
+
     const desc =
-      normalizeTitle(stripHtml(metaContent(html, "og:description") || metaContent(html, "description"))) ||
-      "Confira a vida e a oração do santo celebrado hoje.";
+      normalizeTitle(
+        stripHtml(metaContent(pageHtml, "og:description") || metaContent(pageHtml, "description")),
+      ) || "Confira a vida e a oração do santo celebrado hoje.";
 
     return {
       kind: "news",
-      href: dayLink || metaContent(html, "og:url") || SANTO_DIA_URL,
+      href: pageUrl || metaContent(pageHtml, "og:url") || SANTO_DIA_URL,
       badge: "Santo do Dia",
       title,
       subtitle: desc,
       image: proxyImage(rawImg),
-      imageFallback: proxyImage(FALLBACK_IMAGES["Santo do Dia"]),
+      imageFallback: proxyImage(rawImg),
+      imageOriginal: upgradeImageUrl(rawImg),
     };
   } catch {
     return null;
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v6";
+const CACHE_KEY = "rcc_rnoticias_cache_v7";
+
+function isStockPhotoCard(card: RadioCard): boolean {
+  if (card.kind !== "news") return false;
+  return /unsplash\.com/i.test(card.image || "") || /unsplash\.com/i.test(card.imageOriginal || "");
+}
 
 function readCache(): RadioCard[] {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
     const parsed = cached ? (JSON.parse(cached) as RadioCard[]) : [];
     if (!Array.isArray(parsed) || parsed.length === 0) return defaultCards();
-    // Garante sempre 6 slots (cache antigo podia ter 1–5)
     const base = defaultCards();
     for (let i = 0; i < 6; i++) {
-      if (parsed[i]) base[i] = parsed[i];
+      const c = parsed[i];
+      if (c && !isStockPhotoCard(c)) base[i] = c;
     }
     return base;
   } catch {
@@ -788,11 +810,21 @@ function NewsCardImage({
 }: {
   card: Extract<RadioCard, { kind: "news" }>;
 }) {
-  const sources = imageSources(card.image, card.imageOriginal || card.imageFallback);
+  const sources = imageSources(card.image, card.imageOriginal || "").filter(
+    (u) => u && !/unsplash\.com/i.test(u),
+  );
   const [idx, setIdx] = useState(0);
+  const [exhausted, setExhausted] = useState(false);
+  const sourceKey = `${card.image}|${card.imageOriginal || ""}`;
+
+  useEffect(() => {
+    setIdx(0);
+    setExhausted(false);
+  }, [sourceKey]);
+
   const src = sources[idx];
 
-  if (!src) {
+  if (exhausted || !src) {
     return <Newspaper className="h-10 w-10 text-primary/35" />;
   }
 
@@ -802,10 +834,12 @@ function NewsCardImage({
       src={src}
       alt={card.title}
       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-      loading="lazy"
+      loading="eager"
+      decoding="async"
       referrerPolicy="no-referrer"
       onError={() => {
         if (idx + 1 < sources.length) setIdx(idx + 1);
+        else setExhausted(true);
       }}
     />
   );
@@ -823,7 +857,12 @@ const NewsSection = () => {
         const base = defaultCards();
         const out: RadioCard[] = [];
         for (let i = 0; i < 6; i++) {
-          out.push(slots[i] ?? prev[i] ?? base[i]);
+          const next = slots[i];
+          const old = prev[i];
+          // Não reaproveita foto genérica (Unsplash) se o slot novo ainda não chegou
+          if (next) out.push(next);
+          else if (old && !isStockPhotoCard(old)) out.push(old);
+          else out.push(base[i]);
         }
         try {
           localStorage.setItem(CACHE_KEY, JSON.stringify(out));
