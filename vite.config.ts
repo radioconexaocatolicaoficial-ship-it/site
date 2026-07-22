@@ -5,42 +5,58 @@ import path from "path";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
 
-/** Proxies locais (dev): imagens IG + feeds RSS sem CORS. */
+async function proxyImageRequest(
+  req: { url?: string },
+  res: {
+    statusCode: number;
+    setHeader: (k: string, v: string) => void;
+    end: (b?: string | Buffer) => void;
+  },
+  referer: string,
+) {
+  try {
+    const u = new URL(req.url || "", "http://localhost");
+    const target = u.searchParams.get("u");
+    if (!target || !/^https?:\/\//i.test(target)) {
+      res.statusCode = 400;
+      res.end("missing u");
+      return;
+    }
+    const upstream = await fetch(target, {
+      headers: {
+        "User-Agent": UA,
+        Referer: referer,
+        Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+      },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!upstream.ok || !upstream.body) {
+      res.statusCode = upstream.status || 502;
+      res.end("upstream error");
+      return;
+    }
+    const ct = upstream.headers.get("content-type") || "image/jpeg";
+    res.setHeader("Content-Type", ct);
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    const buf = Buffer.from(await upstream.arrayBuffer());
+    res.end(buf);
+  } catch {
+    res.statusCode = 502;
+    res.end("proxy failed");
+  }
+}
+
+/** Proxies locais (dev): imagens IG/notícias + feeds RSS sem CORS. */
 function localApiProxyPlugin(): Plugin {
   return {
     name: "local-api-proxy",
     configureServer(server) {
       server.middlewares.use("/api/ig-img", async (req, res) => {
-        try {
-          const u = new URL(req.url || "", "http://localhost");
-          const target = u.searchParams.get("u");
-          if (!target || !/^https?:\/\//i.test(target)) {
-            res.statusCode = 400;
-            res.end("missing u");
-            return;
-          }
-          const upstream = await fetch(target, {
-            headers: {
-              "User-Agent": UA,
-              Referer: "https://www.instagram.com/",
-              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-            },
-            signal: AbortSignal.timeout(15000),
-          });
-          if (!upstream.ok || !upstream.body) {
-            res.statusCode = upstream.status || 502;
-            res.end("upstream error");
-            return;
-          }
-          const ct = upstream.headers.get("content-type") || "image/jpeg";
-          res.setHeader("Content-Type", ct);
-          res.setHeader("Cache-Control", "public, max-age=3600");
-          const buf = Buffer.from(await upstream.arrayBuffer());
-          res.end(buf);
-        } catch {
-          res.statusCode = 502;
-          res.end("proxy failed");
-        }
+        await proxyImageRequest(req, res, "https://www.instagram.com/");
+      });
+
+      server.middlewares.use("/api/img", async (req, res) => {
+        await proxyImageRequest(req, res, "https://www.google.com/");
       });
 
       server.middlewares.use("/api/rss", async (req, res) => {

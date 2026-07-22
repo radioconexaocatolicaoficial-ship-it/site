@@ -109,8 +109,11 @@ const NEWS_CARD_FEEDS: { badge: string; rss: string; fallbackRss?: string[] }[] 
   },
   {
     badge: "Trânsito em tempo real SP",
-    rss: "https://g1.globo.com/dynamo/sao-paulo/transito/rss2.xml",
-    fallbackRss: ["https://g1.globo.com/rss/g1/sao-paulo/transito/"],
+    rss: "https://feeds.folha.uol.com.br/cotidiano/rss091.xml",
+    fallbackRss: [
+      "https://news.google.com/rss/search?q=tr%C3%A1nsito+S%C3%A3o+Paulo+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://g1.globo.com/dynamo/sao-paulo/transito/rss2.xml",
+    ],
   },
   {
     badge: "Esportes",
@@ -158,6 +161,8 @@ export type RadioCard =
       subtitle: string;
       image: string;
       imageFallback: string;
+      /** URL original da foto da matéria (para fallback de proxy) */
+      imageOriginal?: string;
     }
   | {
       kind: "transit";
@@ -176,15 +181,28 @@ function stripHtml(html: string): string {
 }
 
 function isJunkImage(url: string): boolean {
-  return /logo|icon|spacer|pixel|1x1|favicon|avatar|badge|btn|selo|sprite|tracking|ads?/i.test(url);
+  return /logo|icon|spacer|pixel|1x1|favicon|avatar|badge|btn|selo|sprite|tracking|ads?|placeholder|gravatar|emoji|gstatic\.com\/gnews|google_news_\d+|J6_coFbogxhRI9iM864NL_liGXvsQp2AupsKei7z0cNNfDvGUmWUy20nuUhkREQyrp/i.test(
+    url,
+  );
+}
+
+/** WordPress e CDNs costumam servir -200x200; troca pela versão maior. */
+function upgradeImageUrl(url: string): string {
+  if (!url) return "";
+  return url
+    .replace(/&amp;/g, "&")
+    .replace(/-\d{2,4}x\d{2,4}(?=\.(?:jpe?g|png|webp|gif))/i, "")
+    .replace(/\/thumbnails?\//i, "/")
+    .trim();
 }
 
 function extractImgFromHtml(html: string): string {
   if (!html) return "";
   const flat = html.replace(/\s+/g, " ").replace(/&amp;/g, "&");
 
+  const candidates: string[] = [];
   const patterns = [
-    /<img[^>]+(?:src|data-src|data-lazy-src)=["'](https?:\/\/[^"']+)["']/gi,
+    /<img[^>]+(?:src|data-src|data-lazy-src|data-original)=["'](https?:\/\/[^"']+)["']/gi,
     /<img[^>]+(?:src|data-src)=["'](\/\/[^"']+)["']/gi,
     /(?:srcset|data-srcset)=["'](https?:\/\/[^"'*\s,]+)/gi,
   ];
@@ -195,42 +213,126 @@ function extractImgFromHtml(html: string): string {
       let u = m[1].replace(/\s+/g, "");
       if (u.startsWith("//")) u = `https:${u}`;
       if (isJunkImage(u)) continue;
-      return u;
+      candidates.push(upgradeImageUrl(u));
     }
   }
 
   const og = flat.match(/property=["']og:image["']\s+content=["'](https?:\/\/[^"']+)["']/i)
     || flat.match(/content=["'](https?:\/\/[^"']+)["']\s+property=["']og:image["']/i);
-  if (og?.[1] && !isJunkImage(og[1])) return og[1];
+  if (og?.[1] && !isJunkImage(og[1])) candidates.unshift(upgradeImageUrl(og[1]));
 
   const glb = flat.match(/(https?:\/\/(?:s\d+-)?(?:g1|ge)\.glbimg\.com\/[^\s"'<>]+)/i);
-  if (glb?.[1]) return glb[1].replace(/[),.;]+$/, "");
+  if (glb?.[1]) candidates.push(upgradeImageUrl(glb[1].replace(/[),.;]+$/, "")));
 
-  return "";
+  // Prefere URLs sem sufixo de miniatura / com resolução maior
+  candidates.sort((a, b) => scoreImageUrl(b) - scoreImageUrl(a));
+  return candidates[0] || "";
+}
+
+function scoreImageUrl(url: string): number {
+  let s = 0;
+  if (/og|1200|1080|720|640|large|full|original|uploads/i.test(url)) s += 5;
+  if (/-\d{2,3}x\d{2,3}\./i.test(url)) s -= 8;
+  if (/wp-content|glbimg|cancaonova|gazeta|cnn|static\./i.test(url)) s += 3;
+  if (/\.(jpe?g|png|webp)(\?|$)/i.test(url)) s += 2;
+  return s;
 }
 
 function isYoutubeLink(url: string): boolean {
   return /youtube\.com|youtu\.be/i.test(url);
 }
 
-/** Proxy de imagem — evita bloqueio de hotlink (Globo, etc.). */
+/** Proxy de imagem — cadeia estável para CDN de notícias. */
 function proxyImage(url: string): string {
   if (!url || !/^https?:\/\//i.test(url)) return url;
-  if (/wsrv\.nl|images\.unsplash\.com|openweathermap|wttr\.in/i.test(url)) return url;
-  return `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//i, ""))}&w=640&h=420&fit=cover&output=jpg`;
+  if (/wsrv\.nl|images\.weserv\.nl|images\.unsplash\.com|openweathermap|wttr\.in|\/api\/img/i.test(url)) {
+    return url;
+  }
+  const clean = upgradeImageUrl(url);
+  // Em dev, proxy local evita hotlink bloqueado (Globo etc.)
+  if (import.meta.env.DEV) {
+    return `/api/img?u=${encodeURIComponent(clean)}`;
+  }
+  return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&w=640&h=420&fit=cover&output=jpg`;
+}
+
+function imageSources(primary: string, original?: string): string[] {
+  const srcs: string[] = [];
+  const add = (u: string) => {
+    if (u && !srcs.includes(u)) srcs.push(u);
+  };
+  const orig = upgradeImageUrl(original || "");
+  add(primary);
+  if (orig) {
+    add(`/api/img?u=${encodeURIComponent(orig)}`);
+    add(`https://images.weserv.nl/?url=${encodeURIComponent(orig)}&w=640&h=420&fit=cover&output=jpg`);
+    add(`https://wsrv.nl/?url=${encodeURIComponent(orig.replace(/^https?:\/\//i, ""))}&w=640&h=420&fit=cover&output=jpg`);
+    add(orig);
+  }
+  return srcs;
 }
 
 function pickItemImage(item: Rss2JsonItem): string {
   const enc = item.enclosure;
-  if (enc?.thumbnail?.trim() && /^https?:\/\//i.test(enc.thumbnail)) return enc.thumbnail.trim();
+  if (enc?.thumbnail?.trim() && /^https?:\/\//i.test(enc.thumbnail) && !isJunkImage(enc.thumbnail)) {
+    return upgradeImageUrl(enc.thumbnail.trim());
+  }
   const encLink = enc?.link?.trim() ?? "";
-  if (encLink && (/^https?:\/\//i.test(encLink)) && (/image|\.(jpg|jpeg|png|webp|gif)/i.test(encLink) || enc?.type?.startsWith("image"))) {
-    return encLink;
+  if (
+    encLink &&
+    /^https?:\/\//i.test(encLink) &&
+    !isJunkImage(encLink) &&
+    (/image|\.(jpg|jpeg|png|webp|gif)/i.test(encLink) || enc?.type?.startsWith("image"))
+  ) {
+    return upgradeImageUrl(encLink);
   }
   if (item.thumbnail?.trim() && /^https?:\/\//i.test(item.thumbnail) && !isJunkImage(item.thumbnail)) {
-    return item.thumbnail.trim();
+    return upgradeImageUrl(item.thumbnail.trim());
   }
   return extractImgFromHtml(item.content || item.description || "");
+}
+
+/** Busca a foto oficial (og:image) da matéria — garante imagem correspondente à notícia. */
+async function fetchOgImage(articleUrl: string): Promise<string> {
+  if (!articleUrl || !/^https?:\/\//i.test(articleUrl)) return "";
+  if (/news\.google\.com\/rss/i.test(articleUrl)) return "";
+  try {
+    const html = await fetchPageHtml(articleUrl);
+    const og =
+      metaContent(html, "og:image") ||
+      metaContent(html, "twitter:image") ||
+      extractImgFromHtml(html);
+    if (og && /^https?:\/\//i.test(og) && !isJunkImage(og)) return upgradeImageUrl(og);
+  } catch {
+    /* ignore */
+  }
+  return "";
+}
+
+function unwrapArticleUrl(url: string): string {
+  if (!url) return "";
+  let u = url.replace(/&amp;/g, "&").trim();
+  // Folha RSS: https://redir.folha.../*https://www1.folha...
+  const folha = u.match(/\*(https?:\/\/www1\.folha\.uol\.com\.br\/[^\s]+)/i);
+  if (folha) return folha[1];
+  const embedded = u.match(/\*(https?:\/\/[^\s]+)/i);
+  if (embedded) return embedded[1];
+  return u;
+}
+
+function isTrafficRelated(title: string, description = ""): boolean {
+  return /tr[áa]nsito|engarrafamento|marginal|rodovia|avenida|pista|sem[áa]foro|guinch|ciclista|ciclomotor|motot[áa]xi|acidente|interdit|cet-?sp|congestionamento|lento|trens|metr[oô]|[oô]nibus|faixa|cruzamento|reboque/i.test(
+    `${title} ${description}`,
+  );
+}
+
+function itemTimestamp(item: Rss2JsonItem): number {
+  const t = Date.parse(item.pubDate || "");
+  return Number.isFinite(t) ? t : 0;
+}
+
+function sortItemsNewest(items: Rss2JsonItem[]): Rss2JsonItem[] {
+  return [...items].sort((a, b) => itemTimestamp(b) - itemTimestamp(a));
 }
 
 function wmoToOwmIcon(code: number, isDay: boolean): string {
@@ -469,34 +571,86 @@ async function loadRssItems(rssUrl: string, max: number): Promise<Rss2JsonItem[]
   return fetchRss2Json(rssUrl, max);
 }
 
-function latestStory(
+async function buildNewsCard(
   items: Rss2JsonItem[],
   badge: string,
-): RadioCard | null {
-  for (const it of items) {
-    const link = (it.link || "").trim();
+): Promise<RadioCard | null> {
+  const ordered = sortItemsNewest(items);
+  const maxAgeMs = 1000 * 60 * 60 * 24 * 45; // 45 dias
+  const now = Date.now();
+  const isTransit = badge.toLowerCase().includes("trânsito");
+
+  const fresh = ordered.filter((it) => {
+    const ts = itemTimestamp(it);
+    return !ts || now - ts < maxAgeMs;
+  });
+  let pool = fresh.length ? fresh : ordered;
+
+  if (isTransit) {
+    const trafficOnly = pool.filter((it) =>
+      isTrafficRelated(it.title || "", stripHtml(it.description || it.content || "")),
+    );
+    if (trafficOnly.length) pool = trafficOnly;
+  }
+
+  for (const it of pool.slice(0, 10)) {
+    const link = unwrapArticleUrl((it.link || "").trim());
     if (!link || isYoutubeLink(link)) continue;
 
     const titleRaw = (it.title || "").trim() || stripHtml(it.description || "");
-    const title = normalizeTitle(titleRaw);
+    const title = normalizeTitle(titleRaw.replace(/\s+-\s+[^-]+$/, ""));
     if (!title) continue;
 
-    const rawImg = pickItemImage(it);
-    const fallback = FALLBACK_IMAGES[badge] || FALLBACK_IMAGES.Esportes;
-    const image = proxyImage(rawImg || fallback);
-    const imageFallback = proxyImage(fallback);
-    const subtitle = normalizeTitle(stripHtml(it.description || it.content || ""));
+    let rawImg = pickItemImage(it);
+
+    let articleUrl = link;
+    if (/news\.google\.com/i.test(link)) {
+      const fromHtml =
+        (it.description || "").match(/href=["'](https?:\/\/(?!news\.google)[^"']+)["']/i)?.[1] ||
+        (it.content || "").match(/href=["'](https?:\/\/(?!news\.google)[^"']+)["']/i)?.[1] ||
+        "";
+      if (fromHtml) articleUrl = unwrapArticleUrl(fromHtml);
+    }
+
+    const og = await fetchOgImage(articleUrl);
+    if (og) rawImg = og;
+
+    if (!rawImg) continue;
+
+    const image = proxyImage(rawImg);
+    const subtitle = normalizeTitle(stripHtml(it.description || it.content || "")) || title;
 
     return {
       kind: "news",
-      href: link,
+      href: isTransit ? "https://www.waze.com/pt-BR/live-map/" : articleUrl || link,
       badge,
       title,
-      subtitle,
+      subtitle: subtitle === title ? `Fonte: ${badge}` : subtitle,
       image,
-      imageFallback,
+      imageFallback: proxyImage(rawImg),
+      imageOriginal: rawImg,
     };
   }
+
+  for (const it of pool) {
+    const link = unwrapArticleUrl((it.link || "").trim());
+    if (!link || isYoutubeLink(link)) continue;
+    const titleRaw = (it.title || "").trim() || stripHtml(it.description || "");
+    const title = normalizeTitle(titleRaw.replace(/\s+-\s+[^-]+$/, ""));
+    if (!title) continue;
+    const fallback = FALLBACK_IMAGES[badge] || FALLBACK_IMAGES.Esportes;
+    return {
+      kind: "news",
+      href: isTransit ? "https://www.waze.com/pt-BR/live-map/" : link,
+      badge,
+      title,
+      subtitle: normalizeTitle(stripHtml(it.description || "")) || "Abra para ler a matéria completa",
+      image: proxyImage(fallback),
+      imageFallback: proxyImage(fallback),
+      imageOriginal: fallback,
+    };
+  }
+
   return null;
 }
 
@@ -505,26 +659,16 @@ async function loadNewsCard(
 ): Promise<RadioCard | null> {
   const urls = [def.rss, ...(def.fallbackRss ?? [])];
 
-  return new Promise((resolve) => {
-    let pending = urls.length;
-    let done = false;
-
-    urls.forEach((url) => {
-      loadRssItems(url, 12)
-        .then((items) => {
-          const story = latestStory(items, def.badge);
-          if (!done && story) {
-            done = true;
-            resolve(story);
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          pending -= 1;
-          if (!done && pending === 0) resolve(null);
-        });
-    });
-  });
+  for (const url of urls) {
+    try {
+      const items = await loadRssItems(url, 16);
+      const story = await buildNewsCard(items, def.badge);
+      if (story) return story;
+    } catch {
+      /* próxima URL */
+    }
+  }
+  return null;
 }
 
 async function fetchPageHtml(pageUrl: string): Promise<string> {
@@ -621,7 +765,7 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v5";
+const CACHE_KEY = "rcc_rnoticias_cache_v6";
 
 function readCache(): RadioCard[] {
   try {
@@ -637,6 +781,34 @@ function readCache(): RadioCard[] {
   } catch {
     return defaultCards();
   }
+}
+
+function NewsCardImage({
+  card,
+}: {
+  card: Extract<RadioCard, { kind: "news" }>;
+}) {
+  const sources = imageSources(card.image, card.imageOriginal || card.imageFallback);
+  const [idx, setIdx] = useState(0);
+  const src = sources[idx];
+
+  if (!src) {
+    return <Newspaper className="h-10 w-10 text-primary/35" />;
+  }
+
+  return (
+    <img
+      key={src}
+      src={src}
+      alt={card.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      loading="lazy"
+      referrerPolicy="no-referrer"
+      onError={() => {
+        if (idx + 1 < sources.length) setIdx(idx + 1);
+      }}
+    />
+  );
 }
 
 const NewsSection = () => {
@@ -827,22 +999,7 @@ const NewsSection = () => {
                         </span>
                       </div>
                     ) : card.kind === "news" && card.image ? (
-                      <img
-                        src={card.image}
-                        alt={card.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          const el = e.target as HTMLImageElement;
-                          if (el.dataset.fallback === "1") {
-                            el.src = card.imageFallback;
-                            return;
-                          }
-                          el.dataset.fallback = "1";
-                          el.src = card.imageFallback || FALLBACK_IMAGES[card.badge] || FALLBACK_IMAGES.Esportes;
-                        }}
-                      />
+                      <NewsCardImage card={card} />
                     ) : (
                       <Newspaper className="h-10 w-10 text-primary/35" />
                     )}
