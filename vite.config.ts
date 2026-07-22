@@ -1,6 +1,81 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+
+const UA =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+
+/** Proxies locais (dev): imagens IG + feeds RSS sem CORS. */
+function localApiProxyPlugin(): Plugin {
+  return {
+    name: "local-api-proxy",
+    configureServer(server) {
+      server.middlewares.use("/api/ig-img", async (req, res) => {
+        try {
+          const u = new URL(req.url || "", "http://localhost");
+          const target = u.searchParams.get("u");
+          if (!target || !/^https?:\/\//i.test(target)) {
+            res.statusCode = 400;
+            res.end("missing u");
+            return;
+          }
+          const upstream = await fetch(target, {
+            headers: {
+              "User-Agent": UA,
+              Referer: "https://www.instagram.com/",
+              Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+            },
+            signal: AbortSignal.timeout(15000),
+          });
+          if (!upstream.ok || !upstream.body) {
+            res.statusCode = upstream.status || 502;
+            res.end("upstream error");
+            return;
+          }
+          const ct = upstream.headers.get("content-type") || "image/jpeg";
+          res.setHeader("Content-Type", ct);
+          res.setHeader("Cache-Control", "public, max-age=3600");
+          const buf = Buffer.from(await upstream.arrayBuffer());
+          res.end(buf);
+        } catch {
+          res.statusCode = 502;
+          res.end("proxy failed");
+        }
+      });
+
+      server.middlewares.use("/api/rss", async (req, res) => {
+        try {
+          const u = new URL(req.url || "", "http://localhost");
+          const target = u.searchParams.get("u");
+          if (!target || !/^https?:\/\//i.test(target)) {
+            res.statusCode = 400;
+            res.end("missing u");
+            return;
+          }
+          const upstream = await fetch(target, {
+            headers: {
+              "User-Agent": UA,
+              Accept: "application/rss+xml, application/xml, text/xml, */*",
+            },
+            signal: AbortSignal.timeout(15000),
+          });
+          if (!upstream.ok) {
+            res.statusCode = upstream.status || 502;
+            res.end("upstream error");
+            return;
+          }
+          const text = await upstream.text();
+          res.setHeader("Content-Type", "application/xml; charset=utf-8");
+          res.setHeader("Cache-Control", "public, max-age=120");
+          res.end(text);
+        } catch {
+          res.statusCode = 502;
+          res.end("proxy failed");
+        }
+      });
+    },
+  };
+}
 
 export default defineConfig({
   build: {
@@ -12,7 +87,6 @@ export default defineConfig({
     port: 8080,
     hmr: { overlay: false },
     proxy: {
-      // Feed Atom do YouTube sem CORS (só no `npm run dev`)
       "/api/yt-padreph": {
         target: "https://www.youtube.com",
         changeOrigin: true,
@@ -24,7 +98,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react()],
+  plugins: [react(), localApiProxyPlugin()],
   resolve: {
     alias: { "@": path.resolve(__dirname, "./src") },
     dedupe: ["react", "react-dom", "react/jsx-runtime", "react/jsx-dev-runtime"],

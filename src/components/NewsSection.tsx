@@ -12,6 +12,8 @@ const SP_LON = -46.6333;
 const FALLBACK_PLACE = "São Paulo";
 
 const PROXIES = [
+  (url: string) => `/api/rss?u=${encodeURIComponent(url)}`,
+  (url: string) => `https://r.jina.ai/http://${url.replace(/^https?:\/\//i, "")}`,
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
   (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
@@ -28,6 +30,69 @@ const FALLBACK_IMAGES: Record<string, string> = {
 };
 
 const SANTO_DIA_URL = "https://santo.cancaonova.com/";
+
+function fallbackNewsCard(
+  badge: string,
+  title: string,
+  subtitle: string,
+  href: string,
+): RadioCard {
+  const image = proxyImage(FALLBACK_IMAGES[badge] || FALLBACK_IMAGES.Esportes);
+  return {
+    kind: "news",
+    href,
+    badge,
+    title,
+    subtitle,
+    image,
+    imageFallback: image,
+  };
+}
+
+/** Sempre 6 slots — preenchidos com dados ao vivo quando o feed responde. */
+function defaultCards(): RadioCard[] {
+  return [
+    {
+      kind: "weather",
+      href: `https://www.google.com/search?q=${encodeURIComponent(`previsão do tempo ${FALLBACK_PLACE}`)}`,
+      badge: "Previsão do tempo",
+      title: FALLBACK_PLACE,
+      subtitle: "Atualizando…",
+      bgImage: `https://wttr.in/${SP_LAT},${SP_LON}_0pq_transparency=ffffff.png`,
+      iconImage: "https://openweathermap.org/img/wn/02d@4x.png",
+    },
+    fallbackNewsCard(
+      "Música Católica",
+      "Música católica e louvor",
+      "Confira as novidades no portal da Canção Nova",
+      "https://musica.cancaonova.com/",
+    ),
+    fallbackNewsCard(
+      "Canção Nova",
+      "Notícias da Canção Nova",
+      "Acompanhe as últimas publicações",
+      "https://noticias.cancaonova.com/",
+    ),
+    fallbackNewsCard(
+      "Trânsito em tempo real SP",
+      "Trânsito em São Paulo",
+      "Veja o mapa ao vivo no Waze",
+      "https://www.waze.com/pt-BR/live-map/",
+    ),
+    fallbackNewsCard(
+      "Santo do Dia",
+      "Santo do Dia",
+      "Confira o santo celebrado hoje",
+      SANTO_DIA_URL,
+    ),
+    fallbackNewsCard(
+      "Esportes",
+      "Últimas do esporte",
+      "Acompanhe os destaques esportivos",
+      "https://ge.globo.com/",
+    ),
+  ];
+}
 
 /**
  * Cartões de notícia (feeds). Santo do Dia vem da página HTML, não do RSS.
@@ -49,11 +114,11 @@ const NEWS_CARD_FEEDS: { badge: string; rss: string; fallbackRss?: string[] }[] 
   },
   {
     badge: "Esportes",
-    rss: "https://www.cnnbrasil.com.br/esportes/feed/",
+    rss: "https://www.gazetaesportiva.com/feed/",
     fallbackRss: [
-      "https://www.gazetaesportiva.com/feed/",
-      "https://g1.globo.com/dynamo/esporte/rss2.xml",
       "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://g1.globo.com/dynamo/esporte/rss2.xml",
+      "https://www.cnnbrasil.com.br/esportes/feed/",
     ],
   },
 ];
@@ -324,6 +389,11 @@ async function fetchFeedViaOneProxy(
   max: number,
 ): Promise<Rss2JsonItem[]> {
   const url = makeProxy(rssUrl);
+  // /api/rss só existe no Vite (dev)
+  if (url.startsWith("/api/rss") && !import.meta.env.DEV) {
+    throw new Error("local rss proxy unavailable");
+  }
+
   const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_MS) });
   if (!res.ok) throw new Error(`proxy ${res.status}`);
 
@@ -341,9 +411,35 @@ async function fetchFeedViaOneProxy(
     }
   }
   if (text.length < 80) throw new Error("proxy empty");
-  const items = parseFeedXml(text);
+
+  let items = parseFeedXml(text);
+  if (items.length) return items.slice(0, max);
+
+  items = parseFeedMarkdown(text);
   if (!items.length) throw new Error("parse empty");
   return items.slice(0, max);
+}
+
+/** Extrai itens a partir do markdown do r.jina.ai. */
+function parseFeedMarkdown(md: string): Rss2JsonItem[] {
+  const out: Rss2JsonItem[] = [];
+  const seen = new Set<string>();
+
+  for (const m of md.matchAll(/\[([^\]]{8,180})\]\((https?:\/\/[^)\s]+)\)/g)) {
+    const title = normalizeTitle(m[1]);
+    const link = m[2].replace(/&amp;/g, "&");
+    if (!title || !link) continue;
+    if (/jina\.ai|corsproxy|allorigins|rss2json/i.test(link)) continue;
+    if (isYoutubeLink(link)) continue;
+    if (/\/feed\/?$/i.test(link) || /#(comments|respond)/i.test(link)) continue;
+    const key = link.split("?")[0];
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ title, link, description: title });
+    if (out.length >= 12) break;
+  }
+
+  return out;
 }
 
 /** Proxies em paralelo primeiro; rss2json só como reserva (evita 429). */
@@ -432,9 +528,19 @@ async function loadNewsCard(
 }
 
 async function fetchPageHtml(pageUrl: string): Promise<string> {
-  for (const makeProxy of PROXIES) {
+  // HTML: proxy local (dev) + CORS proxies — evita jina (vira markdown e quebra og:tags)
+  const htmlProxies = [
+    (url: string) => `/api/rss?u=${encodeURIComponent(url)}`,
+    (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    (url: string) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+  ];
+
+  for (const makeProxy of htmlProxies) {
     try {
       const proxied = makeProxy(pageUrl);
+      if (proxied.startsWith("/api/") && !import.meta.env.DEV) continue;
       const res = await fetch(proxied, { signal: AbortSignal.timeout(FETCH_MS) });
       if (!res.ok) continue;
       let text = await res.text();
@@ -444,7 +550,7 @@ async function fetchPageHtml(pageUrl: string): Promise<string> {
       } catch {
         /* HTML puro */
       }
-      if (text.length > 500) return text;
+      if (text.length > 500 && /<html|<head|og:title|entry-title/i.test(text)) return text;
     } catch {
       /* próximo */
     }
@@ -515,58 +621,49 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v4";
+const CACHE_KEY = "rcc_rnoticias_cache_v5";
 
 function readCache(): RadioCard[] {
   try {
     const cached = localStorage.getItem(CACHE_KEY);
-    return cached ? (JSON.parse(cached) as RadioCard[]) : [];
+    const parsed = cached ? (JSON.parse(cached) as RadioCard[]) : [];
+    if (!Array.isArray(parsed) || parsed.length === 0) return defaultCards();
+    // Garante sempre 6 slots (cache antigo podia ter 1–5)
+    const base = defaultCards();
+    for (let i = 0; i < 6; i++) {
+      if (parsed[i]) base[i] = parsed[i];
+    }
+    return base;
   } catch {
-    return [];
+    return defaultCards();
   }
 }
 
 const NewsSection = () => {
   const [cards, setCards] = useState<RadioCard[]>(() => readCache());
-  const [isLoading, setIsLoading] = useState(() => readCache().length === 0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const load = useCallback(async () => {
     const slots: (RadioCard | null)[] = [null, null, null, null, null, null];
 
     const publish = () => {
       setCards((prev) => {
-        const merged: RadioCard[] = [];
+        const base = defaultCards();
+        const out: RadioCard[] = [];
         for (let i = 0; i < 6; i++) {
-          const card = slots[i] ?? prev[i];
-          if (card) merged.push(card);
+          out.push(slots[i] ?? prev[i] ?? base[i]);
         }
-        // Remove trânsito duplicado (ex.: cache antigo com metrô + trânsito)
-        const deduped: RadioCard[] = [];
-        let hasTransit = false;
-        for (const card of merged) {
-          const isTraffic =
-            card.kind === "transit" ||
-            card.badge.toLowerCase().includes("trânsito") ||
-            card.badge.toLowerCase().includes("trens e metrô");
-          if (isTraffic) {
-            if (hasTransit) continue;
-            hasTransit = true;
-          }
-          deduped.push(card);
-        }
-        const toSave = deduped.slice(0, 6);
-        if (!toSave.length) return prev;
         try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(toSave));
+          localStorage.setItem(CACHE_KEY, JSON.stringify(out));
         } catch {
           /* ignore */
         }
-        return toSave;
+        return out;
       });
       setIsLoading(false);
     };
 
-    // 1 clima · 2 música · 3 canção nova · 4 trânsito (1x) · 5 santo do dia · 6 esportes
+    // 1 clima · 2 música · 3 canção nova · 4 trânsito · 5 santo do dia · 6 esportes
     const tasks: Promise<void>[] = [
       fetchWeatherCard(SP_LAT, SP_LON, FALLBACK_PLACE).then((c) => {
         slots[0] = c;
@@ -615,26 +712,9 @@ const NewsSection = () => {
     if (!sports) return;
 
     setCards((prev) => {
-      const idx = prev.findIndex((c) => c.badge === "Esportes");
-      if (idx >= 0) {
-        const cur = prev[idx];
-        if (cur.href === sports.href && cur.title === sports.title && cur.kind === "news" && sports.kind === "news" && cur.image === sports.image) {
-          return prev;
-        }
-        const next = [...prev];
-        next[idx] = sports;
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(next));
-        } catch {
-          /* ignore */
-        }
-        return next;
-      }
-
-      // Slot 6 (índice 5) se ainda não existe
-      const next = [...prev];
-      if (next.length >= 6) next[5] = sports;
-      else next.push(sports);
+      const next = [...(prev.length === 6 ? prev : defaultCards())];
+      while (next.length < 6) next.push(defaultCards()[next.length]);
+      next[5] = sports;
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(next.slice(0, 6)));
       } catch {
@@ -672,7 +752,7 @@ const NewsSection = () => {
   const showSkeleton = isLoading && cards.length === 0;
 
   return (
-    <section className="h-full flex flex-col min-h-0" aria-labelledby="radio-noticias-heading">
+    <section className="w-full" aria-labelledby="radio-noticias-heading">
       <div className="mb-3">
         <h2 id="radio-noticias-heading" className="text-xl font-bold text-foreground leading-tight">
           Rádio Notícias
@@ -696,13 +776,7 @@ const NewsSection = () => {
                 </div>
               </div>
             ))
-          : cards.length === 0
-            ? (
-                <div className="col-span-full rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                  Não foi possível carregar os cartões. Atualize a página ou tente mais tarde.
-                </div>
-              )
-            : cards.map((card, i) => (
+          : cards.map((card, i) => (
                 <a
                   key={`${card.kind}-${i}-${card.badge}-${card.href}-${"title" in card ? card.title : ""}`}
                   href={card.href}

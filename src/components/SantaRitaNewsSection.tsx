@@ -4,6 +4,8 @@ import { ExternalLink, Instagram, Youtube, Newspaper } from "lucide-react";
 interface NewsItem {
   title: string;
   img: string;
+  /** URL original (CDN Instagram) para fallback se o proxy falhar */
+  imgOriginal?: string;
   link: string;
   desc: string;
   badge: string;
@@ -40,14 +42,53 @@ const XML_PROXIES = [
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 const FETCH_MS = 14000;
 const REFRESH_MS = 5 * 60 * 1000;
-const CACHE_KEY = "rcc_santarita_ig_yt_v6";
+const CACHE_KEY = "rcc_santarita_ig_yt_v8";
 
 function proxyImg(url: string): string {
-  if (!url || !/^https?:\/\//i.test(url)) return url;
-  // YouTube thumbs e wsrv já ok
-  if (/i\.ytimg\.com|wsrv\.nl/i.test(url)) return url;
-  // Instagram CDN: proxy para evitar bloqueio de hotlink
-  return `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//i, ""))}&w=720&h=480&fit=cover&output=jpg`;
+  const clean = decodeIgUrl(url);
+  if (!clean || !/^https?:\/\//i.test(clean)) return clean || "";
+  if (/i\.ytimg\.com/i.test(clean)) return clean;
+  // images.weserv.nl — mais estável no browser para CDN do Instagram
+  return `https://images.weserv.nl/?url=${encodeURIComponent(clean)}&w=720&h=480&fit=cover&output=jpg`;
+}
+
+/** Recupera URL original a partir de weserv/wsrv ou CDN. */
+function resolveOriginalImg(item: NewsItem): string {
+  if (item.imgOriginal) return decodeIgUrl(item.imgOriginal);
+  const fromProxy = item.img || "";
+  const m = fromProxy.match(/[?&]url=([^&]+)/i);
+  if (m) {
+    try {
+      const decoded = decodeURIComponent(m[1]);
+      if (/^https?:\/\//i.test(decoded)) return decodeIgUrl(decoded);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (/cdninstagram|fbcdn|scontent/i.test(fromProxy)) return decodeIgUrl(fromProxy);
+  return "";
+}
+
+function igImageSources(item: NewsItem): string[] {
+  const original = resolveOriginalImg(item);
+  const fromProxy = item.img || "";
+  const sources: string[] = [];
+
+  const add = (u: string) => {
+    if (u && !sources.includes(u)) sources.push(u);
+  };
+
+  if (original) {
+    // weserv primeiro: converte webp/heic → jpg e funciona em produção
+    add(`https://images.weserv.nl/?url=${encodeURIComponent(original)}&w=720&h=480&fit=cover&output=jpg`);
+    add(`https://wsrv.nl/?url=${encodeURIComponent(original)}&w=720&h=480&fit=cover&output=jpg`);
+    // proxy local (dev) com Referer do Instagram
+    add(`/api/ig-img?u=${encodeURIComponent(original)}`);
+    add(original);
+  }
+  if (fromProxy) add(fromProxy);
+
+  return sources;
 }
 
 function decodeIgUrl(u: string): string {
@@ -211,7 +252,7 @@ function formatPostCopy(caption: string): { title: string; desc: string } {
 
 function parseInstagramEmbed(raw: string): NewsItem[] {
   /** Ordem do embed = mais recente primeiro (após o avatar). */
-  type Cand = { caption: string; img: string; link: string };
+  type Cand = { caption: string; img: string; imgOriginal: string; link: string };
   const ordered: Cand[] = [];
   const seenImg = new Set<string>();
 
@@ -229,6 +270,7 @@ function parseInstagramEmbed(raw: string): NewsItem[] {
     ordered.push({
       caption: cleanCaption(captionRaw),
       img: proxyImg(img),
+      imgOriginal: img,
       link: link || IG_PROFILE,
     });
   };
@@ -270,15 +312,16 @@ function parseInstagramEmbed(raw: string): NewsItem[] {
         title: copy.title,
         desc: copy.desc,
         img: c.img,
+        imgOriginal: c.imgOriginal,
         link: c.link,
         badge: "Instagram",
       };
     }
-    // Post recente sem alt/legenda no embed — mantém o post (é o mais novo)
     return {
       title: index === 0 ? "Publicação mais recente" : "Nova publicação",
       desc: "Confira a postagem completa no Instagram",
       img: c.img,
+      imgOriginal: c.imgOriginal,
       link: c.link,
       badge: "Instagram",
     };
@@ -466,13 +509,62 @@ async function fetchPadrePhCard(): Promise<NewsItem | null> {
   return null;
 }
 
+function CardMedia({ item }: { item: NewsItem }) {
+  const sources =
+    item.badge === "Instagram"
+      ? igImageSources(item)
+      : item.badge === "YouTube"
+        ? [
+            item.img,
+            ...(item.link.includes("v=")
+              ? [`https://i.ytimg.com/vi/${item.link.match(/v=([^&]+)/)?.[1]}/hqdefault.jpg`]
+              : []),
+          ].filter(Boolean) as string[]
+        : ([item.img].filter(Boolean) as string[]);
+
+  const [srcIndex, setSrcIndex] = useState(0);
+  const [exhausted, setExhausted] = useState(false);
+  const sourceKey = `${item.badge}|${item.img}|${item.imgOriginal || ""}|${item.link}`;
+
+  useEffect(() => {
+    setSrcIndex(0);
+    setExhausted(false);
+  }, [sourceKey]);
+
+  const src = sources[srcIndex];
+
+  if (exhausted || !src) {
+    return <Newspaper className="h-10 w-10 text-primary/35" />;
+  }
+
+  return (
+    <img
+      key={src}
+      src={src}
+      alt={item.title}
+      className={`w-full h-full object-cover ${item.position || "object-center"} group-hover:scale-105 transition-transform duration-500`}
+      loading="eager"
+      decoding="async"
+      referrerPolicy="no-referrer"
+      onError={() => {
+        if (srcIndex + 1 < sources.length) setSrcIndex(srcIndex + 1);
+        else setExhausted(true);
+      }}
+    />
+  );
+}
+
 function readCache(): NewsItem[] {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     const parsed = raw ? (JSON.parse(raw) as NewsItem[]) : [];
     // Descarta cache antigo com imagens genéricas (unsplash)
     if (parsed.some((p) => /unsplash\.com/i.test(p.img))) return [];
-    return parsed;
+    return parsed.map((p) =>
+      p.badge === "Instagram" && !p.imgOriginal
+        ? { ...p, imgOriginal: resolveOriginalImg(p) || undefined }
+        : p,
+    );
   } catch {
     return [];
   }
@@ -489,9 +581,10 @@ const SantaRitaNewsSection = () => {
       const ig = igPosts.filter((p) => p.img && !/unsplash/i.test(p.img)).slice(0, 2);
 
       setSrItems((prev) => {
-        const prevIg = prev.filter((p) => p.badge === "Instagram");
+        const prevIg = prev.filter((p) => p.badge === "Instagram" && p.img);
         const prevYt = prev.find((p) => p.badge === "YouTube");
 
+        // Sempre prefere posts frescos (URLs do CDN Instagram expiram)
         const nextIg = ig.length ? ig : prevIg.slice(0, 2);
         const nextYt = ytCard?.img ? ytCard : prevYt;
 
@@ -612,38 +705,7 @@ const SantaRitaNewsSection = () => {
               </p>
 
               <div className="aspect-[3/2] overflow-hidden bg-muted shrink-0 flex items-center justify-center relative">
-                {item.img ? (
-                  <img
-                    src={item.img}
-                    alt={item.title}
-                    className={`w-full h-full object-cover ${item.position || "object-center"} group-hover:scale-105 transition-transform duration-500`}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const el = e.target as HTMLImageElement;
-                      // Tenta URL original sem proxy (caso wsrv falhe)
-                      if (el.dataset.fb !== "1" && item.img.includes("wsrv.nl")) {
-                        el.dataset.fb = "1";
-                        const m = item.img.match(/url=([^&]+)/);
-                        if (m) {
-                          el.src = `https://${decodeURIComponent(m[1])}`;
-                          return;
-                        }
-                      }
-                      if (item.badge === "YouTube" && item.link.includes("v=")) {
-                        const id = item.link.match(/v=([^&]+)/)?.[1];
-                        if (id && el.dataset.yt !== "1") {
-                          el.dataset.yt = "1";
-                          el.src = `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
-                          return;
-                        }
-                      }
-                      el.style.visibility = "hidden";
-                    }}
-                  />
-                ) : (
-                  <Newspaper className="h-10 w-10 text-primary/35" />
-                )}
+                <CardMedia item={item} />
               </div>
 
               <div className="px-2.5 py-2 flex items-start justify-between gap-2 border-t border-border/60 flex-1 min-h-[3.25rem]">
