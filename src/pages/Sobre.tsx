@@ -11,9 +11,6 @@ import {
   Headphones,
   Radio,
   ExternalLink,
-  Phone,
-  Mail,
-  MapPin,
 } from "lucide-react";
 
 const SOCIALS = [
@@ -307,7 +304,7 @@ const Sobre = () => (
     </section>
 
     {/* Redes sociais */}
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-12 md:pb-16 lg:pb-20">
+    <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
       <div className="mb-6 sm:mb-8 max-w-2xl">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
           Nossas redes
@@ -345,56 +342,6 @@ const Sobre = () => (
             </div>
           </a>
         ))}
-      </div>
-    </section>
-
-    {/* Contato rápido */}
-    <section
-      className="border-t border-border"
-      style={{
-        background: "linear-gradient(90deg, #051230 0%, #0a2060 50%, #051230 100%)",
-      }}
-    >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-14 text-white">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 items-center">
-          <div>
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold leading-tight">
-              Quer falar com a rádio?
-            </h2>
-            <p className="text-sm sm:text-base text-white/70 mt-2 max-w-md">
-              Pedidos de música, parcerias, orações e dúvidas — estamos prontos para ouvir você.
-            </p>
-            <Link
-              to="/contato"
-              className="inline-flex mt-4 sm:mt-5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition hover:brightness-110"
-              style={{ background: "linear-gradient(135deg,#f5c518,#e8a800)", color: "#002266" }}
-            >
-              Ir para Contato
-            </Link>
-          </div>
-          <div className="space-y-3 sm:space-y-4 text-sm break-words">
-            <a
-              href="https://wa.me/5511961605164"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 text-white/85 hover:text-yellow-400 transition"
-            >
-              <Phone className="h-4 w-4 shrink-0" />
-              (11) 96160-5164
-            </a>
-            <a
-              href="mailto:contato@radioconexaocatolica.com.br"
-              className="flex items-center gap-3 text-white/85 hover:text-yellow-400 transition min-w-0"
-            >
-              <Mail className="h-4 w-4 shrink-0" />
-              <span className="truncate">contato@radioconexaocatolica.com.br</span>
-            </a>
-            <p className="flex items-start sm:items-center gap-3 text-white/85">
-              <MapPin className="h-4 w-4 shrink-0 mt-0.5 sm:mt-0" />
-              São Paulo, SP — Diocese de São Miguel Paulista
-            </p>
-          </div>
-        </div>
       </div>
     </section>
   </Layout>
