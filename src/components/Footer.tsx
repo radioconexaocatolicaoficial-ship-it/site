@@ -130,7 +130,7 @@ const Footer = () => {
           {[
             { label: "Início", to: "/" },
             { label: "Programação", to: "/programacao" },
-            { label: "Comunidade", to: "/comunidade" },
+            { label: "Comunidade", to: "/comunidade/catedral" },
             { label: "Praça", to: "/praca" },
             { label: "Contato", to: "/contato" },
           ].map((l) => (

@@ -13,7 +13,7 @@ const titles: Record<string, string> = {
   "/midia/downloads": "Downloads",
   "/midia/posts": "Posts",
   "/comunidade": "Comunidade",
-  "/comunidade/missas": "Missas",
+  "/comunidade/catedral": "Catedral S.M.A.",
   "/comunidade/renovacao": "Renovação Carismática",
   "/comunidade/musicas-missa": "Músicas da Missa",
   "/comunidade/caminhada": "Caminhada da Ressurreição",
