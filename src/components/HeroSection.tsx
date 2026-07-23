@@ -148,69 +148,71 @@ const HeroSection = () => {
         </div>
       </div>
 
-      {/* Mobile — setas dentro do banner */}
-      <div className="relative block md:hidden w-full overflow-hidden rounded-b-xl">
-        <img
-          src={slides[current].mobile}
-          alt=""
-          aria-hidden
-          className="w-full h-auto object-cover invisible"
-          width={1080}
-          height={1920}
-        />
-        {slides.map((slide, i) => {
-          const active = i === current;
-          const img = (
-            <img
-              src={slide.mobile}
-              alt={slide.alt}
-              className="w-full h-auto object-cover absolute inset-0"
-              width={1080}
-              height={1920}
-              loading={i === 0 ? "eager" : "lazy"}
-            />
-          );
+      {/* Mobile — todos os cantos arredondados + padding 5px */}
+      <div className="relative block md:hidden w-full p-[5px]">
+        <div className="relative w-full overflow-hidden rounded-xl">
+          <img
+            src={slides[current].mobile}
+            alt=""
+            aria-hidden
+            className="w-full h-auto object-cover invisible"
+            width={1080}
+            height={1920}
+          />
+          {slides.map((slide, i) => {
+            const active = i === current;
+            const img = (
+              <img
+                src={slide.mobile}
+                alt={slide.alt}
+                className="w-full h-auto object-cover absolute inset-0"
+                width={1080}
+                height={1920}
+                loading={i === 0 ? "eager" : "lazy"}
+              />
+            );
 
-          return (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-[1200ms] ease-in-out ${
-                active ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
-              }`}
-              aria-hidden={!active}
-            >
-              {slide.href ? (
-                <a
-                  href={slide.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full h-full relative"
-                  aria-label={slide.ctaLabel ?? slide.alt}
-                >
-                  {img}
-                </a>
-              ) : (
-                img
-              )}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={slide.id}
+                className={`absolute inset-0 transition-opacity duration-[1200ms] ease-in-out ${
+                  active ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                }`}
+                aria-hidden={!active}
+              >
+                {slide.href ? (
+                  <a
+                    href={slide.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full relative"
+                    aria-label={slide.ctaLabel ?? slide.alt}
+                  >
+                    {img}
+                  </a>
+                ) : (
+                  img
+                )}
+              </div>
+            );
+          })}
 
-        <ArrowButtons onPrev={prev} onNext={next} />
+          <ArrowButtons onPrev={prev} onNext={next} />
 
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-          {slides.map((slide, i) => (
-            <button
-              key={slide.id}
-              type="button"
-              onClick={() => setCurrent(i)}
-              className={`w-2.5 h-2.5 rounded-full transition-colors ${
-                i === current ? "bg-white shadow" : "bg-white/45"
-              }`}
-              aria-label={`Ir para banner ${i + 1}`}
-              aria-current={i === current}
-            />
-          ))}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+            {slides.map((slide, i) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setCurrent(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                  i === current ? "bg-white shadow" : "bg-white/45"
+                }`}
+                aria-label={`Ir para banner ${i + 1}`}
+                aria-current={i === current}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
