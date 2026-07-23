@@ -1,130 +1,144 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import Layout from "@/components/Layout";
 import LojaProdutoDialog from "@/components/LojaProdutoDialog";
-import { ShoppingCart } from "lucide-react";
+import {
+  lojaBannerProdutos,
+  lojaCategorias,
+  lojaProdutos,
+  whatsappLojaLink,
+  type LojaProduto,
+} from "@/data/lojaProdutos";
+import lojaBanner from "@/assets/loja-artigos-catolicos.jpg";
 
-import camiseta from "@/assets/camiseta-fundo-branco.jpg";
-import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.jpg";
-import exerciciosEspirituais from "@/assets/Exercícios-Espirituais.jpg";
-import squeezeAluminio from "@/assets/Squeeze-em-Alumínio.jpg";
-import santaRita from "@/assets/SANTA-RITA-DE-CASSIA.jpg";
-import sacola from "@/assets/sacola.jpg";
-import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.jpg";
-import tercoCores from "@/assets/Terços-Diversas-cores.jpg";
-import rosarioCampacto from "@/assets/rosario-campcto.jpg";
-
-type ProdutoLoja = {
-  id: number;
-  nome: string;
-  desc: string;
-  preco: string;
-  img: string;
-  categoria: string;
-  imgLightBg?: boolean;
-};
-
-const produtos: ProdutoLoja[] = [
-  {
-    id: 1,
-    nome: "Squeeze Caminhada da Ressurreição",
-    desc: "Squeeze oficial da Caminhada da Ressurreição com arte exclusiva. Entre em contato para mais informações.",
-    preco: "Orçamento",
-    img: garrafaCaminhada,
-    categoria: "Acessórios",
-  },
-  {
-    id: 2,
-    nome: "Livro Exercícios Espirituais — Santo Inácio de Loyola",
-    desc: "Edição especial do clássico Exercícios Espirituais de Santo Inácio de Loyola. Capa dura com acabamento premium.",
-    preco: "R$ 59,90",
-    img: exerciciosEspirituais,
-    categoria: "Livros",
-  },
-  {
-    id: 3,
-    nome: "Squeeze Conexão Católica — Há 11 Anos",
-    desc: "Squeeze comemorativo de 11 anos da Rádio Conexão Católica. Entre em contato para mais informações.",
-    preco: "Orçamento",
-    img: squeezeAluminio,
-    categoria: "Acessórios",
-  },
-  {
-    id: 4,
-    nome: "Livro Santa Rita de Cássia — Padre PH",
-    desc: "Livro 'Santa Rita de Cássia — Advogada das Causas Impossíveis' pelo Padre PH. Edição especial Dei Gloriam.",
-    preco: "R$ 59,90",
-    img: santaRita,
-    categoria: "Livros",
-  },
-  {
-    id: 5,
-    nome: "Mochila Saco Conexão Católica — Há 11 Anos",
-    desc: "Mochila saco oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para mais informações.",
-    preco: "Orçamento",
-    img: sacola,
-    categoria: "Acessórios",
-  },
-  {
-    id: 6,
-    nome: "Terço Aeternum — Olho de Tigre com Espada",
-    desc: "Terço artesanal Aeternum com pedras olho de tigre e pingente espada de São Miguel Arcanjo. Peça única.",
-    preco: "R$ 50,00",
-    img: tercoSaoMiguel,
-    categoria: "Religioso",
-  },
-  {
-    id: 7,
-    nome: "Terço Nossa Senhora Aparecida — Cristal Azul",
-    desc: "Terço de cristal azul com medalha e crucifixo dourado de Nossa Senhora Aparecida. Embalagem para presente.",
-    preco: "R$ 30,00",
-    img: tercoCores,
-    categoria: "Religioso",
-  },
-  {
-    id: 8,
-    nome: "Terço Aeternum Premium — Olho de Tigre",
-    desc: "Terço premium Aeternum com pedras olho de tigre naturais e pingente espada de São Miguel Arcanjo. Edição especial.",
-    preco: "R$ 100,00",
-    img: rosarioCampacto,
-    categoria: "Religioso",
-  },
-  {
-    id: 9,
-    nome: "Camiseta Conexão Católica — Há 11 Anos",
-    desc: "Camiseta oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para tamanhos e cores disponíveis.",
-    preco: "Orçamento",
-    img: camiseta,
-    categoria: "Vestuário",
-    imgLightBg: true,
-  },
-];
-
-const categorias = ["Todos", ...Array.from(new Set(produtos.map(p => p.categoria)))];
+const AUTO_MS = 5000;
 
 const Loja = () => {
   const [cat, setCat] = useState("Todos");
-  const [modalProduto, setModalProduto] = useState<ProdutoLoja | null>(null);
-  const filtrados = cat === "Todos" ? produtos : produtos.filter(p => p.categoria === cat);
+  const [modalProduto, setModalProduto] = useState<LojaProduto | null>(null);
+  const [slide, setSlide] = useState(0);
+
+  const filtrados = cat === "Todos" ? lojaProdutos : lojaProdutos.filter((p) => p.categoria === cat);
+  const total = lojaBannerProdutos.length;
+  const atual = lojaBannerProdutos[slide] ?? lojaBannerProdutos[0];
+
+  useEffect(() => {
+    if (total < 2) return;
+    const id = window.setInterval(() => setSlide((s) => (s + 1) % total), AUTO_MS);
+    return () => window.clearInterval(id);
+  }, [total]);
+
+  const prev = () => setSlide((s) => (s - 1 + total) % total);
+  const next = () => setSlide((s) => (s + 1) % total);
 
   return (
     <Layout>
-      {/* Hero */}
-      <div className="gradient-primary text-primary-foreground py-12 px-4 text-center">
-        <div className="container mx-auto">
-          <ShoppingCart className="h-12 w-12 mx-auto mb-4 opacity-80" />
-          <h1 className="text-3xl font-bold mb-2">Loja Oficial</h1>
-          <p className="text-primary-foreground/80 max-w-xl mx-auto">
-            Produtos exclusivos da Rádio Conexão Católica. Compre pelo WhatsApp com facilidade.
-          </p>
-        </div>
-      </div>
+      {/* Banner: loja religiosa + carrossel PNG (produto | descrição/preço) */}
+      <section className="relative overflow-hidden h-[300px] sm:h-[340px] md:h-[380px] bg-[#051230]">
+        <img
+          src={lojaBanner}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-45"
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(5,18,48,0.55) 0%, rgba(10,32,96,0.72) 45%, rgba(5,18,48,0.88) 100%)",
+          }}
+        />
 
-      <div className="container mx-auto px-4 py-10">
-        {/* Filtros */}
+        {atual ? (
+          <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Produto anterior"
+              className="absolute left-2 sm:left-4 z-20 h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-white/35 bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 transition flex items-center justify-center"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Próximo produto"
+              className="absolute right-2 sm:right-4 z-20 h-9 w-9 sm:h-10 sm:w-10 rounded-full border border-white/35 bg-black/25 text-white backdrop-blur-sm hover:bg-black/40 transition flex items-center justify-center"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+
+            <div
+              key={atual.id}
+              className="w-full grid grid-cols-2 gap-2 sm:gap-6 md:gap-8 items-center px-8 sm:px-12 animate-in fade-in duration-500"
+            >
+              {/* Lado esquerdo — produto PNG */}
+              <div className="flex items-center justify-center md:justify-end h-[180px] sm:h-[220px] md:h-[280px]">
+                <img
+                  src={atual.imgPng}
+                  alt={atual.nome}
+                  className="max-h-full max-w-full object-contain drop-shadow-[0_12px_28px_rgba(0,0,0,0.45)]"
+                />
+              </div>
+
+              {/* Lado direito — descrição e preço */}
+              <div className="text-left text-white">
+                <p className="text-[9px] sm:text-[11px] font-semibold tracking-[0.16em] sm:tracking-[0.2em] uppercase text-yellow-400/90 mb-1 sm:mb-2">
+                  Loja Oficial · {atual.categoria}
+                </p>
+                <h1 className="text-base sm:text-2xl md:text-3xl font-black leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)] line-clamp-2">
+                  {atual.nome}
+                </h1>
+                <p className="mt-1.5 sm:mt-2 text-white/80 text-[11px] sm:text-sm md:text-base max-w-md line-clamp-2 sm:line-clamp-3 drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+                  {atual.desc}
+                </p>
+                <div className="mt-2.5 sm:mt-4 flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span
+                    className={`text-base sm:text-xl md:text-2xl font-black ${
+                      atual.preco === "Orçamento" ? "text-white/90" : "text-yellow-400"
+                    }`}
+                  >
+                    {atual.preco === "Orçamento" ? "Sob orçamento" : atual.preco}
+                  </span>
+                  <a
+                    href={whatsappLojaLink(atual.nome, atual.preco)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-full text-[11px] sm:text-sm font-bold transition hover:brightness-110"
+                    style={{ background: "linear-gradient(135deg,#f5c518,#e8a800)", color: "#002266" }}
+                  >
+                    <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    Comprar
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {total > 1 ? (
+          <div className="absolute bottom-3 left-0 right-0 z-20 flex justify-center gap-1.5">
+            {lojaBannerProdutos.map((p, i) => (
+              <button
+                key={p.id}
+                type="button"
+                aria-label={`Ir para ${p.nome}`}
+                onClick={() => setSlide(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === slide ? "w-6 bg-yellow-400" : "w-1.5 bg-white/45 hover:bg-white/70"
+                }`}
+              />
+            ))}
+          </div>
+        ) : null}
+      </section>
+
+      <div id="produtos-loja" className="container mx-auto px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
         <div className="flex flex-wrap gap-2 mb-8">
-          {categorias.map(c => (
+          {lojaCategorias.map((c) => (
             <button
               key={c}
+              type="button"
               onClick={() => setCat(c)}
               className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                 cat === c
@@ -137,9 +151,8 @@ const Loja = () => {
           ))}
         </div>
 
-        {/* Grid de produtos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtrados.map(produto => (
+          {filtrados.map((produto) => (
             <div
               key={produto.id}
               role="button"
@@ -153,22 +166,26 @@ const Loja = () => {
               }}
               className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
             >
-              <div className={`aspect-square overflow-hidden ${produto.imgLightBg ? "bg-white" : ""}`}>
+              <div className="aspect-square overflow-hidden bg-transparent flex items-center justify-center p-3">
                 <img
-                  src={produto.img}
+                  src={produto.imgPng ?? produto.img}
                   alt={produto.nome}
-                  className={`w-full h-full hover:scale-105 transition-transform duration-500 ${
-                    produto.imgLightBg ? "object-contain p-3" : "object-cover"
-                  }`}
+                  className="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-500"
                   loading="lazy"
                 />
               </div>
               <div className="p-4 flex flex-col flex-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary opacity-70 mb-1">{produto.categoria}</span>
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary opacity-70 mb-1">
+                  {produto.categoria}
+                </span>
                 <h3 className="font-semibold text-sm text-foreground leading-snug mb-1">{produto.nome}</h3>
                 <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{produto.desc}</p>
                 <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
-                  <span className={`text-base font-bold ${produto.preco === "Orçamento" ? "text-muted-foreground text-sm" : "text-primary"}`}>
+                  <span
+                    className={`text-base font-bold ${
+                      produto.preco === "Orçamento" ? "text-muted-foreground text-sm" : "text-primary"
+                    }`}
+                  >
                     {produto.preco === "Orçamento" ? "Sob orçamento" : produto.preco}
                   </span>
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ver detalhes</span>
@@ -182,18 +199,7 @@ const Loja = () => {
       <LojaProdutoDialog
         open={modalProduto !== null}
         onOpenChange={(open) => !open && setModalProduto(null)}
-        produto={
-          modalProduto
-            ? {
-                id: modalProduto.id,
-                nome: modalProduto.nome,
-                preco: modalProduto.preco,
-                img: modalProduto.img,
-                desc: modalProduto.desc,
-                ...(modalProduto.imgLightBg ? { imgLightBg: true as const } : {}),
-              }
-            : null
-        }
+        produto={modalProduto}
       />
     </Layout>
   );

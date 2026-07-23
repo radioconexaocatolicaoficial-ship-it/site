@@ -113,7 +113,7 @@ const Footer = () => {
         </a>
       </div>
     </div>
-    <div className="container mx-auto px-4 py-12 flex flex-wrap gap-8">
+    <div className="container mx-auto px-4 py-8 flex flex-wrap gap-8">
 
       {/* Coluna 1 — Nossa Rádio */}
       <div className="w-full sm:w-auto" style={{ minWidth: "200px", flex: "1 1 200px" }}>
@@ -129,7 +129,8 @@ const Footer = () => {
         <ul className={col}>
           {[
             { label: "Início", to: "/" },
-            { label: "Programação", to: "/programacao" },
+            { label: "Loja", to: "/loja" },
+            { label: "Mídia", to: "/midia" },
             { label: "Comunidade", to: "/comunidade/catedral" },
             { label: "Praça", to: "/praca" },
             { label: "Contato", to: "/contato" },
@@ -145,8 +146,7 @@ const Footer = () => {
         <ul className={col}>
           {[
             { label: "Sobre Nós", to: "/sobre" },
-            { label: "Locutores", to: "/programacao/locutores" },
-            { label: "Eventos", to: "/programacao/eventos" },
+            { label: "Loja", to: "/loja" },
             { label: "Caminhada", to: "https://www.caminhadadaressurreicao.com/", external: true },
             { label: "Renovação", to: "https://rccbrasil.org.br/", external: true },
             { label: "LGPD / Privacidade", to: "/lgpd" },
@@ -192,10 +192,11 @@ const Footer = () => {
         <h3 className={heading}><Clapperboard className="h-5 w-5 opacity-80" />Mídia</h3>
         <ul className={`${col} mb-4`}>
           {[
-            { label: "Fotos", to: "/midia/fotos" },
-            { label: "Vídeos", to: "/midia/videos" },
-            { label: "Downloads", to: "/midia/downloads" },
-            { label: "Posts", to: "/midia/posts" },
+            { label: "Mídia", to: "/midia" },
+            { label: "Instagram", to: "https://www.instagram.com/radioconexaocatolicaoficial/", external: true },
+            { label: "Facebook", to: "https://www.facebook.com/radioconexaocatolicaofical", external: true },
+            { label: "YouTube", to: "https://www.youtube.com/@radioconexaocatolicaofical", external: true },
+            { label: "TikTok", to: "https://www.tiktok.com/@radioconexaocatolica", external: true },
             { label: "Músicas da Missa", to: "https://musicasparamissa.com.br/", external: true },
           ].map((l) => (
             <li key={l.to}>

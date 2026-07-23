@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Home, Info, CalendarDays, Clapperboard, Users, Network, Phone } from "lucide-react";
+import { Menu, X, ChevronDown, Home, Info, ShoppingBag, Clapperboard, Users, Network, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
 import RadioPlayer from "./RadioPlayer";
 import TopBar from "./TopBar";
@@ -18,24 +18,8 @@ type NavItem = {
 const navItems: NavItem[] = [
   { label: "Início", to: "/", icon: <Home className="h-4 w-4" /> },
   { label: "Sobre Nós", to: "/sobre", icon: <Info className="h-4 w-4" /> },
-  {
-    label: "Programação", to: "/programacao", icon: <CalendarDays className="h-4 w-4" />,
-    children: [
-      { label: "Locutores", to: "/programacao/locutores" },
-      { label: "Músicas", to: "/programacao/musicas" },
-      { label: "Eventos", to: "/programacao/eventos" },
-      { label: "Pedidos", to: "/programacao/pedidos" },
-    ],
-  },
-  {
-    label: "Mídia", to: "/midia", icon: <Clapperboard className="h-4 w-4" />,
-    children: [
-      { label: "Fotos", to: "/midia/fotos" },
-      { label: "Vídeos", to: "/midia/videos" },
-      { label: "Downloads", to: "/midia/downloads" },
-      { label: "Posts", to: "/midia/posts" },
-    ],
-  },
+  { label: "Loja", to: "/loja", icon: <ShoppingBag className="h-4 w-4" /> },
+  { label: "Mídia", to: "/midia", icon: <Clapperboard className="h-4 w-4" /> },
   {
     label: "Comunidade",
     icon: <Users className="h-4 w-4" />,

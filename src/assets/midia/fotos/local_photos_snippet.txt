@@ -1,0 +1,8 @@
+﻿  { id: "ig1", network: "instagram", title: "Dia de Nossa sSenhora de Fátima 13 de Maio.", excerpt: "Instagram oficial", image: ig1, href: "https://www.instagram.com/p/DYSMn7fuD0u/", kind: "foto" },
+  { id: "ig2", network: "instagram", title: "Corpus Christi", excerpt: "Instagram oficial", image: ig2, href: "https://www.instagram.com/p/DZLWsWXEQh7/", kind: "foto" },
+  { id: "ig3", network: "instagram", title: "Nosso coração transborda de gratidão aos jovens da Diocese de São Miguel, que co", excerpt: "Instagram oficial", image: ig3, href: "https://www.instagram.com/p/DZJ1-qggIYf/", kind: "foto" },
+  { id: "ig4", network: "instagram", title: "Nosso coração transborda de gratidão aos jovens da Diocese de São Miguel, que co", excerpt: "Instagram oficial", image: ig4, href: "https://www.instagram.com/p/DZKua4rxuTl/", kind: "foto" },
+  { id: "ig5", network: "instagram", title: "by @radioconexaocatolicaoficial", excerpt: "Instagram oficial", image: ig5, href: "https://www.instagram.com/p/DZLHkgMEbBW/", kind: "foto" },
+  { id: "ig6", network: "instagram", title: "A Rádio Conexão Católica deseja a todas as mães um feliz dia!", excerpt: "Instagram oficial", image: ig6, href: "https://www.instagram.com/p/DYKUKgPjdFh/", kind: "foto" },
+  { id: "ig7", network: "instagram", title: "Nesta quinta-feira (4), a Diocese de São Miguel Paulista se encheu de fé e tradi", excerpt: "Instagram oficial", image: ig7, href: "https://www.instagram.com/p/DZNVCE0xPGd/", kind: "foto" },
+  { id: "ig8", network: "instagram", title: "Vamos lá POVO DE DEUS! Vamos nos unir nesse domingo 03/05 para o 1° Cenáculo da ", excerpt: "Instagram oficial", image: ig8, href: "https://www.instagram.com/p/DX2ndvCtGUo/", kind: "foto" },
