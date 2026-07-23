@@ -1,21 +1,12 @@
-import camiseta from "@/assets/camiseta-fundo-branco.jpg";
-import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.jpg";
-import exerciciosEspirituais from "@/assets/Exercícios-Espirituais.jpg";
-import squeezeAluminio from "@/assets/Squeeze-em-Alumínio.jpg";
-import santaRita from "@/assets/SANTA-RITA-DE-CASSIA.jpg";
-import sacola from "@/assets/sacola.jpg";
-import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.jpg";
-import tercoCores from "@/assets/Terços-Diversas-cores.jpg";
-import rosarioCampacto from "@/assets/rosario-campcto.jpg";
-
-import camisetaPng from "@/assets/loja-png/camiseta-fundo-branco.png";
-import garrafaCaminhadaPng from "@/assets/loja-png/Garrafa-Caminhada-da-Ressurreição.png";
-import exerciciosEspirituaisPng from "@/assets/loja-png/Exercícios-Espirituais.png";
-import squeezeAluminioPng from "@/assets/loja-png/Squeeze-em-Alumínio.png";
-import santaRitaPng from "@/assets/loja-png/SANTA-RITA-DE-CASSIA.png";
-import sacolaPng from "@/assets/loja-png/sacola.png";
-import tercoCoresPng from "@/assets/loja-png/Terços-Diversas-cores.png";
-import rosarioCampactoPng from "@/assets/loja-png/rosario-campcto.png";
+import camiseta from "@/assets/Camiseta-fundo-branco.png";
+import garrafaCaminhada from "@/assets/Garrafa-Caminhada-da-Ressurreição.png";
+import exerciciosEspirituais from "@/assets/Exercícios-Espirituais.png";
+import squeezeAluminio from "@/assets/Squeeze-em-Alumínio.png";
+import santaRita from "@/assets/SANTA-RITA-DE-CASSIA.png";
+import sacola from "@/assets/sacola.png";
+import tercoSaoMiguel from "@/assets/Terço-de-São-Miguel-Arcanjo.png";
+import tercoCores from "@/assets/Terços-Diversas-cores.png";
+import rosarioCampacto from "@/assets/rosario-campcto.png";
 
 export const WHATSAPP_LOJA = "5511961605164";
 
@@ -39,7 +30,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Squeeze oficial da Caminhada da Ressurreição com arte exclusiva. Entre em contato para mais informações.",
     preco: "Orçamento",
     img: garrafaCaminhada,
-    imgPng: garrafaCaminhadaPng,
+    imgPng: garrafaCaminhada,
     categoria: "Acessórios",
   },
   {
@@ -48,7 +39,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Edição especial do clássico Exercícios Espirituais de Santo Inácio de Loyola. Capa dura com acabamento premium.",
     preco: "R$ 59,90",
     img: exerciciosEspirituais,
-    imgPng: exerciciosEspirituaisPng,
+    imgPng: exerciciosEspirituais,
     categoria: "Livros",
   },
   {
@@ -57,7 +48,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Squeeze comemorativo de 11 anos da Rádio Conexão Católica. Entre em contato para mais informações.",
     preco: "Orçamento",
     img: squeezeAluminio,
-    imgPng: squeezeAluminioPng,
+    imgPng: squeezeAluminio,
     categoria: "Acessórios",
   },
   {
@@ -66,7 +57,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Livro 'Santa Rita de Cássia — Advogada das Causas Impossíveis' pelo Padre PH. Edição especial Dei Gloriam.",
     preco: "R$ 59,90",
     img: santaRita,
-    imgPng: santaRitaPng,
+    imgPng: santaRita,
     categoria: "Livros",
   },
   {
@@ -75,7 +66,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Mochila saco oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para mais informações.",
     preco: "Orçamento",
     img: sacola,
-    imgPng: sacolaPng,
+    imgPng: sacola,
     categoria: "Acessórios",
   },
   {
@@ -84,6 +75,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Terço artesanal Aeternum com pedras olho de tigre e pingente espada de São Miguel Arcanjo. Peça única.",
     preco: "R$ 50,00",
     img: tercoSaoMiguel,
+    imgPng: tercoSaoMiguel,
     categoria: "Religioso",
   },
   {
@@ -92,7 +84,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Terço de cristal azul com medalha e crucifixo dourado de Nossa Senhora Aparecida. Embalagem para presente.",
     preco: "R$ 30,00",
     img: tercoCores,
-    imgPng: tercoCoresPng,
+    imgPng: tercoCores,
     categoria: "Religioso",
   },
   {
@@ -101,7 +93,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Terço premium Aeternum com pedras olho de tigre naturais e pingente espada de São Miguel Arcanjo. Edição especial.",
     preco: "R$ 100,00",
     img: rosarioCampacto,
-    imgPng: rosarioCampactoPng,
+    imgPng: rosarioCampacto,
     categoria: "Religioso",
   },
   {
@@ -110,7 +102,7 @@ export const lojaProdutos: LojaProduto[] = [
     desc: "Camiseta oficial da Rádio Conexão Católica comemorativa de 11 anos. Entre em contato para tamanhos e cores disponíveis.",
     preco: "Orçamento",
     img: camiseta,
-    imgPng: camisetaPng,
+    imgPng: camiseta,
     categoria: "Vestuário",
     imgLightBg: true,
   },

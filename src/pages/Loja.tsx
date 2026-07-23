@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react";
 import Layout from "@/components/Layout";
 import LojaProdutoDialog from "@/components/LojaProdutoDialog";
+import CountdownCard from "@/components/CountdownCard";
+import LiturgiaWidget from "@/components/LiturgiaWidget";
+import PedidoMusica from "@/components/PedidoMusica";
 import {
   lojaBannerProdutos,
   lojaCategorias,
@@ -72,7 +75,6 @@ const Loja = () => {
               key={atual.id}
               className="w-full grid grid-cols-2 gap-2 sm:gap-6 md:gap-8 items-center px-8 sm:px-12 animate-in fade-in duration-500"
             >
-              {/* Lado esquerdo — produto PNG */}
               <div className="flex items-center justify-center md:justify-end h-[180px] sm:h-[220px] md:h-[280px]">
                 <img
                   src={atual.imgPng}
@@ -81,7 +83,6 @@ const Loja = () => {
                 />
               </div>
 
-              {/* Lado direito — descrição e preço */}
               <div className="text-left text-white">
                 <p className="text-[9px] sm:text-[11px] font-semibold tracking-[0.16em] sm:tracking-[0.2em] uppercase text-yellow-400/90 mb-1 sm:mb-2">
                   Loja Oficial · {atual.categoria}
@@ -133,68 +134,90 @@ const Loja = () => {
         ) : null}
       </section>
 
-      <div id="produtos-loja" className="container mx-auto px-4 pt-8 sm:pt-10 pb-4 sm:pb-6">
-        <div className="flex flex-wrap gap-2 mb-8">
-          {lojaCategorias.map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setCat(c)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-                cat === c
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-transparent text-foreground border-border hover:border-primary hover:text-primary"
-              }`}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filtrados.map((produto) => (
-            <div
-              key={produto.id}
-              role="button"
-              tabIndex={0}
-              onClick={() => setModalProduto(produto)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setModalProduto(produto);
-                }
-              }}
-              className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
-            >
-              <div className="aspect-square overflow-hidden bg-transparent flex items-center justify-center p-3">
-                <img
-                  src={produto.imgPng ?? produto.img}
-                  alt={produto.nome}
-                  className="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-500"
-                  loading="lazy"
-                />
-              </div>
-              <div className="p-4 flex flex-col flex-1">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-primary opacity-70 mb-1">
-                  {produto.categoria}
-                </span>
-                <h3 className="font-semibold text-sm text-foreground leading-snug mb-1">{produto.nome}</h3>
-                <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{produto.desc}</p>
-                <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
-                  <span
-                    className={`text-base font-bold ${
-                      produto.preco === "Orçamento" ? "text-muted-foreground text-sm" : "text-primary"
-                    }`}
-                  >
-                    {produto.preco === "Orçamento" ? "Sob orçamento" : produto.preco}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Ver detalhes</span>
-                </div>
-              </div>
+      {/* Duas colunas: produtos | cards laterais */}
+      <section
+        id="produtos-loja"
+        className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-4 sm:pb-6"
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,29.3%)] gap-6 lg:gap-8 items-start">
+          {/* Esquerda — 3 produtos por linha */}
+          <div>
+            <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
+              {lojaCategorias.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => setCat(c)}
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                    cat === c
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-transparent text-foreground border-border hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {c}
+                </button>
+              ))}
             </div>
-          ))}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5">
+              {filtrados.map((produto) => (
+                <div
+                  key={produto.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setModalProduto(produto)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setModalProduto(produto);
+                    }
+                  }}
+                  className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
+                >
+                  <div className="aspect-square overflow-hidden bg-transparent flex items-center justify-center p-3">
+                    <img
+                      src={produto.imgPng ?? produto.img}
+                      alt={produto.nome}
+                      className="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-4 flex flex-col flex-1">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-primary opacity-70 mb-1">
+                      {produto.categoria}
+                    </span>
+                    <h3 className="font-semibold text-sm text-foreground leading-snug mb-1">
+                      {produto.nome}
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{produto.desc}</p>
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
+                      <span
+                        className={`text-base font-bold ${
+                          produto.preco === "Orçamento"
+                            ? "text-muted-foreground text-sm"
+                            : "text-primary"
+                        }`}
+                      >
+                        {produto.preco === "Orçamento" ? "Sob orçamento" : produto.preco}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-wide">
+                        Ver detalhes
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Direita — Abraça São Paulo, Liturgia, Pedido de Música (−4% da largura) */}
+          <aside className="space-y-4 lg:sticky lg:top-24">
+            <CountdownCard />
+            <LiturgiaWidget />
+            <PedidoMusica />
+          </aside>
         </div>
-      </div>
+      </section>
 
       <LojaProdutoDialog
         open={modalProduto !== null}

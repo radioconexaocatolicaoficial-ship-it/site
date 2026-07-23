@@ -50,7 +50,11 @@ const CountdownCard = () => {
       </div>
       <div className="relative z-10">
         <p className="text-xs font-medium tracking-widest uppercase opacity-80">Vem aí a 19ª edição</p>
-        <h2 className="text-xl md:text-2xl font-extrabold mt-1 leading-tight">ABRAÇA SÃO PAULO<br />2026</h2>
+        <h2 className="text-xl md:text-2xl font-extrabold mt-1 leading-tight">
+          ABRAÇA
+          <br />
+          SÃO PAULO 2026
+        </h2>
         <p className="text-sm mt-2 italic opacity-90">"A Fé que Transforma"</p>
       </div>
 
