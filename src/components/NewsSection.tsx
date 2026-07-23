@@ -5,6 +5,8 @@ import {
   resolveNewsCardsInBrowser,
   type ResolvedNewsCard,
 } from "@/lib/resolveNewsCards";
+import imgTransitoBaixada from "@/assets/news/transito-baixada.jpg";
+import imgEsportesBaixada from "@/assets/news/esportes-baixada.jpg";
 
 const RSS2JSON = "https://api.rss2json.com/v1/api.json";
 const REFRESH_MS = 10 * 60 * 1000;
@@ -60,7 +62,7 @@ const REGIONS: Record<NewsRegion, RegionConfig> = {
     ],
   },
   baixada: {
-    cacheKey: "rcc_rnoticias_baixada_v4",
+    cacheKey: "rcc_rnoticias_baixada_v5",
     lat: -23.9608,
     lon: -46.3336,
     place: "Baixada Santista",
@@ -69,21 +71,20 @@ const REGIONS: Record<NewsRegion, RegionConfig> = {
     trafficSubtitle: "Anchieta, Imigrantes e vias da região",
     trafficHref:
       "https://www.waze.com/pt-BR/live-map?utm_source=rcc&lat=-23.9608&lng=-46.3336&zoom=12",
-    trafficRss:
-      "https://news.google.com/rss/search?q=tr%C3%A1nsito+Baixada+Santista+OR+Santos+OR+Anchieta+OR+Imigrantes+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    trafficRss: "https://g1.globo.com/dynamo/sp/santos-regiao/rss2.xml",
     trafficFallbackRss: [
-      "https://g1.globo.com/dynamo/sp/santos-regiao/rss2.xml",
-      "https://news.google.com/rss/search?q=tr%C3%A1nsito+Santos+S%C3%A3o+Vicente+Praia+Grande+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://news.google.com/rss/search?q=tr%C3%A1nsito+Baixada+Santista+OR+Anchieta+OR+Imigrantes+when:3d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://g1.globo.com/dynamo/sao-paulo/transito/rss2.xml",
     ],
     sportsBadge: "Esportes Baixada Santista",
     sportsTitle: "Esportes na Baixada Santista",
     sportsSubtitle: "Santos FC, Portuguesa e esporte regional",
     sportsHref: "https://ge.globo.com/sp/santos-e-regiao/",
-    sportsRss:
-      "https://news.google.com/rss/search?q=(esporte+OR+futebol+OR+%22Santos+FC%22+OR+%22Santos+Futebol+Clube%22+OR+Peixe+OR+%22Portuguesa+Santista%22)+(%22Baixada+Santista%22+OR+Santos+OR+%22S%C3%A3o+Vicente%22+OR+%22Praia+Grande%22+OR+Guaruj%C3%A1)+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    sportsRss: "https://ge.globo.com/dynamo/futebol/times/santos/rss2.xml",
     sportsFallbackRss: [
-      "https://news.google.com/rss/search?q=%22Santos+FC%22+OR+%22Santos+Futebol+Clube%22+OR+%22Vila+Belmiro%22+(futebol+OR+jogo+OR+partida)+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
-      "https://news.google.com/rss/search?q=%22Portuguesa+Santista%22+OR+Jabaquara+OR+%22esporte+Baixada+Santista%22+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://www.gazetaesportiva.com/times/santos/feed/",
+      "https://g1.globo.com/dynamo/sp/santos-regiao/rss2.xml",
+      "https://news.google.com/rss/search?q=Santos+FC+OR+%22Santos+Futebol+Clube%22+futebol+when:5d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
     ],
   },
 };
@@ -104,20 +105,33 @@ const JINA_PROXY = (url: string) => `https://r.jina.ai/http://${url.replace(/^ht
 
 const SANTO_DIA_URL = "https://santo.cancaonova.com/";
 
+/** Imagens de categoria — aparecem se o feed não trouxer foto. */
+const IMG_TRANSITO = imgTransitoBaixada;
+const IMG_ESPORTES = imgEsportesBaixada;
+
+function categoryFallbackImage(badge: string): string {
+  const b = badge.toLowerCase();
+  if (b.includes("trânsito")) return IMG_TRANSITO;
+  if (b.includes("esporte")) return IMG_ESPORTES;
+  return "";
+}
+
 function fallbackNewsCard(
   badge: string,
   title: string,
   subtitle: string,
   href: string,
 ): RadioCard {
+  const img = categoryFallbackImage(badge);
   return {
     kind: "news",
     href,
     badge,
     title,
     subtitle,
-    image: "",
-    imageFallback: "",
+    image: img,
+    imageFallback: img,
+    imageOriginal: img,
   };
 }
 
@@ -347,8 +361,9 @@ function pickItemImage(item: Rss2JsonItem): string {
   if (item.thumbnail?.trim() && /^https?:\/\//i.test(item.thumbnail) && !isJunkImage(item.thumbnail)) {
     return upgradeImageUrl(item.thumbnail.trim());
   }
-  // Não varre o HTML do corpo (muitas imagens laterais/erradas).
-  // A foto correta vem de media/enclosure ou og:image da matéria.
+  // Google News / feeds sem enclosure: tenta img no HTML da descrição
+  const fromHtml = extractImgFromHtml(item.description || item.content || "");
+  if (fromHtml && !isJunkImage(fromHtml)) return fromHtml;
   return "";
 }
 
@@ -676,9 +691,8 @@ async function buildNewsCard(
     const sportsOnly = pool.filter((it) =>
       isSportsRelated(it.title || "", stripHtml(it.description || it.content || "")),
     );
-    // Só esportes — se não houver match, não cai em notícia geral
-    if (!sportsOnly.length) return null;
-    pool = sportsOnly;
+    // Prefere esportes; se o feed já é de time (Santos), mantém o pool
+    if (sportsOnly.length) pool = sportsOnly;
   }
 
   // Prioriza itens que já têm imagem no feed
@@ -687,6 +701,8 @@ async function buildNewsCard(
     const bi = pickItemImage(b) ? 1 : 0;
     return bi - ai;
   });
+
+  let bestWithoutImage: RadioCard | null = null;
 
   for (const it of pool.slice(0, 12)) {
     const link = unwrapArticleUrl((it.link || "").trim());
@@ -726,14 +742,31 @@ async function buildNewsCard(
       }
     }
 
-    if (!rawImg || /unsplash\.com/i.test(rawImg)) continue;
+    const subtitle = normalizeTitle(stripHtml(it.description || it.content || "")) || title;
+    const hrefFinal = isTransit ? "https://www.waze.com/pt-BR/live-map/" : articleUrl || link;
+
+    if (!rawImg || /unsplash\.com/i.test(rawImg)) {
+      if ((isTransit || isSports) && !bestWithoutImage) {
+        const fb = categoryFallbackImage(badge);
+        bestWithoutImage = {
+          kind: "news",
+          href: hrefFinal,
+          badge,
+          title,
+          subtitle: subtitle === title ? `Fonte: ${badge}` : subtitle,
+          image: fb,
+          imageFallback: fb,
+          imageOriginal: fb,
+        };
+      }
+      continue;
+    }
 
     const image = proxyImage(rawImg);
-    const subtitle = normalizeTitle(stripHtml(it.description || it.content || "")) || title;
 
     return {
       kind: "news",
-      href: isTransit ? "https://www.waze.com/pt-BR/live-map/" : articleUrl || link,
+      href: hrefFinal,
       badge,
       title,
       subtitle: subtitle === title ? `Fonte: ${badge}` : subtitle,
@@ -743,7 +776,7 @@ async function buildNewsCard(
     };
   }
 
-  return null;
+  return bestWithoutImage;
 }
 
 async function loadNewsCard(
