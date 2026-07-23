@@ -147,11 +147,19 @@ const Footer = () => {
             { label: "Sobre Nós", to: "/sobre" },
             { label: "Locutores", to: "/programacao/locutores" },
             { label: "Eventos", to: "/programacao/eventos" },
-            { label: "Caminhada", to: "/comunidade/caminhada" },
-            { label: "Renovação", to: "/comunidade/renovacao" },
+            { label: "Caminhada", to: "https://www.caminhadadaressurreicao.com/", external: true },
+            { label: "Renovação", to: "https://rccbrasil.org.br/", external: true },
             { label: "LGPD / Privacidade", to: "/lgpd" },
           ].map((l) => (
-            <li key={l.to}><Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link></li>
+            <li key={l.to}>
+              {l.external ? (
+                <a href={l.to} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors whitespace-nowrap">
+                  {l.label}
+                </a>
+              ) : (
+                <Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link>
+              )}
+            </li>
           ))}
         </ul>
       </div>
@@ -188,9 +196,17 @@ const Footer = () => {
             { label: "Vídeos", to: "/midia/videos" },
             { label: "Downloads", to: "/midia/downloads" },
             { label: "Posts", to: "/midia/posts" },
-            { label: "Músicas da Missa", to: "/comunidade/musicas-missa" },
+            { label: "Músicas da Missa", to: "https://musicasparamissa.com.br/", external: true },
           ].map((l) => (
-            <li key={l.to}><Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link></li>
+            <li key={l.to}>
+              {l.external ? (
+                <a href={l.to} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors whitespace-nowrap">
+                  {l.label}
+                </a>
+              ) : (
+                <Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link>
+              )}
+            </li>
           ))}
         </ul>
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">

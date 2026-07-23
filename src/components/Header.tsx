@@ -5,7 +5,8 @@ import logo from "@/assets/logo.png";
 import RadioPlayer from "./RadioPlayer";
 import TopBar from "./TopBar";
 
-type NavItem = { label: string; to: string; icon?: React.ReactNode; children?: { label: string; to: string }[] };
+type NavChild = { label: string; to: string; external?: boolean };
+type NavItem = { label: string; to: string; icon?: React.ReactNode; children?: NavChild[] };
 
 const navItems: NavItem[] = [
   { label: "Início", to: "/", icon: <Home className="h-4 w-4" /> },
@@ -32,9 +33,21 @@ const navItems: NavItem[] = [
     label: "Comunidade", to: "/comunidade", icon: <Users className="h-4 w-4" />,
     children: [
       { label: "Missas", to: "/comunidade/missas" },
-      { label: "Renovação Carismática", to: "/comunidade/renovacao" },
-      { label: "Músicas/Missa", to: "/comunidade/musicas-missa" },
-      { label: "Caminhada da Ressurreição", to: "/comunidade/caminhada" },
+      {
+        label: "Renovação Carismática",
+        to: "https://rccbrasil.org.br/",
+        external: true,
+      },
+      {
+        label: "Músicas/Missa",
+        to: "https://musicasparamissa.com.br/",
+        external: true,
+      },
+      {
+        label: "Caminhada da Ressurreição",
+        to: "https://www.caminhadadaressurreicao.com/",
+        external: true,
+      },
     ],
   },
   {
@@ -84,12 +97,27 @@ const Header = () => {
                 </Link>
                 {item.children && openDropdown === item.label && (
                   <div className="absolute top-full left-0 mt-1 w-56 bg-card rounded-lg shadow-xl border border-border py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {item.children.map((child) => (
-                      <Link key={child.to} to={child.to}
-                        className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors">
-                        {child.label}
-                      </Link>
-                    ))}
+                    {item.children.map((child) =>
+                      child.external ? (
+                        <a
+                          key={child.to}
+                          href={child.to}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors"
+                        >
+                          {child.label}
+                        </a>
+                      ) : (
+                        <Link
+                          key={child.to}
+                          to={child.to}
+                          className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted hover:text-primary transition-colors"
+                        >
+                          {child.label}
+                        </Link>
+                      ),
+                    )}
                   </div>
                 )}
               </div>
@@ -122,12 +150,29 @@ const Header = () => {
                 </Link>
                 {item.children && openDropdown === item.label && (
                   <div className="pl-4 space-y-1">
-                    {item.children.map((child) => (
-                      <Link key={child.to} to={child.to} onClick={() => setMobileOpen(false)}
-                        className="block py-2 text-sm text-muted-foreground hover:text-primary">
-                        {child.label}
-                      </Link>
-                    ))}
+                    {item.children.map((child) =>
+                      child.external ? (
+                        <a
+                          key={child.to}
+                          href={child.to}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setMobileOpen(false)}
+                          className="block py-2 text-sm text-muted-foreground hover:text-primary"
+                        >
+                          {child.label}
+                        </a>
+                      ) : (
+                        <Link
+                          key={child.to}
+                          to={child.to}
+                          onClick={() => setMobileOpen(false)}
+                          className="block py-2 text-sm text-muted-foreground hover:text-primary"
+                        >
+                          {child.label}
+                        </Link>
+                      ),
+                    )}
                   </div>
                 )}
               </div>
