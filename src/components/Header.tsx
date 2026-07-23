@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown, Home, Info, ShoppingBag, Clapperboard, Users, Network, Phone } from "lucide-react";
+import { Menu, X, ChevronDown, Home, Info, ShoppingBag, Clapperboard, Users, Waves, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
 import RadioPlayer from "./RadioPlayer";
 import TopBar from "./TopBar";
@@ -43,10 +43,7 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  {
-    label: "Praça", to: "/praca", icon: <Network className="h-4 w-4" />,
-    children: [{ label: "Litoral", to: "/praca/litoral" }],
-  },
+  { label: "Rádio Litoral", to: "/litoral", icon: <Waves className="h-4 w-4" /> },
   { label: "Contato", to: "/contato", icon: <Phone className="h-4 w-4" /> },
 ];
 

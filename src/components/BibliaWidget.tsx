@@ -127,9 +127,9 @@ const BibliaWidget = () => {
   };
 
   return (
-    <>
+    <div className="h-full min-h-0">
       {/* Card */}
-      <div className="h-full rounded-xl overflow-hidden gradient-primary text-primary-foreground flex flex-col relative">
+      <div className="h-full min-h-[420px] rounded-xl overflow-hidden gradient-primary text-primary-foreground flex flex-col relative">
         {/* Cruz decorativa */}
         <div className="absolute top-4 right-4 opacity-10 pointer-events-none">
           <Cross className="h-24 w-24" />
@@ -286,7 +286,7 @@ const BibliaWidget = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

@@ -10,6 +10,7 @@ import LGPD from "./pages/LGPD";
 import Loja from "./pages/Loja";
 import Catedral from "./pages/Catedral";
 import Midia from "./pages/Midia";
+import Litoral from "./pages/Litoral";
 import SubPage from "./pages/SubPage";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
@@ -19,7 +20,6 @@ const queryClient = new QueryClient();
 const subRoutes = [
   "/programacao", "/programacao/locutores", "/programacao/musicas", "/programacao/eventos", "/programacao/pedidos",
   "/comunidade", "/comunidade/renovacao", "/comunidade/musicas-missa", "/comunidade/caminhada",
-  "/praca", "/praca/litoral",
 ];
 
 const App = () => (
@@ -36,6 +36,9 @@ const App = () => (
           <Route path="/lgpd" element={<LGPD />} />
           <Route path="/loja" element={<Loja />} />
           <Route path="/midia" element={<Midia />} />
+          <Route path="/litoral" element={<Litoral />} />
+          <Route path="/praca" element={<Navigate to="/litoral" replace />} />
+          <Route path="/praca/litoral" element={<Navigate to="/litoral" replace />} />
           <Route path="/midia/fotos" element={<Navigate to="/midia" replace />} />
           <Route path="/midia/videos" element={<Navigate to="/midia" replace />} />
           <Route path="/midia/downloads" element={<Navigate to="/midia" replace />} />

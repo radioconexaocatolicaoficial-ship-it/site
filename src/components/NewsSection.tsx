@@ -1085,14 +1085,14 @@ const NewsSection = () => {
   const showSkeleton = isLoading && cards.length === 0;
 
   return (
-    <section className="w-full" aria-labelledby="radio-noticias-heading">
-      <div className="mb-3">
+    <section className="w-full h-full flex flex-col" aria-labelledby="radio-noticias-heading">
+      <div className="mb-3 shrink-0">
         <h2 id="radio-noticias-heading" className="text-xl font-bold text-foreground leading-tight">
           Rádio Notícias
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 flex-1 content-start">
         {showSkeleton
           ? skeletonKeys.map((k) => (
               <div

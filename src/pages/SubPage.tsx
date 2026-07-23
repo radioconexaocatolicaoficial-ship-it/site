@@ -13,8 +13,6 @@ const titles: Record<string, string> = {
   "/comunidade/renovacao": "Renovação Carismática",
   "/comunidade/musicas-missa": "Músicas da Missa",
   "/comunidade/caminhada": "Caminhada da Ressurreição",
-  "/praca": "Praça",
-  "/praca/litoral": "Litoral",
 };
 
 const SubPage = () => {

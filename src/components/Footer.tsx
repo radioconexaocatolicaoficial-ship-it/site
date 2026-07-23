@@ -132,7 +132,7 @@ const Footer = () => {
             { label: "Loja", to: "/loja" },
             { label: "Mídia", to: "/midia" },
             { label: "Comunidade", to: "/comunidade/catedral" },
-            { label: "Praça", to: "/praca" },
+            { label: "Rádio Litoral", to: "/litoral" },
             { label: "Contato", to: "/contato" },
           ].map((l) => (
             <li key={l.to}><Link to={l.to} className="hover:text-gold transition-colors whitespace-nowrap">{l.label}</Link></li>
