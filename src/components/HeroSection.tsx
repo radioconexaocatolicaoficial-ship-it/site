@@ -149,7 +149,7 @@ const HeroSection = () => {
       </div>
 
       {/* Mobile — todos os cantos arredondados + padding 5px */}
-      <div className="relative block md:hidden w-full p-[10px]">
+      <div className="relative block md:hidden w-full p-[15px]">
         <div className="relative w-full overflow-hidden rounded-xl">
           <img
             src={slides[current].mobile}
