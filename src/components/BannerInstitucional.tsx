@@ -27,7 +27,7 @@ const BannerInstitucional = () => (
           a sintonia de vida no ar
         </h2>
         <p className="text-sm md:text-base opacity-70 mt-2 font-light">
-          Levando a boa nova para todos os cantos.
+          Levando a Boa Nova para todos os cantos.
         </p>
       </div>
 

@@ -1,0 +1,32 @@
+# SPA React (Vite) — Hostinger / Apache
+# Sem isso, rotas como /litoral, /sobre, /midia abrem 404 ao acessar direto ou atualizar a página.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # HTTPS (opcional — descomente se o domínio já tiver SSL)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Não reescreve arquivos e pastas reais
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Todas as outras rotas → index.html (React Router)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Cache de assets com hash
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2?|png|jpg|jpeg|webp|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+# Segurança básica
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

@@ -14,6 +14,7 @@ import Litoral from "./pages/Litoral";
 import SubPage from "./pages/SubPage";
 import NotFound from "./pages/NotFound";
 import CookieConsent from "./components/CookieConsent";
+import Seo from "./components/Seo";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Seo />
         <CookieConsent />
         <Routes>
           <Route path="/" element={<Index />} />

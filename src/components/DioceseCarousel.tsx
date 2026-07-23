@@ -19,7 +19,7 @@ const FALLBACK: DiocItem[] = [
     title: "Bispos celebram 25 anos de ordenação episcopal", 
     desc: "Dom Manuel Parrado Carral e Dom Pedro Luís Stringhini celebram jubileu com missa presidida pelo Cardeal Dom Odilo Scherer na Paróquia do Divino Espírito Santo.", 
     link: BASE,
-    date: "2025"
+    date: "2026"
   },
   { 
     img: `${BASE}/images/Abertura_Camapanha_da_Fraternidade_2026_Daniel_Reis-3.JPG`, 

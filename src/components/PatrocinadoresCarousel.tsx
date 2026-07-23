@@ -20,7 +20,7 @@ const BannerAnuncieAqui = () => (
           Sua marca aqui,<br /><span style={{ color: "#d4af37" }}>vista por milhares.</span>
         </h3>
         <p style={{ color: "rgba(255,255,255,0.55)", fontSize: "clamp(.65rem,1.1vw,.82rem)", lineHeight: 1.6 }}>
-          Alcance milhares de pessoas todos os dias na maior radio catolica da Zona Leste de SP.
+          Alcance milhares de pessoas todos os dias na maior rádio católica da Zona Leste de SP.
         </p>
         <div className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 rounded-full font-bold"
           style={{ background: "linear-gradient(135deg,#f5c518,#e8a800)", color: "#002266", fontSize: "clamp(.7rem,1.1vw,.85rem)" }}>

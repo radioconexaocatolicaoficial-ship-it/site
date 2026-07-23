@@ -146,19 +146,19 @@ const Sobre = () => (
             </p>
             <p>
               O programa ia ao ar todos os domingos pela extinta{" "}
-              <strong className="text-foreground">Rádio Conexão FM 98.4 MHZ</strong>, uma rádio até
+              <strong className="text-foreground">Rádio Conexão FM 98.4 MHz</strong>, uma rádio até
               então denominada comunitária, mas que já exercia um importante papel social e
               espiritual junto aos seus ouvintes.
             </p>
             <p>
-              O programa foi ao ar por 4 anos, sempre aos domingos, das 7h às 9h, conquistando
-              espaço, credibilidade e criando uma conexão especial com o público, através da
+              O programa foi ao ar por quatro anos, sempre aos domingos, das 7h às 9h, conquistando
+              espaço, credibilidade e criando uma conexão especial com o público, por meio da
               música, da informação e da evangelização.
             </p>
             <p>
               Anos depois, em 2010, na Caminhada da Ressurreição, a{" "}
-              <strong className="text-foreground">Missão Nova Visão</strong> vem inovando com a
-              transmissão via Internet, acompanhando a evolução dos meios de comunicação e
+              <strong className="text-foreground">Missão Nova Visão</strong> inovou com a
+              transmissão via internet, acompanhando a evolução dos meios de comunicação e
               ampliando significativamente o alcance da mensagem.
             </p>
             <p>
@@ -194,13 +194,13 @@ const Sobre = () => (
               presença no cenário da comunicação digital.
             </p>
             <p>
-              Hoje, estamos no ar, mesmo com as dificuldades da pandemia, continuamos firmes na
-              missão, informando, evangelizando e entretendo nossos ouvintes e seguidores, levando
-              esperança e fé a todos os lares.
+              Continuamos no ar com firmeza na missão: informando, evangelizando e acompanhando
+              nossos ouvintes e seguidores, levando esperança e fé a todos os lares — também em
+              julho de 2026.
             </p>
             <p>
-              Em 2024, uma nova fase se inicia, com a troca do quadro societário, onde sai Leandro
-              Gonçalves e entram Roberto Pires e{" "}
+              Em 2024, uma nova fase se iniciou, com a troca do quadro societário, em que sai
+              Leandro Gonçalves e entram Roberto Pires e{" "}
               <strong className="text-foreground">Margarete Pires</strong>, tendo Aurélio Batista
               junto ao quadro societário, garantindo a continuidade da essência e dos valores que
               deram origem a essa missão.

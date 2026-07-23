@@ -12,3 +12,8 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://www.radioconexaocatolica.com.br/sitemap.xml
+
+# Host canônico
+Host: https://www.radioconexaocatolica.com.br

@@ -62,7 +62,7 @@ const DestaqueInstitucional = () => {
             a sintonia de vida no ar
           </h2>
           <p className="text-sm mt-1 opacity-60">
-            Levando a boa nova para todos os cantos.
+            Levando a Boa Nova para todos os cantos.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mt-5 items-center justify-center sm:justify-start">
