@@ -12,9 +12,81 @@ const REFRESH_MS = 10 * 60 * 1000;
 const SPORTS_REFRESH_MS = 30 * 1000;
 const FETCH_MS = 8000;
 
-const SP_LAT = -23.5505;
-const SP_LON = -46.6333;
-const FALLBACK_PLACE = "São Paulo";
+export type NewsRegion = "sp" | "baixada";
+
+type RegionConfig = {
+  cacheKey: string;
+  lat: number;
+  lon: number;
+  place: string;
+  trafficBadge: string;
+  trafficTitle: string;
+  trafficSubtitle: string;
+  trafficHref: string;
+  trafficRss: string;
+  trafficFallbackRss: string[];
+  sportsBadge: string;
+  sportsTitle: string;
+  sportsSubtitle: string;
+  sportsHref: string;
+  sportsRss: string;
+  sportsFallbackRss: string[];
+};
+
+const REGIONS: Record<NewsRegion, RegionConfig> = {
+  sp: {
+    cacheKey: "rcc_rnoticias_cache_v10",
+    lat: -23.5505,
+    lon: -46.6333,
+    place: "São Paulo",
+    trafficBadge: "Trânsito em tempo real SP",
+    trafficTitle: "Trânsito em São Paulo",
+    trafficSubtitle: "Veja o mapa ao vivo no Waze",
+    trafficHref: "https://www.waze.com/pt-BR/live-map/",
+    trafficRss: "https://feeds.folha.uol.com.br/cotidiano/rss091.xml",
+    trafficFallbackRss: [
+      "https://news.google.com/rss/search?q=tr%C3%A1nsito+S%C3%A3o+Paulo+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://g1.globo.com/dynamo/sao-paulo/transito/rss2.xml",
+    ],
+    sportsBadge: "Esportes",
+    sportsTitle: "Últimas do esporte",
+    sportsSubtitle: "Acompanhe os destaques esportivos",
+    sportsHref: "https://ge.globo.com/",
+    sportsRss: "https://www.gazetaesportiva.com/feed/",
+    sportsFallbackRss: [
+      "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://g1.globo.com/dynamo/esporte/rss2.xml",
+      "https://www.cnnbrasil.com.br/esportes/feed/",
+    ],
+  },
+  baixada: {
+    cacheKey: "rcc_rnoticias_baixada_v4",
+    lat: -23.9608,
+    lon: -46.3336,
+    place: "Baixada Santista",
+    trafficBadge: "Trânsito Baixada Santista",
+    trafficTitle: "Trânsito na Baixada Santista",
+    trafficSubtitle: "Anchieta, Imigrantes e vias da região",
+    trafficHref:
+      "https://www.waze.com/pt-BR/live-map?utm_source=rcc&lat=-23.9608&lng=-46.3336&zoom=12",
+    trafficRss:
+      "https://news.google.com/rss/search?q=tr%C3%A1nsito+Baixada+Santista+OR+Santos+OR+Anchieta+OR+Imigrantes+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    trafficFallbackRss: [
+      "https://g1.globo.com/dynamo/sp/santos-regiao/rss2.xml",
+      "https://news.google.com/rss/search?q=tr%C3%A1nsito+Santos+S%C3%A3o+Vicente+Praia+Grande+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    ],
+    sportsBadge: "Esportes Baixada Santista",
+    sportsTitle: "Esportes na Baixada Santista",
+    sportsSubtitle: "Santos FC, Portuguesa e esporte regional",
+    sportsHref: "https://ge.globo.com/sp/santos-e-regiao/",
+    sportsRss:
+      "https://news.google.com/rss/search?q=(esporte+OR+futebol+OR+%22Santos+FC%22+OR+%22Santos+Futebol+Clube%22+OR+Peixe+OR+%22Portuguesa+Santista%22)+(%22Baixada+Santista%22+OR+Santos+OR+%22S%C3%A3o+Vicente%22+OR+%22Praia+Grande%22+OR+Guaruj%C3%A1)+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    sportsFallbackRss: [
+      "https://news.google.com/rss/search?q=%22Santos+FC%22+OR+%22Santos+Futebol+Clube%22+OR+%22Vila+Belmiro%22+(futebol+OR+jogo+OR+partida)+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+      "https://news.google.com/rss/search?q=%22Portuguesa+Santista%22+OR+Jabaquara+OR+%22esporte+Baixada+Santista%22+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
+    ],
+  },
+};
 
 /** Proxies CORS (produção). /api/rss só no Vite dev. */
 const PROXIES = [
@@ -50,15 +122,16 @@ function fallbackNewsCard(
 }
 
 /** Sempre 6 slots — preenchidos com dados ao vivo quando o feed responde. */
-function defaultCards(): RadioCard[] {
+function defaultCards(region: NewsRegion = "sp"): RadioCard[] {
+  const r = REGIONS[region];
   return [
     {
       kind: "weather",
-      href: `https://www.google.com/search?q=${encodeURIComponent(`previsão do tempo ${FALLBACK_PLACE}`)}`,
+      href: `https://www.google.com/search?q=${encodeURIComponent(`previsão do tempo ${r.place}`)}`,
       badge: "Previsão do tempo",
-      title: FALLBACK_PLACE,
+      title: r.place,
       subtitle: "Atualizando…",
-      bgImage: `https://wttr.in/${SP_LAT},${SP_LON}_0pq_transparency=ffffff.png`,
+      bgImage: `https://wttr.in/${r.lat},${r.lon}_0pq_transparency=ffffff.png`,
       iconImage: "https://openweathermap.org/img/wn/02d@4x.png",
     },
     fallbackNewsCard(
@@ -73,25 +146,33 @@ function defaultCards(): RadioCard[] {
       "Acompanhe as últimas publicações",
       "https://noticias.cancaonova.com/",
     ),
-    fallbackNewsCard(
-      "Trânsito em tempo real SP",
-      "Trânsito em São Paulo",
-      "Veja o mapa ao vivo no Waze",
-      "https://www.waze.com/pt-BR/live-map/",
-    ),
+    fallbackNewsCard(r.trafficBadge, r.trafficTitle, r.trafficSubtitle, r.trafficHref),
     fallbackNewsCard(
       "Santo do Dia",
       "Santo do Dia",
       "Confira o santo celebrado hoje",
       SANTO_DIA_URL,
     ),
-    fallbackNewsCard(
-      "Esportes",
-      "Últimas do esporte",
-      "Acompanhe os destaques esportivos",
-      "https://ge.globo.com/",
-    ),
+    fallbackNewsCard(r.sportsBadge, r.sportsTitle, r.sportsSubtitle, r.sportsHref),
   ];
+}
+
+function trafficFeedDef(region: NewsRegion) {
+  const r = REGIONS[region];
+  return {
+    badge: r.trafficBadge,
+    rss: r.trafficRss,
+    fallbackRss: r.trafficFallbackRss,
+  };
+}
+
+function sportsFeedDef(region: NewsRegion) {
+  const r = REGIONS[region];
+  return {
+    badge: r.sportsBadge,
+    rss: r.sportsRss,
+    fallbackRss: r.sportsFallbackRss,
+  };
 }
 
 /**
@@ -107,26 +188,11 @@ const NEWS_CARD_FEEDS: { badge: string; rss: string; fallbackRss?: string[] }[] 
     badge: "Canção Nova",
     rss: "https://noticias.cancaonova.com/feed/",
   },
-  {
-    badge: "Trânsito em tempo real SP",
-    rss: "https://feeds.folha.uol.com.br/cotidiano/rss091.xml",
-    fallbackRss: [
-      "https://news.google.com/rss/search?q=tr%C3%A1nsito+S%C3%A3o+Paulo+when:2d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
-      "https://g1.globo.com/dynamo/sao-paulo/transito/rss2.xml",
-    ],
-  },
-  {
-    badge: "Esportes",
-    rss: "https://www.gazetaesportiva.com/feed/",
-    fallbackRss: [
-      "https://news.google.com/rss/headlines/section/topic/SPORTS?hl=pt-BR&gl=BR&ceid=BR:pt-419",
-      "https://g1.globo.com/dynamo/esporte/rss2.xml",
-      "https://www.cnnbrasil.com.br/esportes/feed/",
-    ],
-  },
+  trafficFeedDef("sp"),
+  sportsFeedDef("sp"),
 ];
 
-const SPORTS_FEED = NEWS_CARD_FEEDS.find((f) => f.badge === "Esportes")!;
+const SPORTS_FEED = sportsFeedDef("sp");
 
 interface Rss2JsonItem {
   title?: string;
@@ -317,6 +383,21 @@ function unwrapArticleUrl(url: string): string {
 function isTrafficRelated(title: string, description = ""): boolean {
   return /tr[áa]nsito|engarrafamento|marginal|rodovia|avenida|pista|sem[áa]foro|guinch|ciclista|ciclomotor|motot[áa]xi|acidente|interdit|cet-?sp|congestionamento|lento|trens|metr[oô]|[oô]nibus|faixa|cruzamento|reboque/i.test(
     `${title} ${description}`,
+  );
+}
+
+function isSportsRelated(title: string, description = ""): boolean {
+  const text = `${title} ${description}`;
+  // Bloqueia assuntos virais da região que não são esporte
+  if (
+    /menino\s+da\s+lei|gabriel\s+piccolo|influenciador|imobili[aá]ria|condenad|indeniza[cç]|estacionamento|recuo\s+de\s+com[eé]rcio/i.test(
+      text,
+    )
+  ) {
+    return false;
+  }
+  return /esporte|futebol|basquete|v[oô]lei|v[oô]leyballbol|t[eê]nis|nata[cç][aã]o|atletismo|handebol|futsal|jud[oô]|boxe|mma|corrida|maratona|campeonato|partida|jogo|gol|t[eé]cnica|t[eé]cnico|treinador|jogador|atleta|clube|time|equipe|santos\s*fc|peixe|portuguesa\s*santista|jabaquara|vila\s*belmiro|s[eé]rie\s*[a-d]|libertadores|copa|ol[ií]mpic/i.test(
+    text,
   );
 }
 
@@ -576,6 +657,7 @@ async function buildNewsCard(
   const maxAgeMs = 1000 * 60 * 60 * 24 * 45;
   const now = Date.now();
   const isTransit = badge.toLowerCase().includes("trânsito");
+  const isSports = badge.toLowerCase().includes("esporte");
 
   const fresh = ordered.filter((it) => {
     const ts = itemTimestamp(it);
@@ -588,6 +670,15 @@ async function buildNewsCard(
       isTrafficRelated(it.title || "", stripHtml(it.description || it.content || "")),
     );
     if (trafficOnly.length) pool = trafficOnly;
+  }
+
+  if (isSports) {
+    const sportsOnly = pool.filter((it) =>
+      isSportsRelated(it.title || "", stripHtml(it.description || it.content || "")),
+    );
+    // Só esportes — se não houver match, não cai em notícia geral
+    if (!sportsOnly.length) return null;
+    pool = sportsOnly;
   }
 
   // Prioriza itens que já têm imagem no feed
@@ -784,27 +875,26 @@ async function fetchSantoDoDia(): Promise<RadioCard | null> {
   }
 }
 
-const CACHE_KEY = "rcc_rnoticias_cache_v10";
-
 function isStockPhotoCard(card: RadioCard): boolean {
   if (card.kind !== "news") return false;
   const img = `${card.image || ""} ${card.imageOriginal || ""}`;
   return /unsplash\.com/i.test(img) || !card.image;
 }
 
-function readCache(): RadioCard[] {
+function readCache(region: NewsRegion): RadioCard[] {
+  const cacheKey = REGIONS[region].cacheKey;
   try {
-    const cached = localStorage.getItem(CACHE_KEY);
+    const cached = localStorage.getItem(cacheKey);
     const parsed = cached ? (JSON.parse(cached) as RadioCard[]) : [];
-    if (!Array.isArray(parsed) || parsed.length === 0) return defaultCards();
-    const base = defaultCards();
+    if (!Array.isArray(parsed) || parsed.length === 0) return defaultCards(region);
+    const base = defaultCards(region);
     for (let i = 0; i < 6; i++) {
       const c = parsed[i];
       if (c && !isStockPhotoCard(c)) base[i] = c;
     }
     return base;
   } catch {
-    return defaultCards();
+    return defaultCards(region);
   }
 }
 
@@ -916,26 +1006,37 @@ async function loadResolvedNewsCards(): Promise<RadioCard[] | null> {
   }
 }
 
-const NewsSection = () => {
-  const [cards, setCards] = useState<RadioCard[]>(() => readCache());
+const NewsSection = ({ region = "sp" }: { region?: NewsRegion }) => {
+  const cfg = REGIONS[region];
+  const [cards, setCards] = useState<RadioCard[]>(() => readCache(region));
   const [isLoading, setIsLoading] = useState(false);
 
   const load = useCallback(async () => {
     const slots: (RadioCard | null)[] = [null, null, null, null, null, null];
+    const trafficDef = trafficFeedDef(region);
+    const sportsDef = sportsFeedDef(region);
 
     const publish = () => {
       setCards((prev) => {
-        const base = defaultCards();
+        const base = defaultCards(region);
         const out: RadioCard[] = [];
         for (let i = 0; i < 6; i++) {
           const next = slots[i];
           const old = prev[i];
-          if (next && !(next.kind === "news" && !next.image)) out.push(next);
+          const isTrafficNews =
+            next?.kind === "news" && next.badge.toLowerCase().includes("trânsito");
+          const isSportsNews =
+            next?.kind === "news" && next.badge.toLowerCase().includes("esporte");
+          if (
+            next &&
+            (!(next.kind === "news" && !next.image) || isTrafficNews || isSportsNews)
+          )
+            out.push(next);
           else if (old && !isStockPhotoCard(old)) out.push(old);
           else out.push(base[i]);
         }
         try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify(out));
+          localStorage.setItem(cfg.cacheKey, JSON.stringify(out));
         } catch {
           /* ignore */
         }
@@ -944,9 +1045,23 @@ const NewsSection = () => {
       setIsLoading(false);
     };
 
-    const weatherTask = fetchWeatherCard(SP_LAT, SP_LON, FALLBACK_PLACE).then((c) => {
+    const weatherTask = fetchWeatherCard(cfg.lat, cfg.lon, cfg.place).then((c) => {
       slots[0] = c;
       publish();
+    });
+
+    const trafficTask = loadNewsCard(trafficDef).then((c) => {
+      if (c) {
+        slots[3] = { ...c, href: cfg.trafficHref, badge: cfg.trafficBadge };
+        publish();
+      }
+    });
+
+    const sportsTask = loadNewsCard(sportsDef).then((c) => {
+      if (c) {
+        slots[5] = { ...c, href: cfg.sportsHref, badge: cfg.sportsBadge };
+        publish();
+      }
     });
 
     const apiCards = await loadResolvedNewsCards();
@@ -956,9 +1071,13 @@ const NewsSection = () => {
 
       slots[1] = byBadge("Música Católica");
       slots[2] = byBadge("Canção Nova");
-      slots[3] = byBadge("Trânsito em tempo real SP");
+      if (region === "sp") {
+        const spTraffic = byBadge("Trânsito em tempo real SP");
+        if (spTraffic) slots[3] = spTraffic;
+        const spSports = byBadge("Esportes");
+        if (spSports) slots[5] = spSports;
+      }
       slots[4] = byBadge("Santo do Dia");
-      slots[5] = byBadge("Esportes");
       publish();
 
       // Tenta atualizar ao vivo sem travar a UI (produção)
@@ -970,9 +1089,11 @@ const NewsSection = () => {
             liveCards.find((c) => c.badge.toLowerCase() === b.toLowerCase()) || null;
           slots[1] = find("Música Católica") || slots[1];
           slots[2] = find("Canção Nova") || slots[2];
-          slots[3] = find("Trânsito em tempo real SP") || slots[3];
+          if (region === "sp") {
+            slots[3] = find("Trânsito em tempo real SP") || slots[3];
+            slots[5] = find("Esportes") || slots[5];
+          }
           slots[4] = find("Santo do Dia") || slots[4];
-          slots[5] = find("Esportes") || slots[5];
           publish();
         })
         .catch(() => {});
@@ -991,21 +1112,9 @@ const NewsSection = () => {
             publish();
           }
         }),
-        loadNewsCard(NEWS_CARD_FEEDS[2]).then((c) => {
-          if (c) {
-            slots[3] = { ...c, href: "https://www.waze.com/pt-BR/live-map/" };
-            publish();
-          }
-        }),
         fetchSantoDoDia().then((c) => {
           if (c) {
             slots[4] = c;
-            publish();
-          }
-        }),
-        loadNewsCard(NEWS_CARD_FEEDS[3]).then((c) => {
-          if (c) {
-            slots[5] = c;
             publish();
           }
         }),
@@ -1013,50 +1122,64 @@ const NewsSection = () => {
       await Promise.allSettled(tasks);
     }
 
-    await weatherTask;
+    await Promise.allSettled([weatherTask, trafficTask, sportsTask]);
     publish();
     setIsLoading(false);
-  }, []);
+  }, [
+    region,
+    cfg.cacheKey,
+    cfg.lat,
+    cfg.lon,
+    cfg.place,
+    cfg.trafficBadge,
+    cfg.trafficHref,
+    cfg.sportsBadge,
+    cfg.sportsHref,
+  ]);
 
   const refreshSportsCard = useCallback(async () => {
     if (typeof document !== "undefined" && document.hidden) return;
 
-    try {
-      const apiCards = await loadResolvedNewsCards();
-      const sports = apiCards?.find((c) => c.badge === "Esportes");
-      if (sports?.image) {
-        setCards((prev) => {
-          const next = [...(prev.length === 6 ? prev : defaultCards())];
-          while (next.length < 6) next.push(defaultCards()[next.length]);
-          next[5] = sports;
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify(next.slice(0, 6)));
-          } catch {
-            /* ignore */
-          }
-          return next.slice(0, 6);
-        });
-        return;
+    const sportsDef = sportsFeedDef(region);
+
+    if (region === "sp") {
+      try {
+        const apiCards = await loadResolvedNewsCards();
+        const sports = apiCards?.find((c) => c.badge === "Esportes");
+        if (sports?.image) {
+          setCards((prev) => {
+            const next = [...(prev.length === 6 ? prev : defaultCards(region))];
+            while (next.length < 6) next.push(defaultCards(region)[next.length]);
+            next[5] = sports;
+            try {
+              localStorage.setItem(cfg.cacheKey, JSON.stringify(next.slice(0, 6)));
+            } catch {
+              /* ignore */
+            }
+            return next.slice(0, 6);
+          });
+          return;
+        }
+      } catch {
+        /* fallback */
       }
-    } catch {
-      /* fallback */
     }
 
-    const sports = await loadNewsCard(SPORTS_FEED);
-    if (!sports?.image) return;
+    const sports = await loadNewsCard(sportsDef);
+    if (!sports) return;
 
     setCards((prev) => {
-      const next = [...(prev.length === 6 ? prev : defaultCards())];
-      while (next.length < 6) next.push(defaultCards()[next.length]);
-      next[5] = sports;
+      const next = [...(prev.length === 6 ? prev : defaultCards(region))];
+      while (next.length < 6) next.push(defaultCards(region)[next.length]);
+      next[5] = { ...sports, href: cfg.sportsHref, badge: cfg.sportsBadge };
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(next.slice(0, 6)));
+        localStorage.setItem(cfg.cacheKey, JSON.stringify(next.slice(0, 6)));
       } catch {
         /* ignore */
       }
       return next.slice(0, 6);
     });
-  }, []);
+  }, [region, cfg.cacheKey, cfg.sportsBadge, cfg.sportsHref]);
 
   useEffect(() => {
     load();

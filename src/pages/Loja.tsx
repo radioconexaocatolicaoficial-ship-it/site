@@ -53,7 +53,7 @@ const Loja = () => {
         />
 
         {atual ? (
-          <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
+          <div className="relative z-10 h-full container mx-auto px-4 flex items-center">
             <button
               type="button"
               onClick={prev}
@@ -134,24 +134,24 @@ const Loja = () => {
         ) : null}
       </section>
 
-      {/* Duas colunas: produtos | cards laterais */}
+      {/* Duas colunas: produtos | cards laterais — mesmo grid da home */}
       <section
         id="produtos-loja"
-        className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-4 sm:pb-6"
+        className="container mx-auto px-4 pt-8 pb-[30px]"
       >
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,29.3%)] gap-6 lg:gap-8 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-start">
           {/* Esquerda — 3 produtos por linha */}
-          <div>
-            <div className="flex flex-wrap gap-2 mb-6 sm:mb-8">
+          <div className="md:col-span-1 lg:col-span-7">
+            <div className="flex flex-wrap gap-2 mb-6">
               {lojaCategorias.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setCat(c)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     cat === c
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-transparent text-foreground border-border hover:border-primary hover:text-primary"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground hover:bg-primary/10 hover:text-primary"
                   }`}
                 >
                   {c}
@@ -172,9 +172,9 @@ const Loja = () => {
                       setModalProduto(produto);
                     }
                   }}
-                  className="bg-card border border-border rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
+                  className="bg-card rounded-xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer text-left"
                 >
-                  <div className="aspect-square overflow-hidden bg-transparent flex items-center justify-center p-3">
+                  <div className="aspect-square overflow-hidden bg-white flex items-center justify-center p-3">
                     <img
                       src={produto.imgPng ?? produto.img}
                       alt={produto.nome}
@@ -190,7 +190,7 @@ const Loja = () => {
                       {produto.nome}
                     </h3>
                     <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{produto.desc}</p>
-                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
+                    <div className="flex items-center justify-between mt-auto pt-2">
                       <span
                         className={`text-base font-bold ${
                           produto.preco === "Orçamento"
@@ -210,8 +210,8 @@ const Loja = () => {
             </div>
           </div>
 
-          {/* Direita — Abraça São Paulo, Liturgia, Pedido de Música (−4% da largura) */}
-          <aside className="space-y-4 lg:sticky lg:top-24">
+          {/* Direita — Abraça São Paulo, Liturgia, Pedido de Música */}
+          <aside className="md:col-span-1 lg:col-span-3 space-y-4 lg:sticky lg:top-24">
             <CountdownCard />
             <LiturgiaWidget />
             <PedidoMusica />

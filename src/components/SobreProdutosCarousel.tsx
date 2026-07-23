@@ -22,8 +22,8 @@ const SobreProdutosCarousel = () => {
   const visible = lojaProdutos.slice(start, start + VISIBLE);
 
   return (
-    <div className="flex-1 min-h-[140px] md:min-h-0 flex flex-col overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 border-b border-border shrink-0">
+    <div className="flex-1 min-h-[140px] md:min-h-0 flex flex-col overflow-hidden rounded-xl bg-muted/40">
+      <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 shrink-0">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
           Produtos
         </p>
@@ -53,7 +53,7 @@ const SobreProdutosCarousel = () => {
             key={p.id}
             type="button"
             onClick={() => setSelected(p)}
-            className="min-w-0 h-full min-h-0 flex flex-col rounded-lg border border-border overflow-hidden bg-background hover:shadow-sm transition-shadow text-left"
+            className="min-w-0 h-full min-h-0 flex flex-col rounded-lg overflow-hidden bg-background hover:shadow-sm transition-shadow text-left"
           >
             <div
               className={cn(

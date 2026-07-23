@@ -40,11 +40,11 @@ const CatedralReformaCarousel = ({ fillHeight = false }: Props) => {
 
   return (
     <div
-      className={`rounded-xl border border-border bg-card overflow-hidden ${
+      className={`rounded-xl bg-muted/30 overflow-hidden ${
         fillHeight ? "h-full flex flex-col" : ""
       }`}
     >
-      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border shrink-0">
+      <div className="flex items-center justify-between gap-2 px-3 py-2 shrink-0">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground truncate">
           Campanha da reforma
         </p>

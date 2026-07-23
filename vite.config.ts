@@ -26,7 +26,13 @@ async function proxyImageRequest(
     const upstream = await fetch(target, {
       headers: {
         "User-Agent": UA,
-        Referer: referer,
+        Referer: (() => {
+          try {
+            return new URL(target).origin + "/";
+          } catch {
+            return referer;
+          }
+        })(),
         Accept: "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
       },
       signal: AbortSignal.timeout(15000),

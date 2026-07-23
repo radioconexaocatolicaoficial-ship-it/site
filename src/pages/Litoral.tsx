@@ -17,8 +17,8 @@ const NewsSection = React.lazy(() => import("@/components/NewsSection"));
 const GoogleReviews = React.lazy(() => import("@/components/GoogleReviews"));
 const PedidoMusica = React.lazy(() => import("@/components/PedidoMusica"));
 const FreiZecaCarousel = React.lazy(() => import("@/components/FreiZecaCarousel"));
-const DioceseCarousel = React.lazy(() => import("@/components/DioceseCarousel"));
-const CaminhadaSection = React.lazy(() => import("@/components/CaminhadaSection"));
+const DioceseSantosCarousel = React.lazy(() => import("@/components/DioceseSantosCarousel"));
+const LitoralEventosCarousel = React.lazy(() => import("@/components/LitoralEventosCarousel"));
 
 const IG_URL = "https://www.instagram.com/radioconexaocatolicalitoral/";
 const BIOLINK = "https://biolink.info/radioconexaocatolica";
@@ -108,7 +108,7 @@ const LitoralInfoSection = () => (
         {destaques.map(({ icon: Icon, title, text }) => (
           <div
             key={title}
-            className="rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col hover:shadow-md transition-shadow"
+            className="rounded-xl bg-muted/40 p-4 sm:p-5 flex flex-col hover:shadow-md transition-shadow"
           >
             <div
               className="w-10 h-10 rounded-full flex items-center justify-center mb-3"
@@ -120,11 +120,11 @@ const LitoralInfoSection = () => (
             <p className="text-xs text-muted-foreground leading-relaxed m-0 flex-1">{text}</p>
           </div>
         ))}
-        <div className="sm:col-span-3 rounded-xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4">
+        <div className="sm:col-span-3 rounded-xl bg-muted/40 p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-4">
           <img
             src={logoLitoral}
             alt="Rádio Conexão Católica No Litoral"
-            className="h-16 sm:h-20 w-auto object-contain rounded-lg bg-white p-1.5 border border-border shrink-0"
+            className="h-16 sm:h-20 w-auto object-contain rounded-lg bg-white p-1.5 shrink-0"
           />
           <div className="text-center sm:text-left flex-1">
             <p className="text-sm font-bold text-foreground">Conexão Católica Litoral</p>
@@ -137,7 +137,7 @@ const LitoralInfoSection = () => (
             href={IG_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold border border-border hover:border-primary hover:text-primary transition-colors"
+            className="inline-flex items-center gap-2 shrink-0 px-4 py-2.5 rounded-xl text-xs font-bold bg-background hover:text-primary transition-colors"
           >
             Ver perfil
             <ExternalLink className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ const Litoral = () => (
             "linear-gradient(160deg, rgba(5,18,48,0.94) 0%, rgba(10,32,96,0.88) 55%, rgba(5,18,48,0.92) 100%)",
         }}
       />
-      <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center text-white">
+      <div className="relative z-10 h-full container mx-auto px-4 flex flex-col items-center justify-center text-center text-white">
         <img
           src={logoLitoral}
           alt="Rádio Conexão Católica No Litoral"
@@ -244,7 +244,7 @@ const Litoral = () => (
             <LiturgiaWidget />
           </div>
           <div className="md:col-span-1 lg:col-span-7">
-            <DioceseCarousel />
+            <DioceseSantosCarousel />
           </div>
         </div>
       </section>
@@ -259,12 +259,12 @@ const Litoral = () => (
             <BibliaWidget />
           </div>
           <div className="md:col-span-1 lg:col-span-7 min-w-0 h-full">
-            <NewsSection />
+            <NewsSection region="baixada" />
           </div>
         </div>
       </section>
 
-      {/* Pedido de Música + Frei Zeca + Caminhada (mesmo modelo Santa Rita da home) */}
+      {/* Pedido de Música + Frei Zeca + Eventos do Litoral */}
       <section className="container mx-auto px-4 pt-0 pb-[30px]">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
           <div className="md:col-span-1 lg:col-span-3">
@@ -272,7 +272,7 @@ const Litoral = () => (
           </div>
           <div className="md:col-span-1 lg:col-span-7 flex flex-col gap-6">
             <FreiZecaCarousel />
-            <CaminhadaSection />
+            <LitoralEventosCarousel />
           </div>
         </div>
       </section>

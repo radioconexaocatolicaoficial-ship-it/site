@@ -389,7 +389,7 @@ type NetworkBlockProps = {
 };
 
 const PostSkeleton = () => (
-  <div className="rounded-lg overflow-hidden bg-background border border-border/60 animate-pulse">
+  <div className="rounded-lg overflow-hidden bg-muted animate-pulse">
     <div className="aspect-[4/5] bg-muted" />
     <div className="p-3 space-y-2">
       <div className="h-4 bg-muted rounded w-3/4" />
@@ -409,8 +409,8 @@ const NetworkBlock = ({
   accent,
   iconPath,
 }: NetworkBlockProps) => (
-  <div className="rounded-xl border border-border bg-card overflow-hidden flex flex-col min-h-0">
-    <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-border">
+  <div className="rounded-xl overflow-hidden flex flex-col min-h-0">
+    <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3">
       <div className="flex items-center gap-2.5 min-w-0">
         <span
           className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-white"
@@ -446,7 +446,7 @@ const NetworkBlock = ({
       </a>
     </div>
 
-    <div className="p-3 sm:p-4 bg-muted/30 flex-1">
+    <div className="p-3 sm:p-4 flex-1">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 h-full">
         {loading
           ? [0, 1].map((i) => <PostSkeleton key={i} />)
@@ -456,7 +456,7 @@ const NetworkBlock = ({
                 href={post.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col rounded-lg overflow-hidden bg-background border border-border/60 hover:shadow-md hover:-translate-y-0.5 transition-all"
+                className="group flex flex-col rounded-lg overflow-hidden bg-card hover:shadow-md hover:-translate-y-0.5 transition-all"
               >
                 <div className="relative aspect-[4/5] bg-muted overflow-hidden">
                   <img
@@ -550,8 +550,9 @@ const CatedralFacebookFeed = () => {
   }, []);
 
   return (
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-10 sm:pb-12 md:pb-14">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+    <section className="container mx-auto px-4 pt-0 pb-[30px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px]">
+        <div className="md:col-span-1 lg:col-span-5">
         <NetworkBlock
           network="instagram"
           label="Instagram"
@@ -562,6 +563,8 @@ const CatedralFacebookFeed = () => {
           accent="#E1306C"
           iconPath={IG_ICON}
         />
+        </div>
+        <div className="md:col-span-1 lg:col-span-5">
         <NetworkBlock
           network="facebook"
           label="Facebook"
@@ -572,6 +575,7 @@ const CatedralFacebookFeed = () => {
           accent="#1877F2"
           iconPath={FB_ICON}
         />
+        </div>
       </div>
     </section>
   );

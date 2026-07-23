@@ -446,7 +446,7 @@ const PostCard = ({ post, onOpen }: { post: Post; onOpen: (p: Post) => void }) =
     <button
       type="button"
       onClick={() => onOpen({ ...post, image })}
-      className="group flex flex-col text-left rounded-xl border border-border bg-background overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all h-full w-full"
+      className="group flex flex-col text-left rounded-xl bg-card overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all h-full w-full"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         <SafeImg
@@ -490,7 +490,7 @@ const MediaTile = ({ post, onOpen }: { post: Post; onOpen: (p: Post) => void }) 
     <button
       type="button"
       onClick={() => onOpen({ ...post, image, kind: post.kind })}
-      className="group relative aspect-square overflow-hidden rounded-lg bg-muted border border-border/60 w-full"
+      className="group relative aspect-square overflow-hidden rounded-lg bg-muted w-full"
     >
       <SafeImg
         src={image}
@@ -692,7 +692,7 @@ const Midia = () => {
               "linear-gradient(180deg, rgba(5,18,48,0.55) 0%, rgba(10,32,96,0.72) 45%, rgba(5,18,48,0.88) 100%)",
           }}
         />
-        <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center text-white">
+        <div className="relative z-10 h-full container mx-auto px-4 flex flex-col items-center justify-center text-center text-white">
           <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-yellow-400/90 mb-3">
             Conteúdo
           </p>
@@ -722,13 +722,13 @@ const Midia = () => {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-10 pb-4 sm:pb-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <section className="container mx-auto px-4 pt-8 pb-[30px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-start">
           {/* Coluna esquerda — maior, 2 posts por rede */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="md:col-span-1 lg:col-span-7 space-y-6">
             {SOCIALS.map((s) => (
-              <div key={s.id} className="rounded-xl border border-border bg-card overflow-hidden">
-                <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 border-b border-border">
+              <div key={s.id} className="overflow-hidden">
+                <div className="flex items-center justify-between gap-3 pb-3 mb-3">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                       Últimas 2
@@ -745,7 +745,7 @@ const Midia = () => {
                     <ExternalLink className="h-3.5 w-3.5" />
                   </a>
                 </div>
-                <div className="p-3 sm:p-4 bg-muted/20">
+                <div>
                   {loading && !(byNetwork[s.id]?.length) ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {[0, 1].map((i) => (
@@ -765,32 +765,28 @@ const Midia = () => {
           </div>
 
           {/* Coluna direita — menor, grid 2 fotos */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="px-4 py-3 border-b border-border">
+          <div className="md:col-span-1 lg:col-span-3 space-y-6">
+            <div className="overflow-hidden">
+              <div className="pb-3 mb-3">
                 <h2 className="text-lg font-bold text-foreground">Fotos</h2>
               </div>
-              <div className="p-3">
-                <div className="grid grid-cols-2 gap-2.5">
-                  {photos.slice(0, PHOTOS_LIMIT).map((p) => (
-                    <MediaTile key={p.id} post={p} onOpen={setPreview} />
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {photos.slice(0, PHOTOS_LIMIT).map((p) => (
+                  <MediaTile key={p.id} post={p} onOpen={setPreview} />
+                ))}
               </div>
             </div>
 
             <LojaCard />
 
-            <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="px-4 py-3 border-b border-border">
+            <div className="overflow-hidden">
+              <div className="pb-3 mb-3">
                 <h2 className="text-lg font-bold text-foreground">Vídeos</h2>
               </div>
-              <div className="p-3">
-                <div className="grid grid-cols-2 gap-2.5">
-                  {videos.slice(0, VIDEOS_LIMIT).map((p) => (
-                    <MediaTile key={p.id} post={{ ...p, kind: "video" }} onOpen={setPreview} />
-                  ))}
-                </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {videos.slice(0, VIDEOS_LIMIT).map((p) => (
+                  <MediaTile key={p.id} post={{ ...p, kind: "video" }} onOpen={setPreview} />
+                ))}
               </div>
             </div>
           </div>

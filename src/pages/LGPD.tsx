@@ -2,7 +2,7 @@ import Layout from "@/components/Layout";
 
 const LGPD = () => (
   <Layout>
-    <div className="container mx-auto px-4 py-16 max-w-4xl">
+    <div className="container mx-auto px-4 pt-8 pb-[30px] max-w-4xl">
       <h1 className="text-3xl font-bold mb-2 text-primary">Política de Privacidade e LGPD</h1>
       <p className="text-sm text-muted-foreground mb-8">Última atualização: janeiro de 2025</p>
 

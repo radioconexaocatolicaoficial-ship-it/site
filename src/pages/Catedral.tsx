@@ -55,7 +55,7 @@ const Catedral = () => (
             "linear-gradient(180deg, rgba(5,18,48,0.50) 0%, rgba(10,32,96,0.68) 45%, rgba(5,18,48,0.82) 100%)",
         }}
       />
-      <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center text-white">
+      <div className="relative z-10 h-full container mx-auto px-4 flex flex-col items-center justify-center text-center text-white">
         <p className="text-[11px] font-semibold tracking-[0.2em] uppercase text-yellow-400/90 mb-3">
           Comunidade
         </p>
@@ -90,11 +90,11 @@ const Catedral = () => (
       </div>
     </section>
 
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-14 space-y-8 lg:space-y-10">
-      {/* Linha 1: Sobre + horários */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-        <div className="lg:col-span-7">
-          <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+    <section className="container mx-auto px-4 pt-8 pb-[30px] space-y-8">
+      {/* Linha 1: Sobre + horários — mesmo grid da home */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-start">
+        <div className="md:col-span-1 lg:col-span-7">
+          <div className="rounded-xl bg-muted/30 p-5 sm:p-6">
             <div className="flex items-center gap-3 mb-4">
               <div
                 className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -152,8 +152,8 @@ const Catedral = () => (
           </div>
         </div>
 
-        <aside className="lg:col-span-5 space-y-4">
-          <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
+        <aside className="md:col-span-1 lg:col-span-3 space-y-4">
+          <div className="rounded-xl bg-muted/30 p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-5 w-5 text-primary shrink-0" />
               <h2 className="text-lg font-bold text-foreground">Horários das Missas</h2>
@@ -175,7 +175,6 @@ const Catedral = () => (
             className="rounded-xl p-5 sm:p-6 text-white"
             style={{
               background: "linear-gradient(135deg, #051230 0%, #0a2060 100%)",
-              border: "1px solid rgba(200,168,75,0.35)",
             }}
           >
             <div className="flex items-center gap-2 mb-4">
@@ -199,7 +198,7 @@ const Catedral = () => (
             href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 sm:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
+            className="flex items-center gap-4 rounded-xl bg-muted/30 p-4 sm:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
             <span
               className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-white"
@@ -222,13 +221,12 @@ const Catedral = () => (
       </div>
 
       {/* Linha 2: Campanha + carrossel — mesma altura */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
-        <div className="lg:col-span-7 flex flex-col gap-4 h-full min-h-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
+        <div className="md:col-span-1 lg:col-span-7 flex flex-col gap-4 h-full min-h-0">
           <div
             className="rounded-xl p-5 sm:p-6 text-white flex-1 flex flex-col"
             style={{
               background: "linear-gradient(135deg, #051230 0%, #0a2060 100%)",
-              border: "1px solid rgba(200,168,75,0.35)",
             }}
           >
             <div className="flex items-center gap-3 mb-4">
@@ -296,7 +294,7 @@ const Catedral = () => (
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-5 sm:p-6 space-y-3 text-sm">
+          <div className="rounded-xl bg-muted/30 p-5 sm:p-6 space-y-3 text-sm">
             <div className="flex items-start gap-3">
               <MapPin className="h-4 w-4 text-primary shrink-0 mt-0.5" />
               <p className="text-muted-foreground">
@@ -325,7 +323,7 @@ const Catedral = () => (
           </div>
         </div>
 
-        <div className="lg:col-span-5 h-full min-h-[360px]">
+        <div className="md:col-span-1 lg:col-span-3 h-full min-h-[360px]">
           <CatedralReformaCarousel fillHeight />
         </div>
       </div>

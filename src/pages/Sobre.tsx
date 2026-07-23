@@ -87,7 +87,7 @@ const Sobre = () => (
             "linear-gradient(160deg, rgba(5,18,48,0.94) 0%, rgba(10,32,96,0.88) 55%, rgba(5,18,48,0.92) 100%)",
         }}
       />
-      <div className="relative z-10 h-full container mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center text-center text-white">
+      <div className="relative z-10 h-full container mx-auto px-4 flex flex-col items-center justify-center text-center text-white">
         <img
           src={logo}
           alt="Rádio Conexão Católica"
@@ -123,9 +123,9 @@ const Sobre = () => (
       </div>
     </section>
 
-    {/* História + Missão (esquerda) | Cards (direita) */}
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16 lg:py-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 md:gap-10 lg:gap-14 items-stretch">
+    {/* História + Missão (esquerda) | Cards (direita) — mesmo grid da home */}
+    <section className="container mx-auto px-4 pt-8 pb-[30px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
         <div className="md:col-span-1 lg:col-span-7">
           {/* Nossa história */}
           <span
@@ -244,12 +244,11 @@ const Sobre = () => (
           </div>
         </div>
 
-        <aside className="md:col-span-1 lg:col-span-5 flex flex-col gap-4 min-h-0 h-full">
+        <aside className="md:col-span-1 lg:col-span-3 flex flex-col gap-4 min-h-0 h-full">
           <div
             className="rounded-xl p-4 sm:p-5 text-white shrink-0"
             style={{
               background: "linear-gradient(135deg, #051230 0%, #0a2060 100%)",
-              border: "1px solid rgba(200,168,75,0.35)",
             }}
           >
             <div className="flex items-center gap-3 mb-3">
@@ -264,7 +263,7 @@ const Sobre = () => (
             </p>
           </div>
 
-          <div className="rounded-xl overflow-hidden border border-border bg-card shrink-0">
+          <div className="rounded-xl overflow-hidden bg-card shrink-0">
             <img
               src={baseRadio}
               alt="Estúdio da Rádio Conexão Católica"
@@ -273,7 +272,7 @@ const Sobre = () => (
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-4 sm:p-5 space-y-3 shrink-0">
+          <div className="rounded-xl bg-muted/40 p-4 sm:p-5 space-y-3 shrink-0">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Em números
             </p>
@@ -304,28 +303,28 @@ const Sobre = () => (
     </section>
 
     {/* Redes sociais */}
-    <section className="container mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6">
-      <div className="mb-6 sm:mb-8 max-w-2xl">
+    <section className="container mx-auto px-4 pt-0 pb-[30px]">
+      <div className="mb-6 max-w-2xl">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
           Nossas redes
         </p>
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
           Acompanhe a Conexão Católica
         </h2>
-        <p className="text-sm sm:text-base text-muted-foreground mt-3 leading-relaxed text-justify">
+        <p className="text-sm text-muted-foreground mt-3 leading-relaxed text-justify">
           Siga a rádio nas plataformas oficiais e fique por dentro da programação, lives e
           conteúdos de evangelização.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-[30px]">
         {SOCIALS.map((s) => (
           <a
             key={s.name}
             href={s.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex items-start gap-3 sm:gap-4 rounded-lg border border-border bg-card px-4 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
+            className="group flex items-start gap-3 sm:gap-4 rounded-lg bg-muted/40 px-4 py-4 hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
             <span
               className="mt-0.5 w-2.5 h-2.5 rounded-full shrink-0"
