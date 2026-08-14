@@ -1,4 +1,4 @@
-import { Smartphone, Download } from "lucide-react";
+﻿import { Smartphone, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DownloadAppSection = () => {
@@ -21,7 +21,7 @@ const DownloadAppSection = () => {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="https://play.google.com/store"
+              href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
               target="_blank"
               rel="noopener noreferrer"
             >

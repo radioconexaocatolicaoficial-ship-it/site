@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+﻿import { useState, useRef } from "react";
 import { Play, Pause } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { STREAM_URL } from "@/lib/radioStream";
@@ -82,7 +82,7 @@ const DestaqueInstitucional = () => {
             </button>
 
             <a
-              href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
+              href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap justify-center w-full sm:w-auto"

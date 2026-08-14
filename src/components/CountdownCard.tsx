@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+﻿import { useState, useEffect, useRef } from "react";
 import { Cross, Headphones } from "lucide-react";
 import { STREAM_URL } from "@/lib/radioStream";
 
@@ -86,7 +86,7 @@ const CountdownCard = () => {
           <Headphones className="w-4 h-4" />
           {playing ? "⏸ Pausar Rádio" : "🎧 Ouvir a Rádio ao Vivo"}
         </button>
-        <a href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR" target="_blank" rel="noopener noreferrer"
+        <a href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund" target="_blank" rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-accent text-accent-foreground text-xs font-bold hover:brightness-110 transition-all">
           📱 Baixar no Google Play
         </a>

@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import logo from "@/assets/logo.png";
 import baseRadio from "@/assets/Base-radio-1.png";
@@ -112,7 +112,7 @@ const Sobre = () => (
             Fale conosco
           </Link>
           <a
-            href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
+            href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold border border-white/40 text-white hover:bg-white/10 transition"

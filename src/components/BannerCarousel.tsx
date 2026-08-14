@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import bannerDiante from "@/assets/banner-diante-do-rei.jpg";
 import bannerDianteMobile from "@/assets/banner-diante-do-rei-mobile.jpg";
@@ -13,7 +13,7 @@ const banners = [
   { src: bannerDiante, mobile: bannerDianteMobile, alt: "Noite Oracional Diante do Rei", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-realiza-noite-de-oracao-diante-do-rei-em-sao-paulo/" },
   { src: bannerHomens, mobile: bannerHomensMobile, alt: "Encontro para Homens", link: "https://saopaulo.cancaonova.com/noticias/encontro-para-homens-propoe-um-dia-de-formacao-e-espiritualidade-em-sao-paulo/" },
   { src: bannerKairos, mobile: bannerKairosMobile, alt: "Kairós para Mulheres", link: "https://saopaulo.cancaonova.com/noticias/cancao-nova-sao-paulo-promove-kairos-para-mulheres-em-sao-paulo/" },
-  { src: bannerConexao, mobile: bannerConexaoMobile, alt: "Rádio Conexão Católica - A Sintonia de Vida no Ar", link: "https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR" },
+  { src: bannerConexao, mobile: bannerConexaoMobile, alt: "Rádio Conexão Católica - A Sintonia de Vida no Ar", link: "https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund" },
 ];
 
 const BannerCarousel = () => {

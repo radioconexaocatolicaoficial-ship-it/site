@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+﻿import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, Music, Users } from "lucide-react";
 import { STREAM_URL, STATION_NAME, fetchNowPlaying } from "@/lib/radioStream";
 
@@ -112,7 +112,7 @@ const FixedPlayer = () => {
 
         {/* App */}
         <a
-          href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
+          href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
           target="_blank"
           rel="noopener noreferrer"
           className="flex-shrink-0 flex items-center gap-1 px-2 md:px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all hover:brightness-110"

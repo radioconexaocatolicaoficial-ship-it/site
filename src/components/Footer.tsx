@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+﻿import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Radio, Zap, Building2, Headphones, Clapperboard } from "lucide-react";
 import { useState } from "react";
 import logo from "@/assets/logo.png";
@@ -73,7 +73,7 @@ const Footer = () => {
 
         {/* Google Play */}
         <a
-          href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
+          href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
           target="_blank"
           rel="noopener noreferrer"
           style={{

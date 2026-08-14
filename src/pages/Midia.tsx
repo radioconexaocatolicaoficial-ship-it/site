@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ExternalLink, Play } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -711,7 +711,7 @@ const Midia = () => {
               Fale conosco
             </Link>
             <a
-              href="https://play.google.com/store/apps/details?id=br.webofus.rdioconexocatlica&hl=pt_BR"
+              href="https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold border border-white/40 text-white hover:bg-white/10 transition backdrop-blur-sm"
