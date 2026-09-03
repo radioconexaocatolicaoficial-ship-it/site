@@ -95,6 +95,37 @@ function localApiProxyPlugin(): Plugin {
           res.end("proxy failed");
         }
       });
+
+      server.middlewares.use("/api/html", async (req, res) => {
+        try {
+          const u = new URL(req.url || "", "http://localhost");
+          const target = u.searchParams.get("u");
+          if (!target || !/^https?:\/\//i.test(target)) {
+            res.statusCode = 400;
+            res.end("missing u");
+            return;
+          }
+          const upstream = await fetch(target, {
+            headers: {
+              "User-Agent": UA,
+              Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+            signal: AbortSignal.timeout(15000),
+          });
+          if (!upstream.ok) {
+            res.statusCode = upstream.status || 502;
+            res.end("upstream error");
+            return;
+          }
+          const text = await upstream.text();
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          res.setHeader("Cache-Control", "public, max-age=60");
+          res.end(text);
+        } catch {
+          res.statusCode = 502;
+          res.end("proxy failed");
+        }
+      });
     },
   };
 }
