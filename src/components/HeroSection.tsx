@@ -1,12 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import heroBg from "@/assets/Banner-Topo-.jpg";
-import heroBgMobile from "@/assets/Banner-topo-mobile.jpg";
-import heroExpo from "@/assets/Banner-Topo-2-.jpg";
-import heroExpoMobile from "@/assets/Banner-topo-mobile2-.jpg";
+import bannerApp from "@/assets/banner-topo-app.jpg";
+import bannerPousada from "@/assets/banner-topo-pousada.jpg";
 
-const EXPO_REGISTER_URL =
-  "https://expocatolica.com.br/event/expocatolica-2026-1764/register";
+const APP_URL = "https://play.google.com/store/apps/details?id=hoostcomv2.ogvopund";
+const POUSADA_URL = "https://pousadasaojosedeanchieta.com.br";
 
 type Slide = {
   id: string;
@@ -19,19 +17,20 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    id: "radio",
-    desktop: heroBg,
-    mobile: heroBgMobile,
-    alt: "Banner Rádio Conexão Católica",
-    href: null,
+    id: "app",
+    desktop: bannerApp,
+    mobile: bannerApp,
+    alt: "Baixe o app da Rádio Conexão Católica",
+    href: APP_URL,
+    ctaLabel: "Baixar o app no Google Play",
   },
   {
-    id: "expo",
-    desktop: heroExpo,
-    mobile: heroExpoMobile,
-    alt: "ExpoCatólica 2026 — Revestidos pela Fé",
-    href: EXPO_REGISTER_URL,
-    ctaLabel: "Fazer inscrição gratuita",
+    id: "pousada",
+    desktop: bannerPousada,
+    mobile: bannerPousada,
+    alt: "Pousada São José de Anchieta — Acolhimento, fé e tranquilidade",
+    href: POUSADA_URL,
+    ctaLabel: "Reservar na Pousada São José de Anchieta",
   },
 ];
 
@@ -87,8 +86,8 @@ const HeroSection = () => {
             alt=""
             aria-hidden
             className="h-[400px] w-auto max-w-full block invisible"
-            width={1920}
-            height={1080}
+            width={1024}
+            height={360}
           />
 
           {slides.map((slide, i) => {
@@ -98,8 +97,8 @@ const HeroSection = () => {
                 src={slide.desktop}
                 alt={slide.alt}
                 className="h-[400px] w-auto max-w-full object-contain"
-                width={1920}
-                height={1080}
+                width={1024}
+                height={360}
                 loading={i === 0 ? "eager" : "lazy"}
               />
             );
@@ -155,9 +154,9 @@ const HeroSection = () => {
             src={slides[current].mobile}
             alt=""
             aria-hidden
-            className="w-full h-auto object-cover invisible"
-            width={1080}
-            height={1920}
+            className="w-full h-auto object-contain invisible"
+            width={1024}
+            height={360}
           />
           {slides.map((slide, i) => {
             const active = i === current;
@@ -165,9 +164,9 @@ const HeroSection = () => {
               <img
                 src={slide.mobile}
                 alt={slide.alt}
-                className="w-full h-auto object-cover absolute inset-0"
-                width={1080}
-                height={1920}
+                className="w-full h-auto object-contain absolute inset-0"
+                width={1024}
+                height={360}
                 loading={i === 0 ? "eager" : "lazy"}
               />
             );
