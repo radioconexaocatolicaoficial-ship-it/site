@@ -76,10 +76,10 @@ const HeroSection = () => {
   }, [next]);
 
   return (
-    <section id="inicio" className="relative w-full overflow-hidden mb-[8%] md:mb-0">
+    <section id="inicio" className="relative w-full overflow-hidden mb-[8%] md:mb-0 md:pt-5">
       {/* Desktop — largura original (object-contain), setas dentro do banner */}
       <div className="hidden md:flex w-full justify-center">
-        <div className="relative h-[400px] max-w-full inline-block overflow-hidden rounded-b-xl">
+        <div className="relative h-[400px] max-w-full inline-block overflow-hidden rounded-xl">
           {/* Define a largura real do banner (mesma proporção de antes) */}
           <img
             src={slides[current].desktop}
