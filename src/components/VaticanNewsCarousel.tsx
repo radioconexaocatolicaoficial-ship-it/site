@@ -29,16 +29,23 @@ const FALLBACK_ITEMS = [
     thumbnail:
       "https://www.vaticannews.va/content/dam/vaticannews/multimedia/2021/05/24/Senza-titolo-12.jpg/_jcr_content/renditions/cq5dam.thumbnail.cropped.500.281.jpeg",
   },
+  {
+    title: "Papa: a esperança cristã é um caminho de paz",
+    link: "https://www.vaticannews.va/pt.html",
+    description:
+      "Na oração do Ângelus, o Santo Padre convidou os fiéis a serem construtores de paz nas famílias e nas comunidades.",
+    thumbnail: FALLBACK_IMG,
+  },
 ];
 
 type Props = {
-  /** Quantidade de cards visíveis por vez (padrão: 2) */
+  /** Quantidade de cards visíveis por vez (padrão: 4 — duas linhas de dois) */
   visibleCount?: number;
 };
 
-const VaticanNewsCarousel = ({ visibleCount = 2 }: Props) => {
+const VaticanNewsCarousel = ({ visibleCount = 4 }: Props) => {
   const [index, setIndex] = useState(0);
-  const { items, loading } = useRssFeed(VATICAN_RSS, 9);
+  const { items, loading } = useRssFeed(VATICAN_RSS, 12);
 
   const displayItems = items.length > 0 ? items : FALLBACK_ITEMS;
   const step = Math.max(1, visibleCount);
@@ -49,10 +56,7 @@ const VaticanNewsCarousel = ({ visibleCount = 2 }: Props) => {
     setIndex((i) => (i + step >= displayItems.length ? 0 : Math.min(max, i + step)));
 
   const visible = displayItems.slice(index, index + step);
-  const gridClass =
-    step >= 3
-      ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-      : "grid-cols-1 md:grid-cols-2";
+  const gridClass = "grid-cols-1 sm:grid-cols-2";
 
   return (
     <div className="h-full flex flex-col">
@@ -77,17 +81,16 @@ const VaticanNewsCarousel = ({ visibleCount = 2 }: Props) => {
       </div>
 
       {loading && items.length === 0 && (
-        <div className={`flex-1 grid ${gridClass} gap-4`}>
+        <div className={`flex-1 min-h-0 grid ${gridClass} gap-3 auto-rows-fr`}>
           {Array.from({ length: step }).map((_, i) => (
             <div
               key={i}
-              className="bg-card rounded-xl border border-border overflow-hidden flex flex-col animate-pulse"
+              className="h-full bg-card rounded-xl border border-border overflow-hidden flex flex-col animate-pulse"
             >
-              <div className="aspect-video bg-muted" />
-              <div className="p-4 flex flex-col gap-2">
+              <div className="aspect-[16/8] bg-muted shrink-0" />
+              <div className="p-2.5 flex flex-col gap-2">
                 <div className="h-4 bg-muted rounded w-3/4" />
                 <div className="h-3 bg-muted rounded w-full" />
-                <div className="h-3 bg-muted rounded w-2/3" />
               </div>
             </div>
           ))}
@@ -95,16 +98,16 @@ const VaticanNewsCarousel = ({ visibleCount = 2 }: Props) => {
       )}
 
       {(!loading || items.length > 0) && (
-        <div className={`flex-1 grid ${gridClass} gap-4`}>
+        <div className={`flex-1 min-h-0 grid ${gridClass} gap-3 auto-rows-fr`}>
           {visible.map((item, i) => (
             <a
               key={`${index}-${i}-${item.link}`}
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="group bg-card rounded-xl border border-border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col"
+              className="group h-full min-h-0 bg-card rounded-xl border border-border overflow-hidden hover:shadow-md transition-shadow flex flex-col"
             >
-              <div className="aspect-video overflow-hidden bg-muted">
+              <div className="aspect-[16/8] overflow-hidden bg-muted shrink-0">
                 <img
                   src={item.thumbnail || FALLBACK_IMG}
                   alt={item.title}
@@ -115,12 +118,14 @@ const VaticanNewsCarousel = ({ visibleCount = 2 }: Props) => {
                   }}
                 />
               </div>
-              <div className="p-4 flex-1 flex flex-col">
-                <h3 className="font-semibold text-sm text-foreground leading-snug mb-2 line-clamp-3">
+              <div className="p-2.5 flex-1 flex flex-col min-h-0">
+                <h3 className="font-semibold text-[13px] text-foreground leading-snug line-clamp-2">
                   {item.title}
                 </h3>
-                <p className="text-xs text-muted-foreground flex-1 line-clamp-6">{item.description}</p>
-                <span className="mt-3 text-xs font-semibold text-primary">LER NOTÍCIA →</span>
+                <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 flex-1">
+                  {item.description}
+                </p>
+                <span className="mt-1.5 text-[11px] font-semibold text-primary">LER NOTÍCIA →</span>
               </div>
             </a>
           ))}

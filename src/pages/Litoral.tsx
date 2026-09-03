@@ -10,7 +10,7 @@ const LiturgiaWidget = React.lazy(() => import("@/components/LiturgiaWidget"));
 const BibliaWidget = React.lazy(() => import("@/components/BibliaWidget"));
 const DestaqueInstitucional = React.lazy(() => import("@/components/DestaqueInstitucional"));
 const LojaCard = React.lazy(() => import("@/components/LojaCard"));
-const LojaProdutosScroller = React.lazy(() => import("@/components/LojaProdutosScroller"));
+const UltimosEventos = React.lazy(() => import("@/components/UltimosEventos"));
 const YouTubeVideos = React.lazy(() => import("@/components/YouTubeVideos"));
 const PatrocinadoresCarousel = React.lazy(() => import("@/components/PatrocinadoresCarousel"));
 const NewsSection = React.lazy(() => import("@/components/NewsSection"));
@@ -211,10 +211,10 @@ const Litoral = () => (
     {/* Rádio São Paulo + Vatican News — mesmo modelo da home */}
     <section className="container mx-auto px-4 pt-0 pb-[30px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
-        <div className="md:col-span-1 lg:col-span-3">
+        <div className="md:col-span-1 lg:col-span-3 h-full">
           <RadioSaoPauloCard />
         </div>
-        <div className="md:col-span-1 lg:col-span-7">
+        <div className="md:col-span-1 lg:col-span-7 h-full min-h-0">
           <VaticanNewsCarousel />
         </div>
       </div>
@@ -232,8 +232,8 @@ const Litoral = () => (
           <div className="md:col-span-1 lg:col-span-3">
             <LojaCard />
           </div>
-          <div className="md:col-span-1 lg:col-span-7 min-h-[320px] lg:min-h-[380px]">
-            <LojaProdutosScroller />
+          <div className="md:col-span-1 lg:col-span-7 max-h-[720px]">
+            <UltimosEventos />
           </div>
         </div>
       </section>
