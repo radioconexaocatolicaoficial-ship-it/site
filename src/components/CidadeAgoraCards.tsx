@@ -104,17 +104,17 @@ function Card({
   children: ReactNode;
 }) {
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-[#d7e4f4] bg-white px-4 py-3">
-      <div className="mb-2 flex items-center gap-1.5 text-primary">
+    <article className="flex h-full max-h-[164px] flex-col rounded-2xl border border-[#d7e4f4] bg-white px-4 py-1.5">
+      <div className="mb-1 flex items-center gap-1.5 text-primary">
         {icon}
         <h3 className="text-[13px] font-bold uppercase tracking-wide">{title}</h3>
       </div>
-      <div className="flex-1">{children}</div>
+      <div className="min-h-0 flex-1">{children}</div>
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2.5 text-[13px] font-semibold text-primary hover:underline"
+        className="mt-1 text-[13px] font-semibold text-primary hover:underline"
       >
         Ver detalhes →
       </a>
@@ -141,7 +141,7 @@ function WeatherCard({ box }: { box: BoxState<WeatherData> }) {
               </p>
             )}
           </div>
-          <p className="text-[40px] font-bold leading-none text-primary">{box.data.temp}°</p>
+          <p className="text-[30px] font-bold leading-none text-primary">{box.data.temp}°</p>
         </div>
       ) : (
         <p className="text-sm text-muted-foreground">Indisponível</p>
@@ -162,8 +162,8 @@ function TrafficCard({ box }: { box: BoxState<TrafficData> }) {
       ) : box.data ? (
         <>
           <p className="text-sm font-bold text-primary">SP · {box.data.totalKm} km</p>
-          <p className="mb-2 text-[12px] text-muted-foreground">{rodizioHoje()}</p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[13px]">
+          <p className="mb-1 text-[12px] leading-tight text-muted-foreground">{rodizioHoje()}</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0 text-[13px] leading-tight">
             {regions.map((r) => (
               <div key={r.name} className="flex items-baseline justify-between gap-2">
                 <span className="font-semibold text-primary">{zoneLabel(r.name)}</span>
@@ -193,7 +193,7 @@ function TransportCard({ box }: { box: BoxState<TransportData> }) {
       {box.loading && !box.data ? (
         <div className="h-14 animate-pulse rounded bg-muted" />
       ) : box.data ? (
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {rows.map((row) => (
             <li key={row.label} className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-sm font-semibold text-primary">
@@ -222,7 +222,7 @@ function FuelCard({ box }: { box: BoxState<FuelData> }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-sm font-bold text-primary">São Paulo</p>
-            <p className="mb-1.5 text-[12px] text-muted-foreground">Média ANP</p>
+            <p className="mb-1 text-[12px] text-muted-foreground">Média ANP</p>
             <div className="space-y-0.5 text-[13px]">
               {others.map((item) => (
                 <div key={item.name} className="flex items-baseline justify-between gap-3">
@@ -233,7 +233,7 @@ function FuelCard({ box }: { box: BoxState<FuelData> }) {
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[28px] font-bold leading-none text-primary">{gas?.price || "—"}</p>
+            <p className="text-[22px] font-bold leading-none text-primary">{gas?.price || "—"}</p>
             <p className="mt-1 text-[11px] text-muted-foreground">Gasolina</p>
           </div>
         </div>

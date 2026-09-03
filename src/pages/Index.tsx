@@ -2,8 +2,8 @@ import React, { Suspense } from "react";
 import Layout from "@/components/Layout";
 import HeroSection from "@/components/HeroSection";
 import CidadeAgoraCards from "@/components/CidadeAgoraCards";
-import NewsFeedStrict from "@/components/NewsFeedStrict";
-import CountdownCard from "@/components/CountdownCard";
+import NewsHomeGrid from "@/components/NewsHomeGrid";
+import LitoralCard from "@/components/LitoralCard";
 import VaticanNewsCarousel from "@/components/VaticanNewsCarousel";
 
 // Lazy Loaded Below-the-fold Components
@@ -26,13 +26,13 @@ const Index = () => (
   <Layout>
     <HeroSection /> {/* Banner topo - acima de tudo */}
     <CidadeAgoraCards />
-    <NewsFeedStrict /> {/* Acima da dobra - Eager Load */}
+    <NewsHomeGrid />
 
-    {/* Seção 1: Countdown + Vatican News (Ainda importantes o suficiente para serem eager) */}
+    {/* Seção 1: Rádio Litoral + Vatican News */}
     <section className="container mx-auto px-4 pt-0 pb-[30px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
         <div className="md:col-span-1 lg:col-span-3">
-          <CountdownCard />
+          <LitoralCard />
         </div>
         <div className="md:col-span-1 lg:col-span-7">
           <VaticanNewsCarousel />

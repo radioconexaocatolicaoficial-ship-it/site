@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { Instagram, ExternalLink, Waves, Radio, Music2, Cross, MapPin } from "lucide-react";
 import Layout from "@/components/Layout";
-import CountdownCard from "@/components/CountdownCard";
+import RadioSaoPauloCard from "@/components/RadioSaoPauloCard";
 import VaticanNewsCarousel from "@/components/VaticanNewsCarousel";
 import litoralBanner from "@/assets/litoral-banner.jpg";
 import logoLitoral from "@/assets/logo-litoral.png";
@@ -208,11 +208,11 @@ const Litoral = () => (
     {/* Informações da Rádio Litoral (sem Abraça São Paulo) */}
     <LitoralInfoSection />
 
-    {/* Abraça São Paulo + Vatican News — mesmo modelo da home */}
+    {/* Rádio São Paulo + Vatican News — mesmo modelo da home */}
     <section className="container mx-auto px-4 pt-0 pb-[30px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-6 md:gap-[30px] items-stretch">
         <div className="md:col-span-1 lg:col-span-3">
-          <CountdownCard />
+          <RadioSaoPauloCard />
         </div>
         <div className="md:col-span-1 lg:col-span-7">
           <VaticanNewsCarousel />
