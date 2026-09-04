@@ -12,11 +12,19 @@ const FEEDS = {
   vaticano: "https://www.vaticannews.va/pt.rss.xml",
   rcc: "https://rccbrasil.org.br/feed/",
   igreja: "https://noticias.cancaonova.com/feed/",
+  aleteia: "https://pt.aleteia.org/feed/",
   receitas: "https://www.receiteria.com.br/feed/",
   teatro:
     "https://news.google.com/rss/search?q=teatro+pe%C3%A7a+S%C3%A3o+Paulo+when:7d&hl=pt-BR&gl=BR&ceid=BR:pt-419",
   cinema: "https://pipocamoderna.com.br/feed/",
 };
+
+const CORS_PROXIES = [
+  (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+
+const NEWS_CACHE_KEY = "rcc_news_home_v2";
 
 type NewsItem = {
   title: string;
@@ -106,42 +114,60 @@ function parseRss(xml: string): NewsItem[] {
   return out;
 }
 
+async function parseFromResponse(res: Response, max: number): Promise<NewsItem[]> {
+  const text = await res.text();
+  let xml = text;
+  try {
+    const json = JSON.parse(text) as { contents?: string; items?: unknown };
+    if (json.contents) xml = json.contents;
+  } catch {
+    /* xml */
+  }
+  const items = parseRss(xml);
+  return items.length ? items.slice(0, max) : [];
+}
+
 async function fetchFeed(url: string, max: number): Promise<NewsItem[]> {
-  try {
-    const res = await fetch(`/api/rss?u=${encodeURIComponent(url)}&t=${Date.now()}`, {
-      cache: "no-store",
-      signal: AbortSignal.timeout(12000),
-    });
-    if (res.ok) {
-      const items = parseRss(await res.text());
-      if (items.length) return items.slice(0, max);
+  const sources = [
+    `/api/rss?u=${encodeURIComponent(url)}&t=${Date.now()}`,
+    ...CORS_PROXIES.map((p) => p(url)),
+    `${RSS2JSON}?rss_url=${encodeURIComponent(url)}&count=${max}&t=${Date.now()}`,
+  ];
+
+  for (const src of sources) {
+    try {
+      const res = await fetch(src, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+      if (!res.ok) continue;
+      if (src.includes("rss2json.com")) {
+        const data = (await res.json()) as {
+          status?: string;
+          items?: {
+            title?: string;
+            link?: string;
+            pubDate?: string;
+            thumbnail?: string;
+            description?: string;
+            enclosure?: { link?: string };
+          }[];
+        };
+        if (data.status !== "ok" || !data.items?.length) continue;
+        return data.items.slice(0, max).map((it) => ({
+          title: decode(it.title || ""),
+          link: it.link || "",
+          date: it.pubDate || "",
+          image: it.thumbnail || it.enclosure?.link || firstImg(it.description || ""),
+          excerpt: stripHtml(it.description || "").slice(0, 480),
+          badge: "",
+          categories: [],
+        }));
+      }
+      const items = await parseFromResponse(res, max);
+      if (items.length) return items;
+    } catch {
+      /* next */
     }
-  } catch {
-    /* fallback */
   }
-  try {
-    const res = await fetch(
-      `${RSS2JSON}?rss_url=${encodeURIComponent(url)}&count=${max}&t=${Date.now()}`,
-      { cache: "no-store", signal: AbortSignal.timeout(12000) },
-    );
-    if (!res.ok) return [];
-    const data = (await res.json()) as {
-      status?: string;
-      items?: { title?: string; link?: string; pubDate?: string; thumbnail?: string; description?: string; enclosure?: { link?: string } }[];
-    };
-    if (data.status !== "ok" || !data.items?.length) return [];
-    return data.items.slice(0, max).map((it) => ({
-      title: decode(it.title || ""),
-      link: it.link || "",
-      date: it.pubDate || "",
-      image: it.thumbnail || it.enclosure?.link || firstImg(it.description || ""),
-      excerpt: stripHtml(it.description || "").slice(0, 480),
-      badge: "",
-      categories: [],
-    }));
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 function formatDate(raw: string): string {
@@ -203,10 +229,20 @@ function withBadge(items: NewsItem[], badge: string): NewsItem[] {
 
 function proxiedImage(url: string): string {
   if (!url) return "";
-  if (/cnnbrasil|glbimg|wp-content|vaticannews/i.test(url)) {
+  if (url.startsWith("/")) return url;
+  if (/cnnbrasil|glbimg|wp-content|vaticannews|gazetaesportiva/i.test(url)) {
     return `/api/img?u=${encodeURIComponent(url)}`;
   }
   return url;
+}
+
+function rawFromProxy(src: string): string {
+  try {
+    const u = new URL(src, window.location.origin);
+    return u.searchParams.get("u") || "";
+  } catch {
+    return "";
+  }
 }
 
 async function enrichImage(item: NewsItem): Promise<NewsItem> {
@@ -228,26 +264,39 @@ async function enrichImage(item: NewsItem): Promise<NewsItem> {
 }
 
 async function loadNews(): Promise<{ highlight: NewsItem | null; rows: Row[] }> {
-  const [cnn, mundo, esportes, vaticano, rcc, igreja, receitas, teatro, cinema] = await Promise.all([
-    fetchFeed(FEEDS.cnn, 10),
-    fetchFeed(FEEDS.mundo, 6),
-    fetchFeed(FEEDS.esportes, 6),
-    fetchFeed(FEEDS.vaticano, 6),
-    fetchFeed(FEEDS.rcc, 4),
-    fetchFeed(FEEDS.igreja, 4),
-    fetchFeed(FEEDS.receitas, 4),
-    fetchFeed(FEEDS.teatro, 6),
-    fetchFeed(FEEDS.cinema, 6),
-  ]);
+  const [cnn, mundo, esportes, vaticano, rcc, igreja, aleteia, receitas, teatro, cinema] =
+    await Promise.all([
+      fetchFeed(FEEDS.cnn, 10),
+      fetchFeed(FEEDS.mundo, 6),
+      fetchFeed(FEEDS.esportes, 6),
+      fetchFeed(FEEDS.vaticano, 6),
+      fetchFeed(FEEDS.rcc, 4),
+      fetchFeed(FEEDS.igreja, 4),
+      fetchFeed(FEEDS.aleteia, 4),
+      fetchFeed(FEEDS.receitas, 4),
+      fetchFeed(FEEDS.teatro, 6),
+      fetchFeed(FEEDS.cinema, 6),
+    ]);
 
   const breaking = findCnnBreaking(cnn);
 
-  const catholicPick = vaticano[0] || igreja[0] || null;
+  const catholicPick = vaticano[0] || igreja[0] || aleteia[0] || null;
   const highlight = breaking
     ? breaking
     : catholicPick
-      ? { ...catholicPick, badge: vaticano[0] ? "Vatican News" : "Igreja Católica" }
-      : null;
+      ? {
+          ...catholicPick,
+          badge: vaticano[0] ? "Vatican News" : igreja[0] ? "Igreja Católica" : "Aleteia",
+        }
+      : {
+          title: "Notícias da Igreja Católica",
+          link: "https://www.vaticannews.va/pt.html",
+          date: "",
+          image: "",
+          excerpt:
+            "Acompanhe as últimas notícias do Vaticano, da Igreja no Brasil e da vida da fé. Toque para abrir o Vatican News.",
+          badge: "Vatican News",
+        };
   const skip = new Set(highlight ? [highlight.link.replace(/\/$/, "")] : []);
 
   const one = (list: NewsItem[], badge: string) =>
@@ -298,6 +347,15 @@ function Card({ item }: { item: NewsItem }) {
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
             loading="lazy"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              const el = e.currentTarget;
+              const raw = rawFromProxy(el.src);
+              if (raw && el.src.includes("/api/img")) {
+                el.src = raw;
+                return;
+              }
+              el.style.display = "none";
+            }}
           />
         ) : (
           <div className="h-full w-full bg-gradient-to-br from-primary/15 to-primary/5" />
@@ -313,16 +371,34 @@ function Card({ item }: { item: NewsItem }) {
   );
 }
 
+function readNewsCache(): { highlight: NewsItem | null; rows: Row[] } | null {
+  try {
+    const raw = localStorage.getItem(NEWS_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as { highlight: NewsItem | null; rows: Row[] }) : null;
+  } catch {
+    return null;
+  }
+}
+
 const NewsHomeGrid = () => {
-  const [highlight, setHighlight] = useState<NewsItem | null>(null);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = readNewsCache();
+  const [highlight, setHighlight] = useState<NewsItem | null>(cached?.highlight ?? null);
+  const [rows, setRows] = useState<Row[]>(cached?.rows ?? []);
+  const [loading, setLoading] = useState(!cached);
 
   const run = useCallback(async () => {
     try {
       const data = await loadNews();
-      setHighlight(data.highlight);
-      setRows(data.rows);
+      const hasCards = data.rows.some((r) => r.items.length);
+      if (data.highlight || hasCards) {
+        setHighlight(data.highlight);
+        setRows(data.rows);
+        try {
+          localStorage.setItem(NEWS_CACHE_KEY, JSON.stringify(data));
+        } catch {
+          /* ignore */
+        }
+      }
     } finally {
       setLoading(false);
     }
